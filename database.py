@@ -1,7 +1,7 @@
 import psycopg2
 import sqlite3
 from datetime import datetime
-import bcrypt
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from typing import Any, Dict, List, Optional
 
@@ -89,20 +89,25 @@ class Database:
         with self.conn:
             self.conn.execute(query, params)
 
-    def get_user_by_username(self, username: str) -> Optional[Dict[str, Any]]:
+    def get_user_by_username(self, username: str, password: str = None) -> Optional[Dict[str, Any]]:
         if self.db_url.startswith('postgresql'):
             query = "SELECT * FROM users WHERE username = %s"
         else:
             query = "SELECT * FROM users WHERE username = ?"
         results = self.execute_query(query, (username,))
-        return results[0] if results else None
+        user = results[0] if results else None
+        if user and password:
+            if check_password_hash(user['password'], password):
+                return user
+        return user
 
     def create_user(self, username: str, password: str, email: str) -> int:
+        hashed_password = generate_password_hash(password)
         if self.db_url.startswith('postgresql'):
             query = "INSERT INTO users (username, password, email) VALUES (%s, %s, %s) RETURNING id"
         else:
             query = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)"
-        user_id = self.execute_insert(query, (username, password, email))
+        user_id = self.execute_insert(query, (username, hashed_password, email))
         
         # Create wallet for the user
         wallet_query = "INSERT INTO wallets (user_id) VALUES (?)"
