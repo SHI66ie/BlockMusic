@@ -46,15 +46,26 @@ class Database:
                     )
                 ''')
             
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS wallets (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER NOT NULL,
-                    balance REAL DEFAULT 0.0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users (id)
-                )
-            ''')
+            if self.db_url.startswith('postgresql'):
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS wallets (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL,
+                        balance REAL DEFAULT 0.0,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (user_id) REFERENCES users (id)
+                    )
+                ''')
+            else:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS wallets (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL,
+                        balance REAL DEFAULT 0.0,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (user_id) REFERENCES users (id)
+                    )
+                ''')
 
     def execute_query(self, query: str, params: tuple = ()) -> List[Dict[str, Any]]:
         """Execute a query and return results as list of dictionaries"""
