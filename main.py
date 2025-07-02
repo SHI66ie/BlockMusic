@@ -76,4 +76,13 @@ def deposit():
         return jsonify({'error': 'Invalid amount'}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    with app.app_context():
+        db.create_all()
+    
+    # Get port from environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Get host from environment variable or default to localhost
+    host = os.environ.get('HOST', '0.0.0.0')
+    
+    app.run(host=host, port=port, debug=True)
