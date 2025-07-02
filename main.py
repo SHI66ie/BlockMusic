@@ -2,9 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from database import Database
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -76,8 +73,9 @@ def deposit():
         return jsonify({'error': 'Invalid amount'}), 400
 
 if __name__ == '__main__':
+    # Initialize database
     with app.app_context():
-        db.create_all()
+        db.initialize_db()
     
     # Get port from environment variable or default to 5000
     port = int(os.environ.get('PORT', 5000))
