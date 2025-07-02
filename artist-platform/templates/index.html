@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <a href="/" class="flex items-center">
+                        <span class="text-xl font-bold">Artist Platform</span>
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/login" class="px-4 py-2">Login</a>
+                    <a href="/register" class="px-4 py-2 bg-blue-700 rounded">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h1 class="text-2xl font-bold mb-4">Welcome to Artist Platform</h1>
+            <p class="mb-6">Discover and support independent artists. Stream their music and help them earn.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Artists will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and display artists
+        async function loadArtists() {
+            try {
+                const response = await fetch('/api/artists');
+                const artists = await response.json();
+                
+                const container = document.querySelector('.grid');
+                artists.forEach(artist => {
+                    const artistCard = document.createElement('div');
+                    artistCard.className = 'bg-white rounded-lg shadow p-4';
+                    artistCard.innerHTML = `
+                        <h2 class="text-xl font-bold mb-2">${artist.username}</h2>
+                        <p class="text-gray-600">${artist.description}</p>
+                        <button onclick="subscribeToArtist(${artist.id})" 
+                                class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">
+                            Subscribe (${artist.subscription_price} per month)
+                        </button>
+                    `;
+                    container.appendChild(artistCard);
+                });
+            } catch (error) {
+                console.error('Error loading artists:', error);
+            }
+        }
+
+        // Subscribe to artist
+        async function subscribeToArtist(artistId) {
+            try {
+                const response = await fetch(`/api/subscribe/${artistId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Subscription successful!');
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Failed to subscribe');
+                }
+            } catch (error) {
+                console.error('Error subscribing:', error);
+                alert('Failed to subscribe');
+            }
+        }
+
+        // Load artists when page loads
+        document.addEventListener('DOMContentLoaded', loadArtists);
+    </script>
+</body>
+</html>
