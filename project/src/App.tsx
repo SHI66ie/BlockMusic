@@ -4,10 +4,12 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import { WalletProvider } from './contexts/WalletContext';
-import { Web3Provider } from './components/Web3Provider';
+import { WagmiProvider } from 'wagmi';
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { useBlockchain } from './hooks/useBlockchain';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Home } from './pages/Home';
+import { config, queryClient, rainbowKitConfig } from './config/web3';
 
 // Create router
 const router = createBrowserRouter([
@@ -16,9 +18,6 @@ const router = createBrowserRouter([
     element: <Home />,
   },
 ]);
-
-// Create a client
-const queryClient = new QueryClient();
 
 function App() {
   console.log('App component rendering');
@@ -55,10 +54,11 @@ function App() {
   console.log('Rendering with router:', router);
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <Web3Provider>
-        <WalletProvider>
-          <div className="min-h-screen bg-gray-100">
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider {...rainbowKitConfig}>
+          <WalletProvider>
+            <div className="min-h-screen bg-gray-100">
             <Header 
               onLoginClick={handleLoginClick}
               onSignupClick={handleSignupClick}
@@ -77,10 +77,11 @@ function App() {
               onClose={handleCloseModal}
               onSwitchMode={handleSwitchAuthMode}
             />
-          </div>
-        </WalletProvider>
-      </Web3Provider>
-    </QueryClientProvider>
+            </div>
+          </WalletProvider>
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
 

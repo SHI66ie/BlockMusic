@@ -1,7 +1,7 @@
-import { http } from 'viem';
-import { baseSepolia } from 'viem/chains';
+import { http, createConfig } from 'wagmi';
+import { baseSepolia } from 'wagmi/chains';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
-import { createConfig } from 'wagmi';
+import { QueryClient } from '@tanstack/react-query';
 
 // Base Sepolia testnet configuration
 export const baseSepoliaConfig = {
@@ -38,16 +38,24 @@ if (!projectId || projectId === 'YOUR_WALLET_CONNECT_PROJECT_ID') {
 }
 
 // Configure Wagmi client
-export const config = createConfig(
-  getDefaultConfig({
-    appName: import.meta.env.VITE_APP_NAME || 'BlockMusic',
-    projectId: projectId || 'dummy-project-id',
-    chains: [baseSepolia],
-    transports: {
-      [baseSepolia.id]: http(),
-    },
-  })
-);
+export const config = createConfig({
+  chains: [baseSepolia],
+  transports: {
+    [baseSepolia.id]: http(),
+  },
+  ssr: true,
+});
+
+// Setup queryClient
+export const queryClient = new QueryClient();
+
+// Setup RainbowKit
+export const rainbowKitConfig = getDefaultConfig({
+  appName: import.meta.env.VITE_APP_NAME || 'BlockMusic',
+  projectId: projectId || 'dummy-project-id',
+  chains: [baseSepolia],
+  ssr: true,
+});
 
 // Wallet connection options
 export const walletConnectionOptions = {
