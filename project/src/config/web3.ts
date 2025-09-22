@@ -24,14 +24,24 @@ export const baseSepoliaConfig = {
   testnet: true,
 };
 
-// WalletConnect project ID - replace with your own from https://cloud.walletconnect.com/
-const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || 'YOUR_WALLET_CONNECT_PROJECT_ID';
+// WalletConnect project ID - get from environment variables
+const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID;
+
+if (!projectId || projectId === 'YOUR_WALLET_CONNECT_PROJECT_ID') {
+  console.error('Missing or invalid WalletConnect Project ID. Please create a .env file with VITE_WALLET_CONNECT_PROJECT_ID');
+  // Fallback to a dummy ID in development
+  if (import.meta.env.DEV) {
+    console.warn('Using dummy WalletConnect Project ID for development');
+  } else {
+    throw new Error('Missing required environment variable: VITE_WALLET_CONNECT_PROJECT_ID');
+  }
+}
 
 // Configure Wagmi client
 export const config = createConfig(
   getDefaultConfig({
-    appName: 'BlockMusic',
-    projectId,
+    appName: import.meta.env.VITE_APP_NAME || 'BlockMusic',
+    projectId: projectId || 'dummy-project-id',
     chains: [baseSepolia],
     transports: {
       [baseSepolia.id]: http(),
