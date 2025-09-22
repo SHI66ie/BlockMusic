@@ -1,10 +1,11 @@
 [build]
-  command = "pip install -r requirements.txt"
+  command = "pip install --upgrade pip && pip install -r requirements.txt"
   publish = "build"
 
 [build.environment]
   PYTHON_VERSION = "3.9"
-  NODE_VERSION = "16"
+  NODE_VERSION = "18"
+  PYTHON_VERBOSE = "true"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+[context.production.environment]
+  PYTHON_VERSION = "3.9"
