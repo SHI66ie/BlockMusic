@@ -1,11 +1,17 @@
 [build]
-  command = "pip install --upgrade pip && pip install -r requirements.txt"
-  publish = "build"
+  command = "cd project && npm install && npm run build"
+  publish = "project/dist"
 
 [build.environment]
-  PYTHON_VERSION = "3.9"
   NODE_VERSION = "18"
-  PYTHON_VERBOSE = "true"
+  NPM_FLAGS = "--prefix=project"
+  
+[dev]
+  command = "cd project && npm run dev"
+  port = 3000
+  publish = "project/dist"
 
-[context.production.environment]
-  PYTHON_VERSION = "3.9"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
