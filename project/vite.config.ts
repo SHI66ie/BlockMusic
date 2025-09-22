@@ -8,7 +8,13 @@ export default defineConfig(({ mode }: { mode: string }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
-    base: './',  // Use relative paths for better compatibility
+    base: process.env.NODE_ENV === 'production' ? '/' : '/',
+    server: {
+      port: 3000,
+      strictPort: true,
+      host: true,
+      open: true,
+    },
     plugins: [
       react(),
       // Polyfill Node.js core modules for browser compatibility
