@@ -4,9 +4,10 @@ import { Play, Menu, X } from 'lucide-react';
 interface HeaderProps {
   onLoginClick: () => void;
   onSignupClick: () => void;
+  rightContent?: React.ReactNode;
 }
 
-const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick }) => {
+const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick, rightContent }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -42,18 +43,22 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick }) => {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={onLoginClick}
-              className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
-            >
-              Log in
-            </button>
-            <button
-              onClick={onSignupClick}
-              className="bg-white text-black px-6 py-2 rounded-full font-medium hover:scale-105 transition-transform duration-200"
-            >
-              Sign up
-            </button>
+            {rightContent || (
+              <>
+                <button
+                  onClick={onLoginClick}
+                  className="text-gray-300 hover:text-white transition-colors duration-200 font-medium"
+                >
+                  Log in
+                </button>
+                <button
+                  onClick={onSignupClick}
+                  className="bg-white text-black px-6 py-2 rounded-full font-medium hover:scale-105 transition-transform duration-200"
+                >
+                  Sign up free
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
