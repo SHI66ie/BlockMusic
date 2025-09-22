@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
-interface WalletContextType {
-  balance: number;
-  isLoading: boolean;
-  error: string | null;
-  getBalance: () => Promise<void>;
-  makeTransaction: (amount: number) => Promise<void>;
-}
+import { WalletContextType, WALLET_API_BASE_URL } from '../types/wallet.types';
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -28,7 +21,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get('http://127.0.0.1:5000/api/wallet');
+      const response = await axios.get(WALLET_API_BASE_URL);
       setBalance(response.data.balance);
     } catch (err) {
       setError('Failed to fetch balance');
@@ -42,7 +35,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       setIsLoading(true);
       setError(null);
-      await axios.post('http://127.0.0.1:5000/api/wallet/deposit', { amount });
+      await axios.post(`${WALLET_API_BASE_URL}/deposit`, { amount });
       await getBalance(); // Refresh balance after transaction
     } catch (err) {
       setError('Transaction failed');

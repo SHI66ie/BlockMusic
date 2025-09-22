@@ -90,7 +90,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
         confirmPassword: '',
         displayName: '',
       });
-    } catch (error) {
+    } catch {
       alert('Failed to connect wallet. Please try again.');
     } finally {
       setIsConnecting(false);
@@ -105,6 +105,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-200"
+          aria-label="Close modal"
         >
           <X className="w-6 h-6" />
         </button>

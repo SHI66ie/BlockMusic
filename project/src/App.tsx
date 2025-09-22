@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes';
 import Header from './components/Header';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Premium from './components/Premium';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import { WalletProvider } from './contexts/WalletContext';
-import Wallet from './components/Wallet';
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -38,19 +36,16 @@ function App() {
           onSignupClick={handleSignupClick}
         />
         
-        <main>
-          <Hero />
-          <Features />
-          <Premium />
-          <Wallet />
+        <main className="flex-1">
+          <RouterProvider router={router} />
         </main>
 
         <Footer />
 
         <AuthModal
           isOpen={isAuthModalOpen}
-          onClose={handleCloseModal}
           mode={authMode}
+          onClose={handleCloseModal}
           onSwitchMode={handleSwitchAuthMode}
         />
       </div>
