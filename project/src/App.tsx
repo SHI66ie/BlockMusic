@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { RouterProvider } from 'react-router-dom';
-import { router } from './routes';
+import { useState, useEffect, Suspense } from 'react';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
@@ -9,11 +8,21 @@ import { Web3Provider } from './components/Web3Provider';
 import { WalletButton } from './components/WalletButton';
 import { useBlockchain } from './hooks/useBlockchain';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Home } from './pages/Home';
+
+// Create router
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+]);
 
 // Create a client
 const queryClient = new QueryClient();
 
 function App() {
+  console.log('App component rendering');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
@@ -44,6 +53,8 @@ function App() {
     }
   }, [isConnected, isCorrectChain, switchToBaseSepolia]);
 
+  console.log('Rendering with router:', router);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <Web3Provider>
@@ -67,7 +78,9 @@ function App() {
               }
             />
             <main className="flex-1">
-              <RouterProvider router={router} />
+              <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+                <RouterProvider router={router} />
+              </Suspense>
             </main>
 
             <Footer />
