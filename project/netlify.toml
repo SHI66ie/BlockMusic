@@ -1,23 +1,20 @@
 [build]
-  command = "npm install && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build"
   publish = "dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--legacy-peer-deps"
-  PYTHON_VERSION = "3.9"
   NODE_OPTIONS = "--max-old-space-size=4096"
 
-[context.production]
-  command = "npm install --legacy-peer-deps && npm run build"
-
-# Redirect all requests to index.html for SPA routing
+# Required for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Cache settings for better performance
+# Security headers
 [[headers]]
   for = "/*"
   [headers.values]
@@ -26,7 +23,15 @@
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
     
+# Cache static assets
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Don't try to run these plugins
+[dev]
+  command = "npm run dev"
+  targetPort = 3000
+  publish = "dist"
+  autoLaunch = false
