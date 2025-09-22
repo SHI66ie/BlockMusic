@@ -11,15 +11,6 @@
 [context.production]
   command = "npm install --legacy-peer-deps && npm run build"
 
-# Disable problematic plugins
-[[plugins]]
-  package = "netlify-purge-cloudflare-on-deploy"
-  enabled = false
-
-[[plugins]]
-  package = "@21yunbox/netlify-plugin-21yunbox-deploy-to-china-cdn"
-  enabled = false
-
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
   from = "/*"
