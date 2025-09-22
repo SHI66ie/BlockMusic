@@ -1,12 +1,56 @@
-# BlockMusic Wallet Integration
+# BlockMusic
 
-This project integrates Reown Cloud's WalletKit with a modern web application.
+A decentralized music platform built on the Base blockchain.
 
 ## Project Structure
 
-- Frontend: React + TypeScript + Vite
-- Backend: Flask + Python
-- Styling: Tailwind CSS
+- **Frontend**: React + TypeScript + Vite
+- **Backend**: Flask + Python
+- **Smart Contracts**: Solidity + Hardhat
+- **Blockchain**: Base Network
+- **Styling**: Tailwind CSS
+
+## Smart Contracts
+
+### Deployed Contracts
+- **Greeter**: `0x40906b7A6e2ae4FAE0f3b6313d69a1862212e88A` on Base Sepolia
+
+### Development
+
+#### Prerequisites
+- Node.js (v16+)
+- npm or yarn
+- Hardhat
+
+#### Setup
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Create a `.env` file:
+```env
+PRIVATE_KEY=your_private_key_here
+```
+
+3. Compile contracts:
+```bash
+npx hardhat compile
+```
+
+4. Run tests:
+```bash
+npx hardhat test
+```
+
+5. Deploy to Base Sepolia:
+```bash
+npx hardhat run scripts/deploy.js --network baseSepolia
+```
+
+## Web Application
+
+This project integrates Reown Cloud's WalletKit with a modern web application.
 
 ## Setup Instructions
 
