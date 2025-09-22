@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
 import { WalletProvider } from './contexts/WalletContext';
 import { useBlockchain } from './hooks/useBlockchain';
-import { Home } from './pages/Home';
 
 function AppContent() {
   console.log('AppContent component rendering');
@@ -44,9 +44,7 @@ function AppContent() {
           onLoginClick={handleLoginClick}
           onSignupClick={handleSignupClick}
         />
-        <main className="flex-1">
-          <Home />
-        </main>
+        <Outlet />
         <Footer />
         <AuthModal
           isOpen={isAuthModalOpen}

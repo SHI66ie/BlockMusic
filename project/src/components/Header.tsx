@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Play, Menu, X } from 'lucide-react';
+import { Play, Menu, X, Music } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface HeaderProps {
   onLoginClick: () => void;
@@ -10,9 +11,10 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { name: 'Premium', href: '#premium' },
-    { name: 'Support', href: '#support' },
-    { name: 'Download', href: '#download' },
+    { name: 'Home', href: '/' },
+    { name: 'Discover', href: '#discover' },
+    { name: 'Charts', href: '#charts' },
+    { name: 'Artist Dashboard', href: '/artist', icon: <Music className="w-4 h-4 mr-1" /> },
   ];
 
   return (
@@ -30,13 +32,14 @@ const Header: React.FC<HeaderProps> = ({ onLoginClick, onSignupClick }) => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
-                className="text-white hover:text-purple-400 transition-colors duration-200 font-medium"
+                to={item.href}
+                className="flex items-center text-white hover:text-purple-400 transition-colors duration-200 font-medium"
               >
+                {item.icon && <span className="mr-1">{item.icon}</span>}
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
