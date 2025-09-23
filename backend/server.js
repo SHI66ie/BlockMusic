@@ -1,30 +1,52 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const axios = require('axios');
+const app = require('./app');
+const mongoose = require('mongoose');
+const config = require('./config/config');
+const logger = require('./utils/logger');
 
-const app = express();
-const port = process.env.PORT || 5000;
+// Connect to MongoDB
+mongoose
+  .connect(config.mongo.uri, config.mongo.options)
+  .then(() => {
+    logger.info('Connected to MongoDB');
+    startServer();
+  })
+  .catch((error) => {
+    logger.error('MongoDB connection error:', error);
+    process.exit(1);
+  });
 
-app.use(cors());
-app.use(express.json());
+// Start the server
+function startServer() {
+  const server = app.listen(config.port, config.host, () => {
+    logger.info(`Server running in ${config.nodeEnv} mode on port ${config.port}`);
+  });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'healthy' });
-});
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (error) => {
+    logger.error(`Unhandled Rejection: ${error.message}`);
+    server.close(() => {
+      process.exit(1);
+    });
+  });
 
-// Example API endpoint for Reown Cloud integration
-app.get('/api/wallet/balance', async (req, res) => {
-    try {
-        // This is where we'll implement the Reown Cloud API calls
-        // You'll need to add your Reown Cloud API credentials in .env file
-        res.json({ message: 'Wallet balance endpoint ready' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (error) => {
+    logger.error(`Uncaught Exception: ${error.message}`);
+    process.exit(1);
+  });
 
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  // Handle SIGTERM (for Docker, Kubernetes, etc.)
+  process.on('SIGTERM', () => {
+    logger.info('SIGTERM received. Shutting down gracefully');
+    server.close(() => {
+      logger.info('Process terminated');
+    });
+  });
+}
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (error) => {
+  logger.error(`Unhandled Rejection: ${error.message}`);
+  // Optionally exit the process with a failure code
+  // process.exit(1);
 });
