@@ -1,150 +1,207 @@
 import React from 'react';
-import { FaHome, FaSearch, FaPlus, FaHeart } from 'react-icons/fa';
-import { BiLibrary } from 'react-icons/bi';
-import { BsThreeDots } from 'react-icons/bs';
-import { useBlockchain } from '../hooks/useBlockchain';
+import { FaSearch, FaMusic, FaFire, FaClock } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useAccount } from 'wagmi'
 
-const Sidebar = () => (
-  <div className="w-64 bg-black text-gray-300 p-6 flex flex-col h-full">
-    <div className="mb-8">
-      <h1 className="text-2xl font-bold text-white mb-6">BlockMusic</h1>
-      <nav>
-        <ul className="space-y-4">
-          <li className="flex items-center space-x-4 hover:text-white cursor-pointer">
-            <FaHome className="text-xl" />
-            <span>Home</span>
-          </li>
-          <li className="flex items-center space-x-4 text-gray-400 hover:text-white cursor-pointer">
-            <FaSearch className="text-xl" />
-            <span>Search</span>
-          </li>
-          <li className="flex items-center space-x-4 text-gray-400 hover:text-white cursor-pointer">
-            <BiLibrary className="text-xl" />
-            <span>Your Library</span>
-          </li>
-          <li className="mt-8 pt-6 border-t border-gray-800">
-            <div className="flex items-center space-x-2 text-gray-400 hover:text-white cursor-pointer">
-              <div className="bg-gray-400 p-1 rounded">
-                <FaPlus className="text-black" />
-              </div>
-              <span>Create Playlist</span>
-            </div>
-            <div className="flex items-center space-x-2 mt-4 text-gray-400 hover:text-white cursor-pointer">
-              <div className="bg-gradient-to-br from-purple-500 to-blue-300 p-1 rounded">
-                <FaHeart className="text-white" />
-              </div>
-              <span>Liked Songs</span>
-            </div>
-          </li>
-        </ul>
-      </nav>
+const FeaturedCard = ({ title, description, imageUrl, category }: { title: string; description: string; imageUrl: string; category: string }) => (
+  <div className="relative group bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-colors">
+    <div className="aspect-square bg-gray-700 relative overflow-hidden">
+      <img 
+        src={imageUrl} 
+        alt={title} 
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+        <button 
+          aria-label={`Play ${title}`}
+          className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center hover:scale-105 transform transition-transform"
+        >
+          <FaMusic className="text-white text-xl" />
+        </button>
+      </div>
+    </div>
+    <div className="p-4">
+      <h3 className="font-semibold text-white">{title}</h3>
+      <p className="text-sm text-gray-400 mt-1">{description}</p>
+      <div className="mt-2">
+        <span className="inline-block px-2 py-1 text-xs rounded-full bg-gray-700 text-gray-300">
+          {category}
+        </span>
+      </div>
     </div>
   </div>
 );
 
-const PlaylistCard = ({ title, description, imageUrl }: { title: string; description: string; imageUrl: string }) => (
-  <div className="bg-gray-800 bg-opacity-40 p-4 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group">
-    <div className="relative">
-      <img src={imageUrl} alt={title} className="w-full aspect-square object-cover rounded mb-4 shadow-lg" />
-      <button 
-        aria-label="Play" 
-        title="Play"
-        className="absolute bottom-6 right-2 bg-green-500 text-black rounded-full p-3 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg transform translate-y-2 group-hover:translate-y-0"
-      >
-        <svg viewBox="0 0 24 24" width="24" height="24" className="fill-current">
-          <path d="M8 5v14l11-7z"></path>
-        </svg>
-      </button>
+const TrackItem = ({ title, artist, duration, isPlaying = false }: { title: string; artist: string; duration: string; isPlaying?: boolean }) => (
+  <div className="flex items-center p-3 rounded-lg hover:bg-gray-800 transition-colors group">
+    <div className="w-10 h-10 rounded bg-gray-700 mr-4 flex-shrink-0 overflow-hidden">
+      <div className="w-full h-full flex items-center justify-center text-gray-400">
+        <FaMusic />
+      </div>
     </div>
-    <h3 className="text-white font-semibold mb-1 truncate">{title}</h3>
-    <p className="text-gray-400 text-sm line-clamp-2">{description}</p>
+    <div className="flex-1 min-w-0">
+      <h4 className={`text-sm font-medium truncate ${isPlaying ? 'text-purple-400' : 'text-white'}`}>
+        {title}
+      </h4>
+      <p className="text-xs text-gray-400 truncate">{artist}</p>
+    </div>
+    <div className="ml-4 text-sm text-gray-400">
+      {duration}
+    </div>
+    <button 
+      aria-label={`More options for ${title}`}
+      className="ml-4 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+    >
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+      </svg>
+    </button>
   </div>
 );
 
 export const Home = () => {
-  const { isConnected } = useBlockchain();
-  
-  // Mock data for playlists
-  const playlists = [
+  const { isConnected } = useAccount();
+
+  const featuredItems = [
     {
-      id: 1,
-      title: 'Today\'s Top Hits',
-      description: 'The hottest tracks right now',
-      imageUrl: 'https://i.scdn.co/image/ab67706f00000002ca5a7517156021292e5663a6'
+      title: "Summer Vibes",
+      description: "The hottest tracks of the season",
+      imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+      category: "Trending"
     },
     {
-      id: 2,
-      title: 'RapCaviar',
-      description: 'New music from DaBaby, Polo G and more',
-      imageUrl: 'https://i.scdn.co/image/ab67706f000000025f73260d83eb3270a72ceb1a'
+      title: "Chill Beats",
+      description: "Relaxing beats to focus",
+      imageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+      category: "Focus"
     },
     {
-      id: 3,
-      title: 'All Out 2010s',
-      description: 'The biggest songs of the 2010s',
-      imageUrl: 'https://i.scdn.co/image/ab67706f00000002d72ef75a14ca6f060c01d7d9'
-    },
-    {
-      id: 4,
-      title: 'Rock Classics',
-      description: 'Rock legends & epic songs',
-      imageUrl: 'https://i.scdn.co/image/ab67706f00000002d0d3fcdcb8501404eb9e3b1f'
-    },
+      title: "Workout Mix",
+      description: "High energy tracks to keep you moving",
+      imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+      category: "Energy"
+    }
+  ];
+
+  const recentTracks = [
+    { id: 1, title: "Midnight City", artist: "M83", duration: "4:03", isPlaying: true },
+    { id: 2, title: "Blinding Lights", artist: "The Weeknd", duration: "3:20" },
+    { id: 3, title: "Levitating", artist: "Dua Lipa", duration: "3:23" },
+    { id: 4, title: "Save Your Tears", artist: "The Weeknd", duration: "3:35" },
+    { id: 5, title: "Stay", artist: "The Kid LAROI, Justin Bieber", duration: "2:21" },
   ];
 
   return (
-    <div className="flex h-screen bg-gradient-to-b from-gray-900 to-black text-white overflow-hidden">
-      <Sidebar />
-      
-      <main className="flex-1 overflow-y-auto p-8">
-        {!isConnected ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8">
-            <h1 className="text-4xl font-bold mb-6">Welcome to BlockMusic</h1>
-            <p className="text-xl text-gray-400 mb-8 max-w-lg">Connect your wallet to start listening to your favorite music on the blockchain</p>
-            <button className="bg-white text-black px-8 py-3 rounded-full font-bold hover:scale-105 transform transition-transform">
-              Connect Wallet
-            </button>
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-purple-900 to-blue-900 rounded-2xl p-8 text-white">
+        <div className="max-w-2xl">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Discover, collect, and sell extraordinary music NFTs</h1>
+          <p className="text-lg text-gray-200 mb-8">
+            BlockMusic is the world's first and largest music NFT marketplace. 
+            Own a piece of music history or create and sell your own tracks.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Link 
+              to="/marketplace" 
+              className="bg-white text-purple-900 hover:bg-gray-100 px-6 py-3 rounded-full font-medium transition-colors"
+            >
+              Explore
+            </Link>
+            {isConnected && (
+              <Link 
+                to="/create" 
+                className="border-2 border-white text-white hover:bg-white hover:bg-opacity-10 px-6 py-3 rounded-full font-medium transition-colors"
+              >
+                Create
+              </Link>
+            )}
           </div>
-        ) : (
-          <>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold">Good afternoon</h2>
-              <div className="flex space-x-4">
-                <button 
-                  aria-label="More options" 
-                  title="More options"
-                  className="text-gray-400 hover:text-white"
-                >
-                  <BsThreeDots className="text-2xl" />
-                </button>
-              </div>
-            </div>
+        </div>
+      </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8">
-              {playlists.map((playlist) => (
-                <PlaylistCard
-                  key={playlist.id}
-                  title={playlist.title}
-                  description={playlist.description}
-                  imageUrl={playlist.imageUrl}
-                />
-              ))}
-            </div>
+      {/* Featured Section */}
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Featured Tracks</h2>
+          <Link to="/marketplace" className="text-purple-400 hover:text-purple-300 text-sm font-medium">
+            View all
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredItems.map((item, index) => (
+            <FeaturedCard 
+              key={index}
+              title={item.title}
+              description={item.description}
+              imageUrl={item.imageUrl}
+              category={item.category}
+            />
+          ))}
+        </div>
+      </section>
 
-            <h2 className="text-2xl font-bold mb-6">Made For You</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {[...playlists].reverse().map((playlist) => (
-                <PlaylistCard
-                  key={`made-for-you-${playlist.id}`}
-                  title={`${playlist.title} Mix`}
-                  description={`Made for you based on your listening history`}
-                  imageUrl={playlist.imageUrl}
-                />
-              ))}
+      {/* Recently Played */}
+      <section>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Recently Played</h2>
+          <button className="text-purple-400 hover:text-purple-300 text-sm font-medium">
+            See more
+          </button>
+        </div>
+        
+        <div className="bg-gray-800 rounded-xl p-2">
+          {recentTracks.map((track) => (
+            <TrackItem 
+              key={track.id}
+              title={track.title}
+              artist={track.artist}
+              duration={track.duration}
+              isPlaying={track.isPlaying}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Browse by category</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { name: 'Pop', color: 'bg-pink-500' },
+            { name: 'Hip Hop', color: 'bg-purple-500' },
+            { name: 'Electronic', color: 'bg-blue-500' },
+            { name: 'Rock', color: 'bg-red-500' },
+            { name: 'Jazz', color: 'bg-yellow-500' },
+            { name: 'Classical', color: 'bg-green-500' },
+          ].map((category, index) => (
+            <div 
+              key={index}
+              className={`${category.color} rounded-lg p-6 hover:opacity-90 transition-opacity cursor-pointer`}
+            >
+              <h3 className="font-semibold text-lg">{category.name}</h3>
+              <p className="text-sm opacity-80 mt-1">100+ tracks</p>
             </div>
-          </>
-        )}
-      </main>
+          ))}
+        </div>
+      </section>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-gray-800 rounded-xl p-6">
+          <div className="text-3xl font-bold mb-2">10,000+</div>
+          <div className="text-gray-400">Tracks available</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-6">
+          <div className="text-3xl font-bold mb-2">5,000+</div>
+          <div className="text-gray-400">Artists</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-6">
+          <div className="text-3xl font-bold mb-2">1M+</div>
+          <div className="text-gray-400">Monthly listeners</div>
+        </div>
+      </div>
     </div>
   );
 };

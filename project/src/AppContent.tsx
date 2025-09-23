@@ -1,59 +1,39 @@
-import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import AuthModal from './components/AuthModal';
-import { WalletProvider } from './contexts/WalletContext';
-import { useBlockchain } from './hooks/useBlockchain';
+import { useEffect } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useAccount, useSwitchChain, useChainId } from 'wagmi';
+import { Navbar } from './components/Navbar';
+import { baseSepolia } from 'wagmi/chains';
 
 function AppContent() {
-  console.log('AppContent component rendering');
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const { isConnected, isCorrectChain, switchToBaseSepolia } = useBlockchain();
+  const { isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChain } = useSwitchChain();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLoginClick = () => {
-    setAuthMode('login');
-    setIsAuthModalOpen(true);
-  };
-
-  const handleSignupClick = () => {
-    setAuthMode('signup');
-    setIsAuthModalOpen(true);
-  };
-
-  const handleSwitchAuthMode = () => {
-    setAuthMode(authMode === 'login' ? 'signup' : 'login');
-  };
-
-  const handleCloseModal = () => {
-    setIsAuthModalOpen(false);
-  };
-
-  // Switch to Base Sepolia if connected to wrong network
+  // Redirect to home if on root path
   useEffect(() => {
-    if (isConnected && !isCorrectChain) {
-      switchToBaseSepolia();
+    if (location.pathname === '/') {
+      navigate('/home');
     }
-  }, [isConnected, isCorrectChain, switchToBaseSepolia]);
+  }, [location.pathname, navigate]);
+
+  // Handle network switching
+  useEffect(() => {
+    if (isConnected && chainId !== baseSepolia.id) {
+      console.warn(`Please switch to ${baseSepolia.name} network`);
+      // Uncomment to automatically switch chains
+      // switchChain({ chainId: baseSepolia.id });
+    }
+  }, [isConnected, chainId, switchChain]);
 
   return (
-    <WalletProvider>
-      <div className="min-h-screen bg-gray-100">
-        <Header 
-          onLoginClick={handleLoginClick}
-          onSignupClick={handleSignupClick}
-        />
+    <div className="min-h-screen bg-gray-900 text-white">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
         <Outlet />
-        <Footer />
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          mode={authMode}
-          onClose={handleCloseModal}
-          onSwitchMode={handleSwitchAuthMode}
-        />
-      </div>
-    </WalletProvider>
+      </main>
+    </div>
   );
 }
 

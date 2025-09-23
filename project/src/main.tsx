@@ -1,7 +1,13 @@
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { WagmiProvider } from 'wagmi';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit';
+import '@rainbow-me/rainbowkit/styles.css';
+
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary';
+import { config, queryClient } from './config/web3';
 import styles from './App.module.css';
 import './index.css';
 
@@ -24,9 +30,24 @@ if (!rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
       <ErrorBoundary>
-        <Suspense fallback={<div className={styles.loading}>Loading BlockMusic...</div>}>
-          <App />
-        </Suspense>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider 
+              theme={darkTheme({
+                accentColor: '#7c3aed',
+                accentColorForeground: 'white',
+                borderRadius: 'medium',
+                fontStack: 'system',
+                overlayBlur: 'small',
+              })}
+              modalSize="compact"
+            >
+              <Suspense fallback={<div className={styles.loading}>Loading BlockMusic...</div>}>
+                <App />
+              </Suspense>
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
       </ErrorBoundary>
     </StrictMode>
   );
