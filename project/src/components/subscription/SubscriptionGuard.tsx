@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSubscription } from '../../contexts/SubscriptionContext';
+import { useSubscription } from '../../hooks/useSubscription';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
 interface SubscriptionGuardProps {
@@ -12,7 +12,7 @@ export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({
   children,
   redirectTo = '/subscribe',
 }) => {
-  const { isSubscribed, isLoading, checkSubscription } = useSubscription();
+  const { isSubscribed, isLoading } = useSubscription();
   const location = useLocation();
 
   // If we're still loading the subscription status, show a loading spinner
@@ -31,16 +31,4 @@ export const SubscriptionGuard: React.FC<SubscriptionGuardProps> = ({
 
   // If user is subscribed, render the children
   return <>{children}</>;
-};
-
-// Create a version of the component with default props
-export const withSubscription = (
-  Component: React.ComponentType,
-  redirectTo?: string
-) => {
-  return (props: any) => (
-    <SubscriptionGuard redirectTo={redirectTo}>
-      <Component {...props} />
-    </SubscriptionGuard>
-  );
 };

@@ -1,0 +1,49 @@
+.progressBar {
+  position: relative;
+  padding-top: 0.25rem;
+}
+
+.progressContainer {
+  overflow: hidden;
+  height: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+  display: flex;
+  border-radius: 0.25rem;
+  background-color: #374151; /* bg-gray-700 */
+}
+
+.progressFill {
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  white-space: nowrap;
+  color: white;
+  justify-content: center;
+  background: linear-gradient(to right, #a855f7, #ec4899);
+  transition: all 0.5s ease;
+  width: 0%;
+}
+
+/* Dynamic width classes */
+.progressFill[data-width='5'] { width: 5%; }
+.progressFill[data-width='10'] { width: 10%; }
+.progressFill[data-width='15'] { width: 15%; }
+.progressFill[data-width='20'] { width: 20%; }
+.progressFill[data-width='25'] { width: 25%; }
+.progressFill[data-width='30'] { width: 30%; }
+.progressFill[data-width='35'] { width: 35%; }
+.progressFill[data-width='40'] { width: 40%; }
+.progressFill[data-width='45'] { width: 45%; }
+.progressFill[data-width='50'] { width: 50%; }
+.progressFill[data-width='55'] { width: 55%; }
+.progressFill[data-width='60'] { width: 60%; }
+.progressFill[data-width='65'] { width: 65%; }
+.progressFill[data-width='70'] { width: 70%; }
+.progressFill[data-width='75'] { width: 75%; }
+.progressFill[data-width='80'] { width: 80%; }
+.progressFill[data-width='85'] { width: 85%; }
+.progressFill[data-width='90'] { width: 90%; }
+.progressFill[data-width='95'] { width: 95%; }
+.progressFill[data-width='100'] { width: 100%; }

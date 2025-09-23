@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
-import { SubscriptionPlan } from '../components/subscription/SubscriptionPlan';
+import { SubscriptionPlans } from '../components/subscription/SubscriptionPlans';
 import { useSubscription } from '../contexts/SubscriptionContext';
 
 const Subscribe: React.FC = () => {
@@ -49,7 +49,7 @@ const Subscribe: React.FC = () => {
           </div>
         ) : (
           <div className="max-w-5xl mx-auto">
-            <SubscriptionPlan />
+            <SubscriptionPlans />
             
             <div className="mt-12 bg-gray-800/50 rounded-xl p-6">
               <h3 className="text-xl font-semibold mb-4">What's included?</h3>

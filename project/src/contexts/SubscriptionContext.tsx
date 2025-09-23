@@ -1,128 +1,167 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useAccount, useContractRead, useContractWrite, useWaitForTransaction } from 'wagmi';
-import { Subscription as SubscriptionABI } from '../abis/Subscription';
-import { parseEther, formatEther } from 'viem';
+import React, { createContext, useEffect, useState, useCallback } from 'react';
+import { useAccount, useContractRead, useContractWrite } from 'wagmi';
+// parseEther is kept for future use
+import { toast } from 'react-toastify';
 
-type SubscriptionPlan = 'daily' | 'monthly' | 'yearly' | null;
+// Import ABI
+import { SubscriptionManager as SubscriptionManagerABI } from '../abis/SubscriptionManager';
+import { MockUSDC as MockUSDCABI } from '../abis/MockUSDC';
+import { 
+  SUBSCRIPTION_CONTRACT,
+  PLAN_TO_ENUM,
+  ENUM_TO_PLAN
+} from '../constants/subscription';
 
-interface SubscriptionContextType {
+export type SubscriptionPlan = 'daily' | 'monthly' | 'yearly' | null;
+
+export interface SubscriptionContextType {
   isSubscribed: boolean;
   subscriptionEnds: number | null;
+  currentPlan: SubscriptionPlan;
   isLoading: boolean;
   error: string | null;
-  subscribe: (plan: 'daily' | 'monthly' | 'yearly', paymentMethod: 'usdc' | 'eth') => Promise<void>;
-  checkSubscription: () => Promise<{ isActive: boolean; endTime: number }>;
+  subscribe: (plan: 'daily' | 'monthly' | 'yearly', paymentMethod?: 'usdc' | 'eth') => Promise<void>;
+  checkSubscription: () => Promise<{ isActive: boolean; endTime: number; plan: SubscriptionPlan }>;
   subscriptionData: {
     dailyPrice: string;
     monthlyPrice: string;
     yearlyPrice: string;
-    ethPrice: string;
-    ethToUsd: number;
   };
+  refreshSubscription: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
-
-// Contract addresses (replace with your deployed contract addresses)
-const SUBSCRIPTION_CONTRACT = '0x...'; // Replace with your deployed contract address
-const USDC_CONTRACT = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; // Base Sepolia USDC
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { address } = useAccount();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionEnds, setSubscriptionEnds] = useState<number | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>(null);
+  const [ethToUsd, setEthToUsd] = useState(2000); // Default ETH to USD rate
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ethToUsd, setEthToUsd] = useState(2000); // Default fallback
+  const [usdcAddress, setUsdcAddress] = useState<string>('');
 
-  // Fetch subscription status
-  const { refetch: refetchSubscription } = useContractRead({
-    address: SUBSCRIPTION_CONTRACT,
-    abi: SubscriptionABI,
-    functionName: 'getSubscriptionStatus',
+  // Contract instances
+  const subscriptionContract = {
+    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: SubscriptionManagerABI,
+  };
+
+  // Get subscription status
+  const { refetch } = useContractRead({
+    ...subscriptionContract,
+    functionName: 'isSubscribed',
     args: [address],
     enabled: !!address,
-    onSuccess: (data: any) => {
-      const [isActive, endTime] = data;
-      setIsSubscribed(isActive);
-      setSubscriptionEnds(Number(endTime) * 1000); // Convert to milliseconds
-    },
   });
 
-  // Subscribe with USDC
-  const { writeAsync: subscribeWithUSDC } = useContractWrite({
-    address: SUBSCRIPTION_CONTRACT,
-    abi: SubscriptionABI,
-    functionName: 'subscribeWithUSDC',
-  });
-
-  // Subscribe with ETH
-  const { writeAsync: subscribeWithETH } = useContractWrite({
-    address: SUBSCRIPTION_CONTRACT,
-    abi: SubscriptionABI,
-    functionName: 'subscribeWithETH',
-    value: parseEther('0.01'), // This will be overridden
-  });
-
-  // Approve USDC
+  // USDC approval
   const { writeAsync: approveUSDC } = useContractWrite({
-    address: USDC_CONTRACT,
-    abi: [
-      {
-        constant: false,
-        inputs: [
-          { name: 'spender', type: 'address' },
-          { name: 'amount', type: 'uint256' },
-        ],
-        name: 'approve',
-        outputs: [{ name: '', type: 'bool' }],
-        payable: false,
-        stateMutability: 'nonpayable',
-        type: 'function',
-      },
-    ],
+    address: usdcAddress as `0x${string}`,
+    abi: MockUSDCABI,
     functionName: 'approve',
   });
 
-  // Get ETH price in USD (simplified)
-  const getEthPrice = async () => {
-    try {
-      // In production, use Chainlink price feed
-      // For now, we'll use a mock value
-      return 2000 * 1e8; // $2000 with 8 decimals
-    } catch (err) {
-      console.error('Failed to fetch ETH price:', err);
-      return 2000 * 1e8; // Fallback
-    }
-  };
+  // Subscribe function
+  const { writeAsync: subscribe } = useContractWrite({
+    ...subscriptionContract,
+    functionName: 'subscribe',
+  });
 
-  // Calculate prices
-  const subscriptionData = {
-    dailyPrice: '2.50', // $2.50 per day
-    monthlyPrice: '25.00', // $25.00 per month (with 10% discount)
-    yearlyPrice: '255.00', // $255.00 per year (with 15% discount)
-    ethPrice: ethToUsd.toString(),
-    ethToUsd,
-  };
+  // Get ETH to USD price
+  const getEthPrice = useCallback(async () => {
+    try {
+      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+      const data = await response.json();
+      setEthToUsd(data.ethereum.usd);
+      return data.ethereum.usd;
+    } catch (err) {
+      console.error('Error fetching ETH price:', err);
+      // Fallback to default value
+      setEthToUsd(2000);
+      return 2000;
+    }
+  }, []);
+
+  // Get subscription price in wei
+  const getSubscriptionPrice = useCallback((plan: 'daily' | 'monthly' | 'yearly'): string => {
+    const pricesInEth = {
+      daily: 0.01,   // 0.01 ETH per day
+      monthly: 0.2,  // 0.2 ETH per month
+      yearly: 2      // 2 ETH per year
+    };
+    
+    // Convert ETH to wei (1 ETH = 1e18 wei)
+    return Math.floor(pricesInEth[plan] * 1e18).toString();
+  }, []);
+  
+  // Get price in USD
+  const getPriceInUsd = useCallback((priceInWei: string) => {
+    const priceInEth = parseFloat(priceInWei) / 1e18;
+    return (priceInEth * ethToUsd).toFixed(2);
+  }, [ethToUsd]);
 
   // Check subscription status
-  const checkSubscription = async () => {
-    if (!address) return { isActive: false, endTime: 0 };
+  const checkSubscription = useCallback(async () => {
+    if (!address || !window.ethereum) {
+      return { isActive: false, endTime: 0, plan: null as SubscriptionPlan };
+    }
     
     try {
-      const result = await refetchSubscription();
-      const [isActive, endTime] = result.data || [false, 0];
-      return { isActive, endTime: Number(endTime) * 1000 };
+      const [isActive, endTime] = await Promise.all([
+        // isSubscribed
+        window.ethereum.request({
+          method: 'eth_call',
+          params: [
+            {
+              to: SUBSCRIPTION_CONTRACT,
+              data: `0xb0f479ff${address.slice(2).padStart(64, '0')}` // isSubscribed(address)
+            },
+            'latest'
+          ]
+        }),
+        // endTime
+        window.ethereum.request({
+          method: 'eth_call',
+          params: [
+            {
+              to: SUBSCRIPTION_CONTRACT,
+              data: `0x8f9f4b63${address.slice(2).padStart(64, '0')}` // subscriptions(address)
+            },
+            'latest'
+          ]
+        })
+      ]);
+
+      const endTimeMs = parseInt(endTime, 16) * 1000; // Convert to milliseconds
+      const active = isActive === '0x0000000000000000000000000000000000000000000000000000000000000001' && endTimeMs > Date.now();
+      
+      // Get plan from endTime response (assuming it's the 4th value)
+      const planNum = parseInt(endTime.slice(258, 322), 16);
+      const plan = ENUM_TO_PLAN[planNum] || null;
+      
+      // Update state
+      setIsSubscribed(active);
+      setSubscriptionEnds(endTimeMs);
+      setCurrentPlan(plan);
+      
+      return {
+        isActive: active,
+        endTime: endTimeMs,
+        plan
+      };
     } catch (err) {
       console.error('Error checking subscription:', err);
-      return { isActive: false, endTime: 0 };
+      return { isActive: false, endTime: 0, plan: null };
     }
-  };
+  }, [address]);
 
   // Subscribe to a plan
-  const subscribe = async (plan: 'daily' | 'monthly' | 'yearly', paymentMethod: 'usdc' | 'eth') => {
+  const handleSubscribe = async (plan: 'daily' | 'monthly' | 'yearly', paymentMethod: 'usdc' | 'eth' = 'usdc') => {
     if (!address) {
-      setError('Please connect your wallet');
+      setError('Wallet not connected');
+      toast.error('Please connect your wallet to subscribe');
       return;
     }
 
@@ -130,88 +169,133 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setError(null);
 
     try {
-      let planId;
-      let amount;
+      const planId = PLAN_TO_ENUM[plan];
+      const price = getSubscriptionPrice(plan);
       
-      if (plan === 'daily') planId = 1;
-      else if (plan === 'monthly') planId = 2;
-      else planId = 3; // yearly
-
       if (paymentMethod === 'usdc') {
-        // For USDC, we need to approve first
-        const usdcAmount = plan === 'daily' 
-          ? parseEther('25') // $25 for 30 days
-          : plan === 'monthly'
-            ? parseEther('25') // $25/month with 10% discount
-            : parseEther('255'); // $255/year with 15% discount
-
-        // Approve USDC
-        await approveUSDC({
-          args: [SUBSCRIPTION_CONTRACT, usdcAmount],
-        });
-
-        // Subscribe with USDC
-        await subscribeWithUSDC({
-          args: [planId],
-        });
-      } else {
-        // For ETH, calculate required amount
-        const usdAmount = plan === 'daily' 
-          ? 25 // $25 for 30 days
-          : plan === 'monthly'
-            ? 25 // $25/month with 10% discount
-            : 255; // $255/year with 15% discount
-
-        const ethAmount = (usdAmount / ethToUsd).toFixed(6);
+        // For USDC payment
+        if (!approveUSDC) {
+          throw new Error('USDC approval not available');
+        }
         
-        // Subscribe with ETH
-        await subscribeWithETH({
-          value: parseEther(ethAmount),
+        // First approve USDC spending
+        toast.info('Approving USDC spending...');
+        const approveTx = await approveUSDC({
+          args: [SUBSCRIPTION_CONTRACT, BigInt(price)],
+        });
+        
+        // Wait for approval to be mined
+        await approveTx.wait();
+        
+        // Then subscribe
+        if (!subscribe) {
+          throw new Error('Subscribe function not available');
+        }
+        
+        toast.info('Processing subscription...');
+        const tx = await subscribe({
           args: [planId],
         });
+        
+        await tx.wait();
+        toast.success(`Successfully subscribed to ${plan} plan!`);
+      } else {
+        // For ETH payment
+        if (!subscribe) {
+          throw new Error('Subscribe function not available');
+        }
+        
+        toast.info('Processing subscription with ETH...');
+        const tx = await subscribe({
+          args: [planId],
+          value: BigInt(price),
+        });
+        
+        await tx.wait();
+        toast.success(`Successfully subscribed to ${plan} plan with ETH!`);
       }
-
+      
       // Refresh subscription status
       await checkSubscription();
-    } catch (err: any) {
+      
+    } catch (err) {
       console.error('Subscription error:', err);
-      setError(err.message || 'Failed to subscribe');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to subscribe';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Refresh subscription status
+  const refreshSubscription = useCallback(async () => {
+    await checkSubscription();
+    await refetch?.();
+  }, [checkSubscription, refetch]);
+
   // Initial load
   useEffect(() => {
-    if (address) {
-      checkSubscription();
-      getEthPrice().then(price => {
-        setEthToUsd(Number(price) / 1e8);
-      });
-    }
-  }, [address]);
+    const init = async () => {
+      if (address) {
+        await getEthPrice();
+        await checkSubscription();
+      }
+    };
+    
+    init();
+  }, [address, checkSubscription, getEthPrice]);
+
+  // Get USDC token address from contract on mount
+  useEffect(() => {
+    const getUsdcAddress = async () => {
+      if (!window.ethereum || !SUBSCRIPTION_CONTRACT || SUBSCRIPTION_CONTRACT === '0x...') return;
+      
+      try {
+        const address = await window.ethereum.request({
+          method: 'eth_call',
+          params: [
+            {
+              to: SUBSCRIPTION_CONTRACT,
+              data: '0xfc0c546a' // usdcToken()
+            },
+            'latest'
+          ]
+        });
+        
+        if (address && address !== '0x') {
+          setUsdcAddress(`0x${address.slice(-40)}`);
+        }
+      } catch (err) {
+        console.error('Error fetching USDC address:', err);
+      }
+    };
+    
+    getUsdcAddress();
+  }, []);
+
+  const contextValue = {
+    isSubscribed,
+    subscriptionEnds,
+    currentPlan,
+    isLoading,
+    error,
+    subscribe: handleSubscribe,
+    checkSubscription,
+    subscriptionData: {
+      dailyPrice: getPriceInUsd(getSubscriptionPrice('daily')),
+      monthlyPrice: getPriceInUsd(getSubscriptionPrice('monthly')),
+      yearlyPrice: getPriceInUsd(getSubscriptionPrice('yearly')),
+    },
+    refreshSubscription,
+  };
 
   return (
-    <SubscriptionContext.Provider
-      value={{
-        isSubscribed,
-        subscriptionEnds,
-        isLoading,
-        error,
-        subscribe,
-        checkSubscription,
-        subscriptionData,
-      }}
-    >
+    <SubscriptionContext.Provider value={contextValue}>
       {children}
     </SubscriptionContext.Provider>
   );
 };
 
-export const useSubscription = () => {
-  const context = useContext(SubscriptionContext);
-  if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
-  }
-  return context;
-};
+// Export the context for use in the useSubscription hook
+export { SubscriptionContext };
