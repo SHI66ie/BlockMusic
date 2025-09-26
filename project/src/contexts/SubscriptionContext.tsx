@@ -1,5 +1,5 @@
-import { createContext, useCallback, useEffect, useState } from 'react';
-import { useAccount, useContractRead, useContractWrite } from 'wagmi';
+import { createContext, useCallback, useEffect, useState, useMemo } from 'react';
+import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { toast } from 'react-toastify';
 
 // Import ABI and constants
@@ -14,7 +14,7 @@ import {
 } from '../constants/subscription';
 import { SubscriptionContextType, SubscriptionStatus } from '../types/subscription';
 
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { address } = useAccount();
@@ -25,86 +25,134 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [error, setError] = useState<string | null>(null);
   const [usdcAddress, setUsdcAddress] = useState<string>('');
 
-  // Get subscription status
-  const { refetch } = useContractRead({
+  // Contract reads
+  const { refetch: refetchIsSubscribed } = useReadContract({
     address: SUBSCRIPTION_CONTRACT as `0x${string}`,
     abi: SubscriptionManagerABI,
     functionName: 'isSubscribed',
-    args: [address],
+    args: address ? [address as `0x${string}`] : undefined,
     enabled: !!address,
   });
 
-  // USDC approval
-  const { writeContractAsync: approveUSDC } = useContractWrite();
+  const { refetch: fetchSubscriptionEndTime } = useReadContract({
+    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: SubscriptionManagerABI,
+    functionName: 'subscriptions',
+    args: address ? [address as `0x${string}`] : undefined,
+    enabled: !!address,
+    select: (data: unknown): number => {
+      if (!data) return 0;
+      const subscriptionData = data as [bigint, bigint, boolean, number];
+      const endTime = subscriptionData[1];
+      return endTime ? Number(endTime) : 0;
+    },
+  });
+
+  const { refetch: fetchCurrentPlan } = useReadContract({
+    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: SubscriptionManagerABI,
+    functionName: 'subscriptions',
+    args: address ? [address as `0x${string}`] : undefined,
+    enabled: !!address,
+    select: (data: unknown): number => {
+      if (!data) return 0;
+      const subscriptionData = data as [bigint, bigint, boolean, number];
+      const plan = subscriptionData[3];
+      return plan ? Number(plan) : 0;
+    },
+  });
+
+  // Contract writes
+  const { writeContractAsync: approveUSDC } = useWriteContract();
+  const { writeContractAsync: subscribe } = useWriteContract();
   
-  // Subscribe function
-  const { writeContractAsync: subscribe } = useContractWrite();
+  // Handle USDC approval
+  const handleApproveUSDC = useCallback(async (spender: `0x${string}`, amount: bigint) => {
+    if (!usdcAddress) {
+      throw new Error('USDC token address not found');
+    }
+    
+    return approveUSDC({
+      address: usdcAddress as `0x${string}`,
+      abi: MockUSDCABI,
+      functionName: 'approve',
+      args: [spender, amount],
+    });
+  }, [approveUSDC, usdcAddress]);
+  
+  // Define the contract write parameters type with proper typing
+  type ContractWriteParams = {
+    address: `0x${string}`;
+    abi: readonly unknown[];
+    functionName: string;
+    args: unknown[];
+    value?: bigint;
+  };
 
-  // Get subscription end time
-  const { refetch: fetchSubscriptionEndTime } = useContractRead({
-    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-    abi: SubscriptionManagerABI,
-    functionName: 'subscriptions',
-    args: [address],
-    enabled: !!address,
-    select: (data: unknown) => {
-      const subscriptionData = data as [bigint, bigint, boolean, number] | undefined;
-      return subscriptionData?.[1] ? Number(subscriptionData[1]) : 0; // Convert bigint to number
-    },
-  });
+  // Handle contract errors consistently
+  const handleContractError = useCallback((error: unknown, context: string) => {
+    console.error(`${context} error:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    setError(errorMessage);
+    toast.error(`${context} failed: ${errorMessage}`);
+  }, []);
 
-  // Get current plan
-  const { refetch: fetchCurrentPlan } = useContractRead({
-    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-    abi: SubscriptionManagerABI,
-    functionName: 'subscriptions',
-    args: [address],
-    enabled: !!address,
-    select: (data: unknown) => {
-      const subscriptionData = data as [bigint, bigint, boolean, number] | undefined;
-      return subscriptionData?.[3] || 0; // plan is the fourth element in the struct
-    },
-  });
-
-  // Get subscription price in USDC (6 decimals)
+  // Move getSubscriptionPrice before it's used
   const getSubscriptionPrice = useCallback((plan: SubscriptionPlan): string => {
     // Convert the price to a string with 6 decimal places
     const price = (PLAN_PRICES[plan] * 1e6).toFixed(0);
     return price;
   }, []);
-  
 
-  // Check subscription status
+  // Move checkSubscription before it's used
   const checkSubscription = useCallback(async (): Promise<SubscriptionStatus> => {
     if (!address) return { isActive: false, endTime: 0, plan: null };
     
     try {
-      const result = await refetch();
-      const isActive = result.data as boolean;
-      
-      const endTimeResult = await fetchSubscriptionEndTime();
-      const endTime = endTimeResult.data as number;
-      
-      const planResult = await fetchCurrentPlan();
-      const plan = planResult.data as number;
-      
-      const planName = ENUM_TO_PLAN[plan] || null;
+      const [isSubscribedResult, endTimeResult, planResult] = await Promise.all([
+        refetchIsSubscribed(),
+        fetchSubscriptionEndTime(),
+        fetchCurrentPlan(),
+      ]);
+
+      const isActive = Boolean(isSubscribedResult.data);
+      const endTime = endTimeResult.data || 0;
+      const planId = planResult.data || 0;
+      const planName = ENUM_TO_PLAN[planId as keyof typeof ENUM_TO_PLAN] || null;
       
       // Update local state
       setIsSubscribed(isActive);
-      setSubscriptionEnds(endTime * 1000);
+      setSubscriptionEnds(Number(endTime) * 1000);
       setCurrentPlan(planName);
       
       return {
         isActive,
-        endTime: endTime * 1000, // Convert to milliseconds
+        endTime: Number(endTime) * 1000, // Convert to milliseconds
         plan: planName
       };
     } catch (err) {
       console.error('Error checking subscription:', err);
       return { isActive: false, endTime: 0, plan: null };
     }
-  }, [address, refetch, fetchSubscriptionEndTime, fetchCurrentPlan]);
+  }, [address, refetchIsSubscribed, fetchSubscriptionEndTime, fetchCurrentPlan]);
+
+  // Handle subscription with error handling
+  const handleSubscribeWithErrorHandling = useCallback(async (params: Omit<ContractWriteParams, 'value'> & { value?: bigint }) => {
+    try {
+      if (!subscribe) {
+        throw new Error('Subscribe function not available');
+      }
+      
+      return await subscribe({
+        ...params,
+        // Ensure value is not undefined when not provided
+        ...(params.value !== undefined ? { value: params.value } : {})
+      });
+    } catch (error) {
+      handleContractError(error, 'Subscription');
+      throw error;
+    }
+  }, [subscribe, handleContractError]);
 
   // Handle subscription
   const handleSubscribe = useCallback(async (plan: SubscriptionPlan, paymentMethod: 'usdc' | 'eth' = 'usdc') => {
@@ -119,60 +167,58 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     try {
       const planId = PLAN_TO_ENUM[plan];
-      const price = getSubscriptionPrice(plan);
+      const price = BigInt(getSubscriptionPrice(plan));
       
       if (paymentMethod === 'usdc') {
         if (!usdcAddress) {
           throw new Error('USDC token address not found');
         }
         
+        // First approve USDC spending
         toast.info('Approving USDC spending...');
-        await approveUSDC({
-          address: usdcAddress as `0x${string}`,
-          abi: MockUSDCABI,
-          functionName: 'approve',
-          args: [SUBSCRIPTION_CONTRACT, BigInt(price)],
-        });
+        await handleApproveUSDC(SUBSCRIPTION_CONTRACT as `0x${string}`, price);
         
-        toast.info('Processing subscription...');
-        await subscribe({
-          address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-          abi: SubscriptionManagerABI,
-          functionName: 'subscribe',
-          args: [planId],
-        });
-        
-        toast.success(`Successfully subscribed to ${plan} plan!`);
-      } else {
-        toast.info('Processing subscription with ETH...');
-        await subscribe({
-          address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-          abi: SubscriptionManagerABI,
-          functionName: 'subscribe',
-          args: [planId],
-          value: BigInt(price),
-        });
-        
-        toast.success(`Successfully subscribed to ${plan} plan with ETH!`);
+        toast.success('USDC approved! Processing subscription...');
       }
       
+      // Then subscribe
+      await handleSubscribeWithErrorHandling({
+        address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+        abi: SubscriptionManagerABI,
+        functionName: 'subscribe',
+        args: [planId],
+        value: paymentMethod === 'eth' ? price : undefined,
+      });
+      
+      toast.success(`Successfully subscribed to ${plan} plan${paymentMethod === 'eth' ? ' with ETH' : ''}!`);
       await checkSubscription();
       
-    } catch (err) {
-      console.error('Subscription error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to subscribe';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (error) {
+      handleContractError(error, 'Subscription');
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  }, [address, usdcAddress, approveUSDC, checkSubscription, getSubscriptionPrice, subscribe]);
+  }, [
+    address, 
+    usdcAddress, 
+    getSubscriptionPrice, 
+    handleApproveUSDC, 
+    handleSubscribeWithErrorHandling, 
+    checkSubscription,
+    handleContractError
+  ]);
+
 
   // Refresh subscription status
   const refreshSubscription = useCallback(async () => {
-    await checkSubscription();
-    await refetch?.();
-  }, [checkSubscription, refetch]);
+    try {
+      // We can just call checkSubscription which already handles all the refetches
+      await checkSubscription();
+    } catch (error) {
+      handleContractError(error, 'Subscription refresh');
+    }
+  }, [checkSubscription, handleContractError]);
 
   // Initial load
   useEffect(() => {
@@ -204,18 +250,40 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         
         if (address && address !== '0x') {
           // Ensure the address is properly formatted
-          const formattedAddress = address.startsWith('0x') ? address : `0x${address}`;
-          setUsdcAddress(formattedAddress.slice(0, 42)); // Ensure 20-byte address with 0x prefix
+          const cleanAddress = address.startsWith('0x') ? address.slice(2) : address;
+          const paddedAddress = cleanAddress.padStart(40, '0');
+          const formattedAddress = `0x${paddedAddress.slice(0, 40)}`;
+          
+          // Validate the address format
+          if (/^0x[0-9a-fA-F]{40}$/.test(formattedAddress)) {
+            // Type assertion to ensure the address is properly typed
+          const validAddress = formattedAddress as `0x${string}`;
+          setUsdcAddress(validAddress);
+          } else {
+            console.error('Invalid USDC address format:', formattedAddress);
+          }
         }
       } catch (err) {
         console.error('Error fetching USDC address:', err);
+        handleContractError(err, 'Fetching USDC address');
       }
     };
     
     getUsdcAddress();
-  }, []);
+  }, [handleContractError]);
 
-  const contextValue: SubscriptionContextType = {
+  const subscriptionData = useMemo(() => ({
+    // Raw prices for calculations
+    monthlyPrice: PLAN_PRICES.monthly.toString(),
+    threeMonthsPrice: PLAN_PRICES.threeMonths.toString(),
+    yearlyPrice: PLAN_PRICES.yearly.toString(),
+    // Formatted prices for display
+    formattedMonthlyPrice: PLAN_PRICES.monthly.toFixed(2),
+    formattedThreeMonthsPrice: PLAN_PRICES.threeMonths.toFixed(2),
+    formattedYearlyPrice: PLAN_PRICES.yearly.toFixed(2),
+  }), []);
+
+  const contextValue: SubscriptionContextType = useMemo(() => ({
     isSubscribed,
     subscriptionEnds,
     currentPlan,
@@ -224,17 +292,18 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     subscribe: handleSubscribe,
     checkSubscription,
     refreshSubscription,
-    subscriptionData: {
-      // Raw prices for calculations
-      monthlyPrice: (PLAN_PRICES.monthly).toString(),
-      threeMonthsPrice: (PLAN_PRICES.threeMonths).toString(),
-      yearlyPrice: (PLAN_PRICES.yearly).toString(),
-      // Formatted prices for display
-      formattedMonthlyPrice: PLAN_PRICES.monthly.toFixed(2),
-      formattedThreeMonthsPrice: PLAN_PRICES.threeMonths.toFixed(2),
-      formattedYearlyPrice: PLAN_PRICES.yearly.toFixed(2),
-    },
-  };
+    subscriptionData,
+  }), [
+    isSubscribed,
+    subscriptionEnds,
+    currentPlan,
+    isLoading,
+    error,
+    handleSubscribe,
+    checkSubscription,
+    refreshSubscription,
+    subscriptionData
+  ]);
 
   return (
     <SubscriptionContext.Provider value={contextValue}>
@@ -242,6 +311,4 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     </SubscriptionContext.Provider>
   );
 };
-
-export { SubscriptionContext };
 
