@@ -18,25 +18,20 @@ async function main() {
     console.log("Waiting for block confirmations...");
     await subscription.deployTransaction.wait(6);
     
-    console.log("Verifying contract on BaseScan...");
+    console.log("Verifying contract...");
     try {
       await hre.run("verify:verify", {
         address: subscription.address,
         constructorArguments: [MOCK_PRICE_FEED],
       });
-      console.log("Contract verified on BaseScan!");
     } catch (error) {
-      console.error("Error verifying contract:", error);
+      if (error.message.includes("Already Verified")) {
+        console.log("Contract is already verified");
+      } else {
+        console.log("Verification failed:", error);
+      }
     }
   }
-  
-  console.log("Deployment completed!");
-  console.log(`Contract address: ${subscription.address}`);
-  
-  // Output the environment variable to set
-  console.log("\nAdd this to your .env file:");
-  console.log(`VITE_SUBSCRIPTION_CONTRACT=${subscription.address}`);
-  console.log(`VITE_USDC_TOKEN=0x036CbD53842c5426634e7929541eC2318f3dCF7e`);
 }
 
 main()
