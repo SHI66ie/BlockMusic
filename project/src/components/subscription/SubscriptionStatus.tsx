@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSubscription } from '../../hooks/useSubscription';
+import { useSubscription } from '../../hooks/useSubscriptionHook';
 import { formatDistanceToNow } from 'date-fns';
 import { FaCrown, FaExclamationTriangle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';

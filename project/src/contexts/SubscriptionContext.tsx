@@ -1,34 +1,18 @@
-import React, { createContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useCallback, useEffect, useState } from 'react';
 import { useAccount, useContractRead, useContractWrite } from 'wagmi';
-// parseEther is kept for future use
 import { toast } from 'react-toastify';
 
-// Import ABI
+// Import ABI and constants
 import { SubscriptionManager as SubscriptionManagerABI } from '../abis/SubscriptionManager';
 import { MockUSDC as MockUSDCABI } from '../abis/MockUSDC';
 import { 
   SUBSCRIPTION_CONTRACT,
   PLAN_TO_ENUM,
-  ENUM_TO_PLAN
+  ENUM_TO_PLAN,
+  PLAN_PRICES,
+  SubscriptionPlan
 } from '../constants/subscription';
-
-export type SubscriptionPlan = 'daily' | 'monthly' | 'yearly' | null;
-
-export interface SubscriptionContextType {
-  isSubscribed: boolean;
-  subscriptionEnds: number | null;
-  currentPlan: SubscriptionPlan;
-  isLoading: boolean;
-  error: string | null;
-  subscribe: (plan: 'daily' | 'monthly' | 'yearly', paymentMethod?: 'usdc' | 'eth') => Promise<void>;
-  checkSubscription: () => Promise<{ isActive: boolean; endTime: number; plan: SubscriptionPlan }>;
-  subscriptionData: {
-    dailyPrice: string;
-    monthlyPrice: string;
-    yearlyPrice: string;
-  };
-  refreshSubscription: () => Promise<void>;
-}
+import { SubscriptionContextType, SubscriptionStatus } from '../types/subscription';
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -36,8 +20,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const { address } = useAccount();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionEnds, setSubscriptionEnds] = useState<number | null>(null);
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>(null);
-  const [ethToUsd, setEthToUsd] = useState(2000); // Default ETH to USD rate
+  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usdcAddress, setUsdcAddress] = useState<string>('');
@@ -69,102 +52,76 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     functionName: 'subscribe',
   });
 
-  // Get ETH to USD price
-  const getEthPrice = useCallback(async () => {
-    try {
-      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
-      const data = await response.json();
-      setEthToUsd(data.ethereum.usd);
-      return data.ethereum.usd;
-    } catch (err) {
-      console.error('Error fetching ETH price:', err);
-      // Fallback to default value
-      setEthToUsd(2000);
-      return 2000;
-    }
-  }, []);
+  // Get subscription end time
+  const { refetch: fetchSubscriptionEndTime } = useContractRead({
+    ...subscriptionContract,
+    functionName: 'subscriptions',
+    args: [address],
+    enabled: !!address,
+    select: (data: unknown) => {
+      const subscriptionData = data as [string, number, boolean, number] | undefined;
+      return subscriptionData?.[1] || 0; // endTime is the second element in the struct
+    },
+  });
 
-  // Get subscription price in wei
-  const getSubscriptionPrice = useCallback((plan: 'daily' | 'monthly' | 'yearly'): string => {
-    const pricesInEth = {
-      daily: 0.01,   // 0.01 ETH per day
-      monthly: 0.2,  // 0.2 ETH per month
-      yearly: 2      // 2 ETH per year
-    };
-    
-    // Convert ETH to wei (1 ETH = 1e18 wei)
-    return Math.floor(pricesInEth[plan] * 1e18).toString();
+  // Get current plan
+  const { refetch: fetchCurrentPlan } = useContractRead({
+    ...subscriptionContract,
+    functionName: 'subscriptions',
+    args: [address],
+    enabled: !!address,
+    select: (data: unknown) => {
+      const subscriptionData = data as [string, number, boolean, number] | undefined;
+      return subscriptionData?.[3] || 0; // plan is the fourth element in the struct
+    },
+  });
+
+  // Get subscription price in USDC (6 decimals)
+  const getSubscriptionPrice = useCallback((plan: SubscriptionPlan): string => {
+    return Math.floor(PLAN_PRICES[plan] * 1e6).toString();
   }, []);
   
-  // Get price in USD
-  const getPriceInUsd = useCallback((priceInWei: string) => {
-    const priceInEth = parseFloat(priceInWei) / 1e18;
-    return (priceInEth * ethToUsd).toFixed(2);
-  }, [ethToUsd]);
 
   // Check subscription status
-  const checkSubscription = useCallback(async () => {
-    if (!address || !window.ethereum) {
-      return { isActive: false, endTime: 0, plan: null as SubscriptionPlan };
-    }
+  const checkSubscription = useCallback(async (): Promise<SubscriptionStatus> => {
+    if (!address) return { isActive: false, endTime: 0, plan: null };
     
     try {
-      const [isActive, endTime] = await Promise.all([
-        // isSubscribed
-        window.ethereum.request({
-          method: 'eth_call',
-          params: [
-            {
-              to: SUBSCRIPTION_CONTRACT,
-              data: `0xb0f479ff${address.slice(2).padStart(64, '0')}` // isSubscribed(address)
-            },
-            'latest'
-          ]
-        }),
-        // endTime
-        window.ethereum.request({
-          method: 'eth_call',
-          params: [
-            {
-              to: SUBSCRIPTION_CONTRACT,
-              data: `0x8f9f4b63${address.slice(2).padStart(64, '0')}` // subscriptions(address)
-            },
-            'latest'
-          ]
-        })
-      ]);
-
-      const endTimeMs = parseInt(endTime, 16) * 1000; // Convert to milliseconds
-      const active = isActive === '0x0000000000000000000000000000000000000000000000000000000000000001' && endTimeMs > Date.now();
+      const result = await refetch();
+      const isActive = result.data as boolean;
       
-      // Get plan from endTime response (assuming it's the 4th value)
-      const planNum = parseInt(endTime.slice(258, 322), 16);
-      const plan = ENUM_TO_PLAN[planNum] || null;
+      const endTimeResult = await fetchSubscriptionEndTime();
+      const endTime = endTimeResult.data as number;
       
-      // Update state
-      setIsSubscribed(active);
-      setSubscriptionEnds(endTimeMs);
-      setCurrentPlan(plan);
+      const planResult = await fetchCurrentPlan();
+      const plan = planResult.data as number;
+      
+      const planName = ENUM_TO_PLAN[plan] || null;
+      
+      // Update local state
+      setIsSubscribed(isActive);
+      setSubscriptionEnds(endTime * 1000);
+      setCurrentPlan(planName);
       
       return {
-        isActive: active,
-        endTime: endTimeMs,
-        plan
+        isActive,
+        endTime: endTime * 1000, // Convert to milliseconds
+        plan: planName
       };
     } catch (err) {
       console.error('Error checking subscription:', err);
       return { isActive: false, endTime: 0, plan: null };
     }
-  }, [address]);
+  }, [address, refetch, fetchSubscriptionEndTime, fetchCurrentPlan]);
 
-  // Subscribe to a plan
-  const handleSubscribe = async (plan: 'daily' | 'monthly' | 'yearly', paymentMethod: 'usdc' | 'eth' = 'usdc') => {
+  // Handle subscription
+  const handleSubscribe = useCallback(async (plan: SubscriptionPlan, paymentMethod: 'usdc' | 'eth' = 'usdc') => {
     if (!address) {
       setError('Wallet not connected');
       toast.error('Please connect your wallet to subscribe');
       return;
     }
-
+    
     setIsLoading(true);
     setError(null);
 
@@ -173,21 +130,17 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const price = getSubscriptionPrice(plan);
       
       if (paymentMethod === 'usdc') {
-        // For USDC payment
         if (!approveUSDC) {
           throw new Error('USDC approval not available');
         }
         
-        // First approve USDC spending
         toast.info('Approving USDC spending...');
         const approveTx = await approveUSDC({
           args: [SUBSCRIPTION_CONTRACT, BigInt(price)],
         });
         
-        // Wait for approval to be mined
         await approveTx.wait();
         
-        // Then subscribe
         if (!subscribe) {
           throw new Error('Subscribe function not available');
         }
@@ -200,7 +153,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         await tx.wait();
         toast.success(`Successfully subscribed to ${plan} plan!`);
       } else {
-        // For ETH payment
         if (!subscribe) {
           throw new Error('Subscribe function not available');
         }
@@ -215,7 +167,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         toast.success(`Successfully subscribed to ${plan} plan with ETH!`);
       }
       
-      // Refresh subscription status
       await checkSubscription();
       
     } catch (err) {
@@ -226,7 +177,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address, approveUSDC, checkSubscription, getSubscriptionPrice, subscribe]);
 
   // Refresh subscription status
   const refreshSubscription = useCallback(async () => {
@@ -238,13 +189,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     const init = async () => {
       if (address) {
-        await getEthPrice();
         await checkSubscription();
       }
     };
     
     init();
-  }, [address, checkSubscription, getEthPrice]);
+  }, [address, checkSubscription]);
 
   // Get USDC token address from contract on mount
   useEffect(() => {
@@ -274,7 +224,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     getUsdcAddress();
   }, []);
 
-  const contextValue = {
+  const contextValue: SubscriptionContextType = {
     isSubscribed,
     subscriptionEnds,
     currentPlan,
@@ -282,12 +232,12 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     error,
     subscribe: handleSubscribe,
     checkSubscription,
-    subscriptionData: {
-      dailyPrice: getPriceInUsd(getSubscriptionPrice('daily')),
-      monthlyPrice: getPriceInUsd(getSubscriptionPrice('monthly')),
-      yearlyPrice: getPriceInUsd(getSubscriptionPrice('yearly')),
-    },
     refreshSubscription,
+    subscriptionData: {
+      monthlyPrice: PLAN_PRICES.monthly.toFixed(2),
+      threeMonthsPrice: PLAN_PRICES.threeMonths.toFixed(2),
+      yearlyPrice: PLAN_PRICES.yearly.toFixed(2),
+    },
   };
 
   return (
@@ -297,5 +247,5 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   );
 };
 
-// Export the context for use in the useSubscription hook
 export { SubscriptionContext };
+

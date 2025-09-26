@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useSubscription } from '../../hooks/useSubscription';
+import { useSubscription } from '../../hooks/useSubscriptionHook';
 import { LoadingSpinner } from '../common/LoadingSpinner';
-import { FaCheck, FaMusic, FaCrown, FaGem, FaStar, FaExclamationTriangle } from 'react-icons/fa';
+import { FaCheck, FaCrown, FaGem, FaStar, FaExclamationTriangle } from 'react-icons/fa';
 import { useAccount } from 'wagmi';
 import { toast } from 'react-toastify';
 import { SubscriptionButton } from './SubscriptionButton';
+import { SubscriptionPlan, PLAN_PRICES } from '../../constants/subscription';
 
 interface PlanCardProps {
   name: string;
@@ -12,11 +13,11 @@ interface PlanCardProps {
   period: string;
   features: string[];
   isPopular?: boolean;
-  onSelect: (plan: 'daily' | 'monthly' | 'yearly') => void;
+  onSelect: (plan: SubscriptionPlan) => void;
   isSubscribing: boolean;
   isCurrentPlan?: boolean;
   icon: React.ReactNode;
-  planId: 'daily' | 'monthly' | 'yearly';
+  planId: SubscriptionPlan;
 }
 
 const PlanCard: React.FC<PlanCardProps> = ({
@@ -89,9 +90,9 @@ export const SubscriptionPlans: React.FC = () => {
   } = useSubscription();
   
   const { isConnected, address } = useAccount();
-  const [activePlan, setActivePlan] = useState<'daily' | 'monthly' | 'yearly' | null>(null);
+  const [activePlan, setActivePlan] = useState<SubscriptionPlan | null>(null);
 
-  const handleSubscribe = useCallback(async (plan: 'daily' | 'monthly' | 'yearly') => {
+  const handleSubscribe = useCallback(async (plan: SubscriptionPlan) => {
     if (!isConnected || !address) {
       toast.error('Please connect your wallet to subscribe');
       return;
@@ -112,46 +113,44 @@ export const SubscriptionPlans: React.FC = () => {
 
   const plans = useMemo(() => [
     {
-      id: 'daily' as const,
-      name: 'Daily Pass',
-      price: subscriptionData?.dailyPrice || '2.50',
-      period: 'day',
-      features: [
-        '24-hour access to all content',
-        'Ad-free experience',
-        'Standard audio quality (192kbps)',
-        'Cancel anytime',
-      ],
-      icon: <FaMusic className="w-6 h-6" />,
-    },
-    {
       id: 'monthly' as const,
       name: 'Monthly',
-      price: subscriptionData?.monthlyPrice || '25.00',
+      price: subscriptionData?.monthlyPrice || PLAN_PRICES.monthly.toFixed(2),
       period: 'month',
       features: [
         'Unlimited access to all content',
         'Ad-free experience',
         'High audio quality (320kbps)',
         'Early access to new releases',
-        'Save 10% compared to daily',
         'Download for offline listening',
       ],
-      isPopular: true,
+      isPopular: false,
       icon: <FaCrown className="w-6 h-6" />,
+    },
+    {
+      id: 'threeMonths' as const,
+      name: '3 Months',
+      price: subscriptionData?.threeMonthsPrice || PLAN_PRICES.threeMonths.toFixed(2),
+      period: '3 months',
+      features: [
+        'Everything in Monthly',
+        'Save 10% compared to monthly',
+        'Priority customer support',
+        'Early access to new features',
+      ],
+      isPopular: true,
+      icon: <FaStar className="w-6 h-6" />,
     },
     {
       id: 'yearly' as const,
       name: 'Yearly',
-      price: subscriptionData?.yearlyPrice || '255.00',
+      price: subscriptionData?.yearlyPrice || PLAN_PRICES.yearly.toFixed(2),
       period: 'year',
       features: [
-        'Unlimited access to all content',
-        'Ad-free experience',
+        'Everything in 3 Months',
+        'Save 15% compared to monthly',
         'Highest audio quality (FLAC)',
         'Exclusive content and events',
-        'Save 15% compared to monthly',
-        'Priority customer support',
         'Early access to concerts',
       ],
       icon: <FaGem className="w-6 h-6" />,
@@ -226,7 +225,7 @@ export const SubscriptionPlans: React.FC = () => {
             </span>
           </div>
           <p className="text-sm text-gray-400 mb-3">
-            Your subscription will automatically renew at the end of the billing period.
+            Your subscription will automatically renew at the end of the billing period. Next payment: ${PLAN_PRICES[currentPlan as keyof typeof PLAN_PRICES]?.toFixed(2)} USDC
           </p>
           <div className="text-xs text-gray-500">
             <p>Need help? <a href="/support" className="text-purple-400 hover:underline">Contact support</a></p>

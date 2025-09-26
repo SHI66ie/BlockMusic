@@ -1,12 +1,13 @@
 import React from 'react';
 import { useAccount } from 'wagmi';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { SubscriptionPlan } from '../../constants/subscription';
 
 interface SubscriptionButtonProps {
-  plan: 'daily' | 'monthly' | 'yearly';
+  plan: SubscriptionPlan;
   isCurrentPlan: boolean;
   isProcessing: boolean;
-  onClick: (plan: 'daily' | 'monthly' | 'yearly') => void;
+  onClick: (plan: SubscriptionPlan) => void;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -31,7 +32,11 @@ export const SubscriptionButton: React.FC<SubscriptionButtonProps> = ({
     if (!isConnected) return 'Connect Wallet';
     if (isProcessing) return 'Processing...';
     if (isCurrentPlan) return 'Current Plan';
-    return `Subscribe ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
+    // Format the plan name for display (e.g., 'threeMonths' -> '3 Months')
+    const displayName = plan === 'threeMonths' 
+      ? '3 Months' 
+      : plan.charAt(0).toUpperCase() + plan.slice(1);
+    return `Subscribe ${displayName}`;
   };
 
   const getButtonClasses = () => {

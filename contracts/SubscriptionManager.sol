@@ -7,19 +7,19 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract SubscriptionManager is Ownable, ReentrancyGuard {
     // Subscription plans
-    enum Plan { Daily, Monthly, Yearly }
+    enum Plan { Monthly, ThreeMonths, Yearly }
     
     // USDC token address on Base Sepolia (replace with actual USDC address)
     address public usdcToken;
     
     // Subscription prices in USDC (6 decimals)
-    uint256 public constant DAILY_PRICE = 1 * 10**6; // 1 USDC
-    uint256 public constant MONTHLY_PRICE = 25 * 10**5; // 2.5 USDC (with 10% discount from 2.78 USDC)
-    uint256 public constant YEARLY_PRICE = 25 * 10**6; // 25 USDC (with 15% discount from 30 USDC)
+    uint256 public constant MONTHLY_PRICE = 25 * 10**5;      // 2.5 USDC
+    uint256 public constant THREE_MONTHS_PRICE = 675 * 10**4; // 6.75 USDC (10% discount from 7.5 USDC)
+    uint256 public constant YEARLY_PRICE = 25 * 10**6;        // 25 USDC (15% discount from 30 USDC)
     
     // Subscription duration in seconds
-    uint256 public constant DAY = 1 days;
     uint256 public constant MONTH = 30 days;
+    uint256 public constant THREE_MONTHS = 90 days;
     uint256 public constant YEAR = 365 days;
     
     // User subscription data
@@ -139,8 +139,8 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
      * @dev Get price for a plan
      */
     function getPlanPrice(Plan plan) public pure returns (uint256) {
-        if (plan == Plan.Daily) return DAILY_PRICE;
         if (plan == Plan.Monthly) return MONTHLY_PRICE;
+        if (plan == Plan.ThreeMonths) return THREE_MONTHS_PRICE;
         if (plan == Plan.Yearly) return YEARLY_PRICE;
         revert("Invalid plan");
     }
@@ -149,8 +149,8 @@ contract SubscriptionManager is Ownable, ReentrancyGuard {
      * @dev Get duration for a plan in seconds
      */
     function getPlanDuration(Plan plan) public pure returns (uint256) {
-        if (plan == Plan.Daily) return DAY;
         if (plan == Plan.Monthly) return MONTH;
+        if (plan == Plan.ThreeMonths) return THREE_MONTHS;
         if (plan == Plan.Yearly) return YEAR;
         revert("Invalid plan");
     }

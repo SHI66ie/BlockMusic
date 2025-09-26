@@ -10,7 +10,7 @@ import Marketplace from './pages/Marketplace';
 import Create from './pages/Create';
 import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
-import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import SubscriptionContextProvider from './contexts/SubscriptionContextProvider';
 import { SubscriptionGuard } from './components/subscription/SubscriptionGuard';
 
 // Type for component props
@@ -40,7 +40,7 @@ function App() {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>
-          <SubscriptionProvider>
+          <SubscriptionContextProvider>
             <Suspense fallback={
               <div className="flex items-center justify-center min-h-screen bg-gray-900">
                 <div className="text-white text-xl">Loading BlockMusic...</div>
@@ -60,7 +60,7 @@ function App() {
                 </Routes>
               </Router>
             </Suspense>
-          </SubscriptionProvider>
+          </SubscriptionContextProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
