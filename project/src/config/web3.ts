@@ -1,7 +1,8 @@
-import { http } from 'wagmi';
-import { baseSepolia } from 'wagmi/chains';
+import { http, createConfig } from 'wagmi';
+import { baseSepolia } from 'viem/chains';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { QueryClient } from '@tanstack/react-query';
+import { defineChain } from 'viem';
 
 // Get Alchemy API key from environment variables
 const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY || '';
@@ -11,14 +12,11 @@ if (!alchemyApiKey) {
 }
 
 // Base Sepolia testnet configuration with Alchemy
-export const baseSepoliaConfig = {
+export const baseSepoliaConfig = defineChain({
   ...baseSepolia,
   name: 'Base Sepolia',
   network: 'base-sepolia',
   rpcUrls: {
-    public: { 
-      http: ['https://sepolia.base.org'],
-    },
     default: { 
       http: [
         alchemyApiKey 
@@ -28,10 +26,9 @@ export const baseSepoliaConfig = {
     },
   },
   blockExplorers: {
-    etherscan: { name: 'Basescan', url: 'https://sepolia.basescan.org' },
     default: { name: 'Basescan', url: 'https://sepolia.basescan.org' },
   },
-};
+});
 
 // WalletConnect project ID - get from environment variables
 const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '';
@@ -41,27 +38,29 @@ if (!projectId) {
 }
 
 // Configure Wagmi client with Alchemy
-export const config = getDefaultConfig({
-  appName: 'BlockMusic',
-  projectId: projectId,
-  chains: [baseSepoliaConfig],
-  ssr: true,
-  // Use Alchemy as the primary RPC provider with fallback to public RPC
-  transports: {
-    [baseSepolia.id]: http(
-      alchemyApiKey 
-        ? `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
-        : baseSepolia.rpcUrls.default.http[0],
-      { 
-        key: 'alchemy',
-        name: 'Alchemy',
-        // Add retry and timeout settings
-        retryCount: 3,
-        timeout: 30_000, // 30 seconds
-      }
-    ),
-  },
-});
+export const config = createConfig(
+  getDefaultConfig({
+    appName: 'BlockMusic',
+    projectId: projectId,
+    chains: [baseSepoliaConfig],
+    ssr: true,
+    // Use Alchemy as the primary RPC provider with fallback to public RPC
+    transports: {
+      [baseSepolia.id]: http(
+        alchemyApiKey 
+          ? `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
+          : 'https://sepolia.base.org',
+        { 
+          key: 'alchemy',
+          name: 'Alchemy',
+          // Add retry and timeout settings
+          retryCount: 3,
+          timeout: 30_000, // 30 seconds
+        }
+      ),
+    },
+  })
+);
 
 // Setup queryClient
 export const queryClient = new QueryClient({
