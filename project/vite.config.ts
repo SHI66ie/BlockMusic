@@ -14,9 +14,18 @@ export default defineConfig(({ mode }: { mode: string }) => {
       strictPort: true,
       host: true,
       open: true,
+      headers: {
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.alchemy.com https://sepolia.base.org;"
+      }
     },
     plugins: [
-      react(),
+      react({
+        babel: {
+          plugins: [
+            ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+          ]
+        }
+      }),
       // Polyfill Node.js core modules for browser compatibility
       nodePolyfills({
         // To exclude specific polyfills, add them to this list
@@ -26,7 +35,11 @@ export default defineConfig(({ mode }: { mode: string }) => {
       }),
     ],
     define: {
-      'process.env': { ...env },
+      'process.env': {
+        ...env,
+        VITE_ALCHEMY_API_KEY: JSON.stringify(env.VITE_ALCHEMY_API_KEY || ''),
+        VITE_WALLET_CONNECT_PROJECT_ID: JSON.stringify(env.VITE_WALLET_CONNECT_PROJECT_ID || '')
+      },
       'import.meta.env.MODE': JSON.stringify(mode),
       global: 'globalThis',  // Fix for global object
     },
