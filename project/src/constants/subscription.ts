@@ -1,5 +1,5 @@
 // Contract addresses - should be in .env file in production
-export const SUBSCRIPTION_CONTRACT = process.env.REACT_APP_SUBSCRIPTION_CONTRACT || '0x...';
+export const SUBSCRIPTION_CONTRACT = import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x...';
 
 // Plan mappings
 export const PLAN_TO_ENUM = {
