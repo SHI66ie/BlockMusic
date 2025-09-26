@@ -1,10 +1,17 @@
-import { http, createConfig } from 'wagmi';
+import { http } from 'wagmi';
 import { baseSepolia } from 'viem/chains';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { QueryClient } from '@tanstack/react-query';
 
 // Get Alchemy API key from environment variables
 const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY || '';
+
+// Debug: Log environment variables (without exposing the actual key)
+console.group('Environment Variables');
+console.log('NODE_ENV:', import.meta.env.MODE);
+console.log('VITE_ALCHEMY_API_KEY:', alchemyApiKey ? '*** Key is set ***' : 'Key is missing or empty');
+console.log('VITE_WALLET_CONNECT_PROJECT_ID:', import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID ? '*** Set ***' : 'Missing');
+console.groupEnd();
 
 if (!alchemyApiKey) {
   console.warn('Missing Alchemy API Key. Falling back to public RPC endpoints.');
