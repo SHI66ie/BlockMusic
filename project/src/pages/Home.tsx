@@ -1,7 +1,8 @@
 import React from 'react';
-import { FaSearch, FaMusic, FaFire, FaClock } from 'react-icons/fa';
+import { FaMusic } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
-import { useAccount } from 'wagmi'
+import { useAccount } from 'wagmi';
+import { AlchemyTest } from '../components/AlchemyTest';
 
 const FeaturedCard = ({ title, description, imageUrl, category }: { title: string; description: string; imageUrl: string; category: string }) => (
   <div className="relative group bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-colors">
@@ -93,6 +94,11 @@ export const Home = () => {
 
   return (
     <div className="space-y-8">
+      {/* Alchemy Connection Test */}
+      <div className="mb-8">
+        <AlchemyTest />
+      </div>
+
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-900 to-blue-900 rounded-2xl p-8 text-white">
         <div className="max-w-2xl">

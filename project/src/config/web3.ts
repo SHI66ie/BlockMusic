@@ -3,14 +3,29 @@ import { baseSepolia } from 'wagmi/chains';
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { QueryClient } from '@tanstack/react-query';
 
-// Base Sepolia testnet configuration
+// Get Alchemy API key from environment variables
+const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY || '';
+
+if (!alchemyApiKey) {
+  console.warn('Missing Alchemy API Key. Falling back to public RPC endpoints.');
+}
+
+// Base Sepolia testnet configuration with Alchemy
 export const baseSepoliaConfig = {
   ...baseSepolia,
   name: 'Base Sepolia',
   network: 'base-sepolia',
   rpcUrls: {
-    public: { http: ['https://sepolia.base.org'] },
-    default: { http: ['https://sepolia.base.org'] },
+    public: { 
+      http: ['https://sepolia.base.org'],
+    },
+    default: { 
+      http: [
+        alchemyApiKey 
+          ? `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
+          : 'https://sepolia.base.org'
+      ],
+    },
   },
   blockExplorers: {
     etherscan: { name: 'Basescan', url: 'https://sepolia.basescan.org' },
@@ -25,14 +40,26 @@ if (!projectId) {
   console.warn('Missing WalletConnect Project ID. Some features may not work correctly.');
 }
 
-// Configure Wagmi client
+// Configure Wagmi client with Alchemy
 export const config = getDefaultConfig({
   appName: 'BlockMusic',
   projectId: projectId,
   chains: [baseSepoliaConfig],
   ssr: true,
+  // Use Alchemy as the primary RPC provider with fallback to public RPC
   transports: {
-    [baseSepolia.id]: http(),
+    [baseSepolia.id]: http(
+      alchemyApiKey 
+        ? `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
+        : baseSepolia.rpcUrls.default.http[0],
+      { 
+        key: 'alchemy',
+        name: 'Alchemy',
+        // Add retry and timeout settings
+        retryCount: 3,
+        timeout: 30_000, // 30 seconds
+      }
+    ),
   },
 });
 
@@ -44,14 +71,6 @@ export const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
-
-// Setup RainbowKit
-export const rainbowKitConfig = getDefaultConfig({
-  appName: import.meta.env.VITE_APP_NAME || 'BlockMusic',
-  projectId: projectId || 'dummy-project-id',
-  chains: [baseSepolia],
-  ssr: true,
 });
 
 // Wallet connection options
