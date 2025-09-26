@@ -7,9 +7,14 @@ export interface SubscriptionStatus {
 }
 
 export interface SubscriptionData {
+  // Raw prices for calculations (in wei or smallest unit)
   monthlyPrice: string;
   threeMonthsPrice: string;
   yearlyPrice: string;
+  // Formatted prices for display (with 2 decimal places)
+  formattedMonthlyPrice: string;
+  formattedThreeMonthsPrice: string;
+  formattedYearlyPrice: string;
 }
 
 export interface SubscriptionContextType {

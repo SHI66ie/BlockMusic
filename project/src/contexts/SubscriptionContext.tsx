@@ -25,60 +25,52 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [error, setError] = useState<string | null>(null);
   const [usdcAddress, setUsdcAddress] = useState<string>('');
 
-  // Contract instances
-  const subscriptionContract = {
-    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-    abi: SubscriptionManagerABI,
-  };
-
   // Get subscription status
   const { refetch } = useContractRead({
-    ...subscriptionContract,
+    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: SubscriptionManagerABI,
     functionName: 'isSubscribed',
     args: [address],
     enabled: !!address,
   });
 
   // USDC approval
-  const { writeAsync: approveUSDC } = useContractWrite({
-    address: usdcAddress as `0x${string}`,
-    abi: MockUSDCABI,
-    functionName: 'approve',
-  });
-
+  const { writeContractAsync: approveUSDC } = useContractWrite();
+  
   // Subscribe function
-  const { writeAsync: subscribe } = useContractWrite({
-    ...subscriptionContract,
-    functionName: 'subscribe',
-  });
+  const { writeContractAsync: subscribe } = useContractWrite();
 
   // Get subscription end time
   const { refetch: fetchSubscriptionEndTime } = useContractRead({
-    ...subscriptionContract,
+    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: SubscriptionManagerABI,
     functionName: 'subscriptions',
     args: [address],
     enabled: !!address,
     select: (data: unknown) => {
-      const subscriptionData = data as [string, number, boolean, number] | undefined;
-      return subscriptionData?.[1] || 0; // endTime is the second element in the struct
+      const subscriptionData = data as [bigint, bigint, boolean, number] | undefined;
+      return subscriptionData?.[1] ? Number(subscriptionData[1]) : 0; // Convert bigint to number
     },
   });
 
   // Get current plan
   const { refetch: fetchCurrentPlan } = useContractRead({
-    ...subscriptionContract,
+    address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: SubscriptionManagerABI,
     functionName: 'subscriptions',
     args: [address],
     enabled: !!address,
     select: (data: unknown) => {
-      const subscriptionData = data as [string, number, boolean, number] | undefined;
+      const subscriptionData = data as [bigint, bigint, boolean, number] | undefined;
       return subscriptionData?.[3] || 0; // plan is the fourth element in the struct
     },
   });
 
   // Get subscription price in USDC (6 decimals)
   const getSubscriptionPrice = useCallback((plan: SubscriptionPlan): string => {
-    return Math.floor(PLAN_PRICES[plan] * 1e6).toString();
+    // Convert the price to a string with 6 decimal places
+    const price = (PLAN_PRICES[plan] * 1e6).toFixed(0);
+    return price;
   }, []);
   
 
@@ -130,40 +122,37 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       const price = getSubscriptionPrice(plan);
       
       if (paymentMethod === 'usdc') {
-        if (!approveUSDC) {
-          throw new Error('USDC approval not available');
+        if (!usdcAddress) {
+          throw new Error('USDC token address not found');
         }
         
         toast.info('Approving USDC spending...');
-        const approveTx = await approveUSDC({
+        await approveUSDC({
+          address: usdcAddress as `0x${string}`,
+          abi: MockUSDCABI,
+          functionName: 'approve',
           args: [SUBSCRIPTION_CONTRACT, BigInt(price)],
         });
         
-        await approveTx.wait();
-        
-        if (!subscribe) {
-          throw new Error('Subscribe function not available');
-        }
-        
         toast.info('Processing subscription...');
-        const tx = await subscribe({
+        await subscribe({
+          address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+          abi: SubscriptionManagerABI,
+          functionName: 'subscribe',
           args: [planId],
         });
         
-        await tx.wait();
         toast.success(`Successfully subscribed to ${plan} plan!`);
       } else {
-        if (!subscribe) {
-          throw new Error('Subscribe function not available');
-        }
-        
         toast.info('Processing subscription with ETH...');
-        const tx = await subscribe({
+        await subscribe({
+          address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+          abi: SubscriptionManagerABI,
+          functionName: 'subscribe',
           args: [planId],
           value: BigInt(price),
         });
         
-        await tx.wait();
         toast.success(`Successfully subscribed to ${plan} plan with ETH!`);
       }
       
@@ -177,7 +166,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setIsLoading(false);
     }
-  }, [address, approveUSDC, checkSubscription, getSubscriptionPrice, subscribe]);
+  }, [address, usdcAddress, approveUSDC, checkSubscription, getSubscriptionPrice, subscribe]);
 
   // Refresh subscription status
   const refreshSubscription = useCallback(async () => {
@@ -206,7 +195,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
           method: 'eth_call',
           params: [
             {
-              to: SUBSCRIPTION_CONTRACT,
+              to: SUBSCRIPTION_CONTRACT as `0x${string}`,
               data: '0xfc0c546a' // usdcToken()
             },
             'latest'
@@ -214,7 +203,9 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         });
         
         if (address && address !== '0x') {
-          setUsdcAddress(`0x${address.slice(-40)}`);
+          // Ensure the address is properly formatted
+          const formattedAddress = address.startsWith('0x') ? address : `0x${address}`;
+          setUsdcAddress(formattedAddress.slice(0, 42)); // Ensure 20-byte address with 0x prefix
         }
       } catch (err) {
         console.error('Error fetching USDC address:', err);
@@ -234,9 +225,14 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     checkSubscription,
     refreshSubscription,
     subscriptionData: {
-      monthlyPrice: PLAN_PRICES.monthly.toFixed(2),
-      threeMonthsPrice: PLAN_PRICES.threeMonths.toFixed(2),
-      yearlyPrice: PLAN_PRICES.yearly.toFixed(2),
+      // Raw prices for calculations
+      monthlyPrice: (PLAN_PRICES.monthly).toString(),
+      threeMonthsPrice: (PLAN_PRICES.threeMonths).toString(),
+      yearlyPrice: (PLAN_PRICES.yearly).toString(),
+      // Formatted prices for display
+      formattedMonthlyPrice: PLAN_PRICES.monthly.toFixed(2),
+      formattedThreeMonthsPrice: PLAN_PRICES.threeMonths.toFixed(2),
+      formattedYearlyPrice: PLAN_PRICES.yearly.toFixed(2),
     },
   };
 

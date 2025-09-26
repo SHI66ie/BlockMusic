@@ -99,7 +99,7 @@ const SubscriptionPlan: React.FC = () => {
     {
       id: 'monthly' as PlanType,
       name: 'Monthly',
-      price: subscriptionData?.monthlyPrice || '2.50',
+      price: subscriptionData?.formattedMonthlyPrice || '2.50',
       period: 'month',
       features: [
         'Unlimited access to all content', 
@@ -110,7 +110,7 @@ const SubscriptionPlan: React.FC = () => {
     {
       id: 'threeMonths' as PlanType,
       name: '3 Months',
-      price: subscriptionData?.threeMonthsPrice || '6.75',
+      price: subscriptionData?.formattedThreeMonthsPrice || '6.75',
       period: '3 months',
       features: [
         'Save 10% compared to monthly', 
@@ -122,7 +122,7 @@ const SubscriptionPlan: React.FC = () => {
     {
       id: 'yearly' as PlanType,
       name: 'Yearly',
-      price: subscriptionData?.yearlyPrice || '25.00',
+      price: subscriptionData?.formattedYearlyPrice || '25.00',
       period: 'year',
       features: [
         'Save 15% compared to monthly', 
