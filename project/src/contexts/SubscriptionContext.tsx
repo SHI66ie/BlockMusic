@@ -4,14 +4,11 @@ import { toast } from 'react-toastify';
 
 // Import ABI and constants
 import { SubscriptionManager as SubscriptionManagerABI } from '../abis/SubscriptionManager';
-import { MockUSDC as MockUSDCABI } from '../abis/MockUSDC';
 import { 
-  PLAN_TO_ENUM,
-  ENUM_TO_PLAN,
   PLAN_PRICES,
   SubscriptionPlan
 } from '../constants/subscription';
-import { SubscriptionContextType, SubscriptionStatus } from '../types/subscription';
+import { SubscriptionContextType } from '../types/subscription';
 
 // Get contract addresses from environment variables
 const SUBSCRIPTION_CONTRACT = import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x...';
@@ -22,8 +19,8 @@ export const SubscriptionContext = createContext<SubscriptionContextType | undef
 export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { address } = useAccount();
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscriptionEnds, setSubscriptionEnds] = useState<number | null>(null);
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan | null>(null);
+  const [subscriptionEnds] = useState<number | null>(null); // Keep for future use
+  const [currentPlan] = useState<SubscriptionPlan | null>(null); // Keep for future use
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const usdcAddress = USDC_TOKEN;
@@ -37,26 +34,96 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Contract reads
   const { refetch: refetchIsSubscribed } = useReadContract({
     address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-    abi: SubscriptionManagerABI,
-{{ ... }}
+    abi: SubscriptionManagerABI as readonly unknown[], // Better type assertion
+    functionName: 'isSubscribed',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  const { writeContractAsync } = useWriteContract();
+
+  const checkSubscription = useCallback(async () => {
+    if (!address) return;
+    
+    try {
+      const result = await refetchIsSubscribed();
+      setIsSubscribed(!!result.data);
+      // You might want to fetch additional subscription details here
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      setError('Failed to check subscription status');
+    }
+  }, [address, refetchIsSubscribed]);
+
+  const handleSubscribe = useCallback(async (planId: string) => {
+    const planIdNumber = parseInt(planId, 10);
+    if (!address) {
+      toast.error('Please connect your wallet');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Implement subscription logic here
+      // This is a placeholder - replace with actual contract interaction
+      await writeContractAsync({
+        address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+        abi: SubscriptionManagerABI,
+        functionName: 'subscribe',
+        args: [planIdNumber],
+      });
+      
+      toast.success('Subscription successful!');
+      await checkSubscription();
+    } catch (error) {
+      console.error('Subscription error:', error);
+      setError('Failed to process subscription');
+      toast.error('Subscription failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [address, checkSubscription, writeContractAsync]);
+
+  const refreshSubscription = useCallback(async () => {
+    await checkSubscription();
+  }, [checkSubscription]);
+
+  // Initialize subscription check when address changes
+  useEffect(() => {
+    const init = async () => {
+      if (address) {
+        await checkSubscription();
+      }
     };
     
     init();
-  }, [address, checkSubscription, usdcAddress]);
+  }, [address, checkSubscription]);
+
+  const handleContractError = useCallback((error: Error, context: string) => {
+    console.error(`Error in ${context}:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+    setError(`Error: ${errorMessage}`);
+    toast.error(`Error: ${errorMessage}`);
+  }, []);
 
   const getUsdcAddress = useCallback(async () => {
     try {
       const formattedAddress = usdcAddress.replace(/0x/g, '').toLowerCase();
       if (formattedAddress.length === 40) {
-        setUsdcAddress(formattedAddress);
+        // If you need to update usdcAddress, you'll need to use a state setter
+        console.log('USDC Address formatted:', `0x${formattedAddress}`);
       } else {
         console.error('Invalid USDC address format:', formattedAddress);
       }
     } catch (err) {
-      console.error('Error fetching USDC address:', err);
-      handleContractError(err, 'Fetching USDC address');
+      console.error('Error processing USDC address:', err);
+      handleContractError(err, 'Processing USDC address');
     }
-  }, [handleContractError, usdcAddress]);
+  }, [usdcAddress, handleContractError]);
   
   useEffect(() => {
     getUsdcAddress();
