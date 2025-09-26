@@ -1,6 +1,5 @@
-import { http } from 'wagmi';
+import { http, createConfig } from 'wagmi';
 import { baseSepolia } from 'viem/chains';
-import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { QueryClient } from '@tanstack/react-query';
 
 // Get Alchemy API key from environment variables
@@ -13,57 +12,65 @@ console.log('VITE_ALCHEMY_API_KEY:', alchemyApiKey ? '*** Key is set ***' : 'Key
 console.log('VITE_WALLET_CONNECT_PROJECT_ID:', import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID ? '*** Set ***' : 'Missing');
 console.groupEnd();
 
-if (!alchemyApiKey) {
-  console.warn('Missing Alchemy API Key. Falling back to public RPC endpoints.');
-}
-
 // Base Sepolia testnet configuration with Alchemy
 export const baseSepoliaConfig = {
   ...baseSepolia,
+  id: 84532, // Explicitly set chain ID for Base Sepolia
   name: 'Base Sepolia',
   network: 'base-sepolia',
   rpcUrls: {
-    default: { 
+    default: {
       http: [
-        alchemyApiKey 
+        alchemyApiKey
           ? `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
           : 'https://sepolia.base.org'
       ],
     },
+    public: {
+      http: ['https://sepolia.base.org']
+    },
+    alchemy: {
+      http: alchemyApiKey ? [`https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`] : []
+    }
   },
   blockExplorers: {
-    default: { name: 'Basescan', url: 'https://sepolia.basescan.org' },
+    default: { 
+      name: 'Basescan', 
+      url: 'https://sepolia.basescan.org' 
+    },
   },
-};
+} as const;
 
 // WalletConnect project ID - get from environment variables
-const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || '';
+const projectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || 'YOUR_WALLETCONNECT_PROJECT_ID';
 
 if (!projectId) {
   console.warn('Missing WalletConnect Project ID. Some features may not work correctly.');
 }
 
-// Configure Wagmi client with Alchemy
-export const config = getDefaultConfig({
-  appName: 'BlockMusic',
-  projectId: projectId,
+// Create a custom configuration without using getDefaultConfig
+export const config = createConfig({
   chains: [baseSepoliaConfig],
-  ssr: true,
-  // Use Alchemy as the primary RPC provider with fallback to public RPC
   transports: {
-    [baseSepolia.id]: http(
-      alchemyApiKey 
+    [baseSepoliaConfig.id]: http(
+      alchemyApiKey
         ? `https://base-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
         : 'https://sepolia.base.org',
-      { 
+      {
         key: 'alchemy',
         name: 'Alchemy',
-        // Add retry and timeout settings
         retryCount: 3,
         timeout: 30_000, // 30 seconds
       }
     ),
   },
+  // Add connectors
+  connectors: [
+    // Add wallet connectors here if needed
+  ],
+  // Add wallet connection options
+  ssr: true,
+  // Add any additional configuration options
 });
 
 // Setup queryClient
@@ -72,18 +79,28 @@ export const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      onError: (error) => {
+        console.error('Query error:', error);
+      },
     },
   },
 });
 
+// RainbowKit configuration
+export const rainbowKitConfig = {
+  projectId,
+  chains: [baseSepoliaConfig],
+  // Add any additional RainbowKit configuration
+};
+
 // Wallet connection options
 export const walletConnectionOptions = {
-  chains: [baseSepolia],
   projectId,
+  chains: [baseSepoliaConfig],
   showQrModal: true,
   theme: 'light',
   themeVariables: {
     '--w3m-color-mix': '#0052FF',
     '--w3m-color-mix-strength': 40,
   },
-} as const;
+};

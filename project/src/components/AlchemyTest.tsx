@@ -3,6 +3,13 @@ import { useBlockNumber, useChainId } from 'wagmi';
 import { baseSepolia } from 'wagmi/chains';
 import { config } from '../config/web3';
 
+type TransportConfig = {
+  value?: {
+    url: string;
+  };
+  toString: () => string;
+} | (() => TransportConfig);
+
 export const AlchemyTest = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -11,7 +18,10 @@ export const AlchemyTest = () => {
   const [rpcUrl, setRpcUrl] = useState<string>('');
   const chainId = useChainId();
   
-  const { data: blockNum } = useBlockNumber({ watch: true });
+  const { data: blockNum } = useBlockNumber({ 
+    chainId: baseSepolia.id,
+    watch: true 
+  });
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -23,11 +33,31 @@ export const AlchemyTest = () => {
         const network = config.chains.find(c => c.id === chainId) || baseSepolia;
         setNetworkName(network.name);
         
-        // Get the RPC URL being used
-        const transport = config.transports[chainId as keyof typeof config.transports];
-        if (transport) {
-          const url = transport.value?.url || transport.toString();
-          setRpcUrl(url);
+        // Get the RPC URL being used - handle different transport formats
+        const transportConfig = (config as { transports?: Record<number, TransportConfig> }).transports?.[chainId];
+        if (transportConfig) {
+          let url: string | undefined;
+          
+          // Handle different transport formats
+          if (typeof transportConfig === 'function') {
+            const transportInstance = transportConfig();
+            url = 'value' in transportInstance 
+              ? (typeof transportInstance.value === 'string' 
+                  ? transportInstance.value 
+                  : transportInstance.value?.url)
+              : transportInstance.toString();
+          } else if ('value' in transportConfig) {
+            url = typeof transportConfig.value === 'string' 
+              ? transportConfig.value 
+              : transportConfig.value?.url;
+          } else {
+            url = transportConfig.toString();
+          }
+          
+          // Clean up the URL to remove any API key
+          if (url) {
+            setRpcUrl(url.replace(/[a-fA-F0-9]{32}/, '***API_KEY***'));
+          }
         }
         
         if (blockNum) {

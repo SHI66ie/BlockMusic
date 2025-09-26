@@ -7,7 +7,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary';
-import { config, queryClient } from './config/web3';
+import { config, queryClient, rainbowKitConfig } from './config/web3';
 import styles from './App.module.css';
 import './index.css';
 
@@ -33,16 +33,19 @@ if (!rootElement) {
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
             <RainbowKitProvider 
-              theme={darkTheme({
-                accentColor: '#7c3aed',
-                accentColorForeground: 'white',
-                borderRadius: 'medium',
-                fontStack: 'system',
-                overlayBlur: 'small',
-              })}
-              modalSize="compact"
+              theme={darkTheme()}
+              appInfo={{
+                appName: 'BlockMusic',
+                learnMoreUrl: 'https://blockmusic.xyz',
+              }}
+              {...rainbowKitConfig}
             >
-              <Suspense fallback={<div className={styles.loading}>Loading BlockMusic...</div>}>
+              <Suspense fallback={
+                <div className={styles.loadingContainer}>
+                  <div className={styles.loadingSpinner}></div>
+                  <p>Loading...</p>
+                </div>
+              }>
                 <App />
               </Suspense>
             </RainbowKitProvider>
