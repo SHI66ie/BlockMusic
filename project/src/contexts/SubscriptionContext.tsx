@@ -95,12 +95,16 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
           yearly: PLAN_PRICES.yearly,
         };
 
-        const amount = planPrices[planId as keyof typeof planPrices] || 0;
-        const ethAmount = (amount * BigInt(10**18)) / BigInt(2000 * 10**8); // Simplified ETH calculation
+        const usdAmount = planPrices[planId as keyof typeof planPrices] || 0;
+        const usdcAmount = BigInt(Math.floor(usdAmount * 1e6)); // Convert USD to USDC smallest unit (6 decimals)
+        const ethPrice = BigInt(2000 * 1e8); // ETH price in USD with 8 decimals (e.g., $2000 = 2000e8)
+        const ethAmount = (usdcAmount * BigInt(1e18)) / ethPrice; // Calculate ETH amount in wei
 
         console.log('Initiating ETH subscription transaction:', {
           contract: SUBSCRIPTION_CONTRACT,
           planId: planIdNumber,
+          usdAmount,
+          usdcAmount: usdcAmount.toString(),
           ethAmount: ethAmount.toString(),
           userAddress: address,
         });
