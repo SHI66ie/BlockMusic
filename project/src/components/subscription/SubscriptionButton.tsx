@@ -57,7 +57,10 @@ export const SubscriptionButton: React.FC<SubscriptionButtonProps> = ({
   return (
     <button
       type="button"
-      onClick={() => onClick(plan)}
+      onClick={() => {
+        console.log('Button clicked for plan:', plan);
+        onClick(plan);
+      }}
       disabled={!isConnected || isCurrentPlan || isProcessing}
       className={getButtonClasses()}
     >
