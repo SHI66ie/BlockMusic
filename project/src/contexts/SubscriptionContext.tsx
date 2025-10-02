@@ -1,5 +1,5 @@
 import { createContext, useCallback, useEffect, useState, useMemo } from 'react';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useSendTransaction } from 'wagmi';
 import { toast } from 'react-toastify';
 
 // Import ABI and constants
@@ -25,6 +25,9 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [error, setError] = useState<string | null>(null);
   const usdcAddress = USDC_TOKEN;
 
+  const { writeContractAsync } = useWriteContract();
+  const { sendTransactionAsync } = useSendTransaction();
+
   // Log contract addresses for debugging
   useEffect(() => {
     console.log('Subscription Contract:', SUBSCRIPTION_CONTRACT);
@@ -42,14 +45,13 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     },
   });
 
-  const { writeContractAsync } = useWriteContract();
-
   const checkSubscription = useCallback(async () => {
     if (!address) return;
     
     try {
       const result = await refetchIsSubscribed();
       setIsSubscribed(!!result.data);
+      setError(null); // Clear error on success
       // You might want to fetch additional subscription details here
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -57,7 +59,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [address, refetchIsSubscribed]);
 
-  const handleSubscribe = useCallback(async (planId: string) => {
+  const handleSubscribe = useCallback(async (planId: string, paymentMethod: 'usdc' | 'eth' = 'eth') => {
     const planIdNumber = parseInt(planId, 10);
     if (!address) {
       toast.error('Please connect your wallet');
@@ -68,16 +70,51 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setError(null);
 
     try {
-      // Implement subscription logic here
-      // This is a placeholder - replace with actual contract interaction
-      await writeContractAsync({
-        address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-        abi: SubscriptionManagerABI,
-        functionName: 'subscribe',
-        args: [planIdNumber],
-      });
-      
-      toast.success('Subscription successful!');
+      if (paymentMethod === 'usdc') {
+        // USDC Payment
+        console.log('Initiating USDC subscription transaction:', {
+          contract: SUBSCRIPTION_CONTRACT,
+          planId: planIdNumber,
+          userAddress: address,
+        });
+
+        const tx = await writeContractAsync({
+          address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+          abi: SubscriptionManagerABI,
+          functionName: 'subscribe',
+          args: [planIdNumber],
+        });
+
+        console.log('USDC Transaction sent:', tx);
+        toast.success('USDC Subscription transaction sent! Confirm in your wallet.');
+      } else {
+        // ETH Payment (for Base testnet)
+        const planPrices = {
+          monthly: PLAN_PRICES.monthly,
+          threeMonths: PLAN_PRICES.threeMonths,
+          yearly: PLAN_PRICES.yearly,
+        };
+
+        const amount = planPrices[planId as keyof typeof planPrices] || 0;
+        const ethAmount = (amount * BigInt(10**18)) / BigInt(2000 * 10**8); // Simplified ETH calculation
+
+        console.log('Initiating ETH subscription transaction:', {
+          contract: SUBSCRIPTION_CONTRACT,
+          planId: planIdNumber,
+          ethAmount: ethAmount.toString(),
+          userAddress: address,
+        });
+
+        const tx = await sendTransactionAsync({
+          to: SUBSCRIPTION_CONTRACT as `0x${string}`,
+          value: ethAmount,
+          data: '0x', // No additional data for direct ETH send
+        });
+
+        console.log('ETH Transaction sent:', tx);
+        toast.success('ETH Subscription transaction sent! Confirm in your wallet.');
+      }
+
       await checkSubscription();
     } catch (error) {
       console.error('Subscription error:', error);
@@ -86,7 +123,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setIsLoading(false);
     }
-  }, [address, checkSubscription, writeContractAsync]);
+  }, [address, checkSubscription, writeContractAsync, sendTransactionAsync]);
 
   const refreshSubscription = useCallback(async () => {
     await checkSubscription();
@@ -116,8 +153,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       if (formattedAddress.length === 40) {
         // If you need to update usdcAddress, you'll need to use a state setter
         console.log('USDC Address formatted:', `0x${formattedAddress}`);
+        setError(null); // Clear error on success
       } else {
         console.error('Invalid USDC address format:', formattedAddress);
+        setError('Invalid USDC address format');
       }
     } catch (err) {
       console.error('Error processing USDC address:', err);

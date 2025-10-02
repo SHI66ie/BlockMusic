@@ -166,7 +166,7 @@ export const SubscriptionPlans: React.FC = () => {
     );
   }
   
-  if (error) {
+  if (error && !subscriptionData) {
     return (
       <div className="bg-red-900/20 border border-red-800 text-red-200 p-4 rounded-lg flex items-start space-x-3">
         <FaExclamationTriangle className="text-red-400 mt-0.5 flex-shrink-0" />
