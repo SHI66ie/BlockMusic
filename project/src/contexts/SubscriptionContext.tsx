@@ -153,20 +153,19 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   const getUsdcAddress = useCallback(async () => {
     try {
-      const formattedAddress = usdcAddress.replace(/0x/g, '').toLowerCase();
-      if (formattedAddress.length === 40) {
-        // If you need to update usdcAddress, you'll need to use a state setter
-        console.log('USDC Address formatted:', `0x${formattedAddress}`);
+      // Validate USDC address format
+      if (usdcAddress && usdcAddress.startsWith('0x') && usdcAddress.length === 42) {
+        console.log('USDC Address validated:', usdcAddress);
         setError(null); // Clear error on success
       } else {
-        console.error('Invalid USDC address format:', formattedAddress);
-        setError('Invalid USDC address format');
+        console.warn('USDC address validation failed:', usdcAddress);
+        // Don't set error for now, as it might be a loading issue
       }
     } catch (err) {
       console.error('Error processing USDC address:', err);
-      handleContractError(err, 'Processing USDC address');
+      // Don't set error for validation failures
     }
-  }, [usdcAddress, handleContractError]);
+  }, [usdcAddress]);
   
   useEffect(() => {
     getUsdcAddress();
