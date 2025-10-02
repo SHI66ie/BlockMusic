@@ -15,90 +15,6 @@ class Database:
         return sqlite3.connect('artist_platform.db')
 
     def initialize_db(self):
-        conn = self.get_db_connection()
-        try:
-            cursor = conn.cursor()
-            
-            # Users table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id SERIAL PRIMARY KEY,
-                    username TEXT UNIQUE NOT NULL,
-                    email TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    is_artist BOOLEAN DEFAULT FALSE,
-                    balance REAL DEFAULT 0.0,
-                    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            ''')
-            
-            # Tracks table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS tracks (
-                    id SERIAL PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    description TEXT,
-                    genre TEXT,
-                    duration REAL,
-                    price REAL DEFAULT 0.0,
-                    file_path TEXT NOT NULL,
-                    cover_art TEXT,
-                    date_uploaded TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    plays INTEGER DEFAULT 0,
-                    earnings REAL DEFAULT 0.0,
-                    artist_id INTEGER,
-                    album_id INTEGER,
-                    FOREIGN KEY (artist_id) REFERENCES users (id),
-                    FOREIGN KEY (album_id) REFERENCES albums (id)
-                )
-            ''')
-            
-            # Albums table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS albums (
-                    id SERIAL PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    description TEXT,
-                    genre TEXT,
-                    cover_art TEXT,
-                    date_released TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    artist_id INTEGER,
-                    FOREIGN KEY (artist_id) REFERENCES users (id)
-                )
-            ''')
-            
-            # Subscriptions table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS subscriptions (
-                    id SERIAL PRIMARY KEY,
-                    user_id INTEGER NOT NULL,
-                    artist_id INTEGER NOT NULL,
-                    start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    end_date TIMESTAMP,
-                    amount REAL NOT NULL,
-                    is_active BOOLEAN DEFAULT TRUE,
-                    FOREIGN KEY (user_id) REFERENCES users (id),
-                    FOREIGN KEY (artist_id) REFERENCES users (id)
-                )
-            ''')
-            
-            # Streams table
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS streams (
-                    id SERIAL PRIMARY KEY,
-                    user_id INTEGER NOT NULL,
-                    track_id INTEGER NOT NULL,
-                    date_streamed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (user_id) REFERENCES users (id),
-                    FOREIGN KEY (track_id) REFERENCES tracks (id)
-                )
-            ''')
-            
-            conn.commit()
-        finally:
-            conn.close()
-
-    def initialize_db(self):
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
@@ -176,7 +92,32 @@ class Database:
                     FOREIGN KEY (track_id) REFERENCES tracks (id)
                 )
             ''')
+            conn.commit()
+        finally:
+            conn.close()
 
+    def get_user_by_id(self, user_id):
+        conn = self.get_db_connection()
+        try:
+            cursor = conn.cursor()
+            if self.db_url:
+                cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+            else:
+                cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
+            user = cursor.fetchone()
+            if user:
+                return {
+                    'id': user[0],
+                    'username': user[1],
+                    'email': user[2],
+                    'password_hash': user[3],
+                    'is_artist': bool(user[4]),
+                    'balance': user[5],
+                    'date_created': user[6]
+                }
+            return None
+        finally:
+            conn.close()
     def get_user_by_username(self, username):
         conn = self.get_db_connection()
         try:

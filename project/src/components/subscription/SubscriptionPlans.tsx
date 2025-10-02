@@ -91,6 +91,7 @@ export const SubscriptionPlans: React.FC = () => {
   
   const { isConnected, address } = useAccount();
   const [activePlan, setActivePlan] = useState<SubscriptionPlan | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'usdc' | 'eth'>('eth');
 
   const handleSubscribe = useCallback(async (plan: SubscriptionPlan) => {
     if (!isConnected || !address) {
@@ -100,7 +101,7 @@ export const SubscriptionPlans: React.FC = () => {
     
     try {
       setActivePlan(plan);
-      await subscribe(plan);
+      await subscribe(plan, paymentMethod);
       toast.success(`Successfully subscribed to ${plan} plan!`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe';
@@ -109,7 +110,7 @@ export const SubscriptionPlans: React.FC = () => {
     } finally {
       setActivePlan(null);
     }
-  }, [isConnected, address, subscribe]);
+  }, [isConnected, address, subscribe, paymentMethod]);
 
   const plans = useMemo(() => [
     {
@@ -188,9 +189,35 @@ export const SubscriptionPlans: React.FC = () => {
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="text-center mb-12">
         <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
+        <p className="text-gray-400 max-w-2xl mx-auto mb-6">
           Select the subscription plan that works best for you. Cancel or switch plans anytime.
         </p>
+        
+        {/* Payment Method Selector */}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex rounded-lg bg-gray-800 p-1">
+            <button
+              onClick={() => setPaymentMethod('eth')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                paymentMethod === 'eth'
+                  ? 'bg-purple-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              ETH (Base Testnet)
+            </button>
+            <button
+              onClick={() => setPaymentMethod('usdc')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                paymentMethod === 'usdc'
+                  ? 'bg-purple-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              USDC
+            </button>
+          </div>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -225,7 +252,7 @@ export const SubscriptionPlans: React.FC = () => {
             </span>
           </div>
           <p className="text-sm text-gray-400 mb-3">
-            Your subscription will automatically renew at the end of the billing period. Next payment: ${PLAN_PRICES[currentPlan as keyof typeof PLAN_PRICES]?.toFixed(2)} USDC
+            Your subscription will automatically renew at the end of the billing period. Next payment: ${PLAN_PRICES[currentPlan as keyof typeof PLAN_PRICES]?.toFixed(2)} {paymentMethod.toUpperCase()}
           </p>
           <div className="text-xs text-gray-500">
             <p>Need help? <a href="/support" className="text-purple-400 hover:underline">Contact support</a></p>

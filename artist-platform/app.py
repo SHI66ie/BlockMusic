@@ -139,18 +139,70 @@ def subscribe(artist_id):
         'subscription_id': subscription_id
     })
 
-@app.route('/api/stream/<int:track_id>', methods=['POST'])
-def stream_track(track_id):
-    # TODO: Implement subscription check
-    stream_id = db.create_stream(
+@app.route('/api/subscription/status', methods=['POST'])
+@login_required
+def subscription_status():
+    data = request.get_json()
+    user_address = data.get('user_address')
+    plan = data.get('plan')
+    
+    # For now, simulate blockchain check
+    # In production, integrate with Web3 or blockchain API
+    is_subscribed = True  # Placeholder
+    subscription_info = {
+        'is_active': is_subscribed,
+        'plan': plan,
+        'end_time': (datetime.utcnow() + timedelta(days=30)).isoformat()
+    }
+    
+    return jsonify(subscription_info)
+
+@app.route('/api/subscription/create', methods=['POST'])
+@login_required
+def create_subscription():
+    data = request.get_json()
+    user_address = data.get('user_address')
+    plan = data.get('plan')
+    payment_method = data.get('payment_method', 'eth')
+    amount = data.get('amount', 0)
+    
+    # Simulate blockchain transaction
+    # In production, verify transaction hash or integrate with Web3
+    subscription_id = db.create_subscription(
         user_id=request.json.get('user_id'),
-        track_id=track_id
+        artist_id=1,  # Placeholder artist ID
+        amount=amount
     )
     
     return jsonify({
-        'message': 'Stream successful',
-        'stream_id': stream_id
+        'message': f'Subscription created for {plan} plan using {payment_method}',
+        'subscription_id': subscription_id
     })
+
+@app.route('/api/subscription/plans', methods=['GET'])
+def get_subscription_plans():
+    # Return plan details matching frontend
+    plans = [
+        {
+            'id': 'monthly',
+            'name': 'Monthly',
+            'price': 2.50,
+            'period': 'month'
+        },
+        {
+            'id': 'threeMonths',
+            'name': '3 Months',
+            'price': 6.75,
+            'period': '3 months'
+        },
+        {
+            'id': 'yearly',
+            'name': 'Yearly',
+            'price': 25.00,
+            'period': 'year'
+        }
+    ]
+    return jsonify(plans)
 
 if __name__ == '__main__':
     with app.app_context():
