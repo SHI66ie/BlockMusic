@@ -10,9 +10,9 @@ import {
 } from '../constants/subscription';
 import { SubscriptionContextType } from '../types/subscription';
 
-// Get contract addresses from environment variables
-const SUBSCRIPTION_CONTRACT = import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x...';
-const USDC_TOKEN = import.meta.env.VITE_USDC_TOKEN || '0x...';
+// Get contract addresses from environment variables (inside component to ensure loading)
+const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x...';
+const getUsdcAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x...';
 
 export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -23,7 +23,10 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [currentPlan] = useState<SubscriptionPlan | null>(null); // Keep for future use
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const usdcAddress = USDC_TOKEN;
+
+  // Get addresses inside component to ensure they're loaded
+  const SUBSCRIPTION_CONTRACT = getContractAddress();
+  const usdcAddress = getUsdcAddress();
 
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
@@ -32,7 +35,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     console.log('Subscription Contract:', SUBSCRIPTION_CONTRACT);
     console.log('USDC Token:', usdcAddress);
-  }, [usdcAddress]);
+  }, [SUBSCRIPTION_CONTRACT, usdcAddress]);
 
   // Contract reads
   const { refetch: refetchIsSubscribed } = useReadContract({
@@ -127,7 +130,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setIsLoading(false);
     }
-  }, [address, checkSubscription, writeContractAsync, sendTransactionAsync]);
+  }, [address, checkSubscription, writeContractAsync, sendTransactionAsync, SUBSCRIPTION_CONTRACT]);
 
   const refreshSubscription = useCallback(async () => {
     await checkSubscription();
