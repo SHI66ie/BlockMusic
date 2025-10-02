@@ -9,15 +9,6 @@ export default defineConfig(({ mode }: { mode: string }) => {
   
   return {
     base: process.env.NODE_ENV === 'production' ? '/' : '/',
-    server: {
-      port: 3000,
-      strictPort: true,
-      host: true,
-      open: true,
-      headers: {
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.alchemy.com https://sepolia.base.org;"
-      }
-    },
     plugins: [
       react({
         babel: {
@@ -43,11 +34,14 @@ export default defineConfig(({ mode }: { mode: string }) => {
       'import.meta.env.MODE': JSON.stringify(mode),
       global: 'globalThis',  // Fix for global object
     },
-    // Server configuration
     server: {
       port: 3000,
+      strictPort: true,
+      host: true,
       open: true,
-      host: true, // Listen on all network interfaces
+      headers: {
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.alchemy.com https://sepolia.base.org;"
+      }
     },
     // Build configuration
     build: {

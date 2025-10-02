@@ -181,6 +181,45 @@
       "artifacts": [
         "Context"
       ]
+    },
+    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\project\\simple-deploy\\contracts\\SubscriptionV2.sol": {
+      "lastModificationDate": 1759396382217,
+      "contentHash": "fb06b80c826f93e9c1acf878e7d9b590",
+      "sourceName": "contracts/SubscriptionV2.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/security/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "SubscriptionV2"
+      ]
     }
   }
 }
