@@ -11,8 +11,8 @@ import {
 import { SubscriptionContextType } from '../types/subscription';
 
 // Get contract addresses from environment variables (inside component to ensure loading)
-const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x...';
-const getUsdcTokenAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x...';
+const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B';
+const getUsdcTokenAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -49,18 +49,28 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   });
 
   const checkSubscription = useCallback(async () => {
-    if (!address) return;
+    if (!address) {
+      return { isActive: false, endTime: 0, plan: null };
+    }
     
     try {
       const result = await refetchIsSubscribed();
-      setIsSubscribed(!!result.data);
+      const isActive = !!result.data;
+      setIsSubscribed(isActive);
       setError(null); // Clear error on success
-      // You might want to fetch additional subscription details here
+      
+      // Return subscription status
+      return {
+        isActive,
+        endTime: subscriptionEnds || 0,
+        plan: currentPlan,
+      };
     } catch (error) {
       console.error('Error checking subscription:', error);
       setError('Failed to check subscription status');
+      return { isActive: false, endTime: 0, plan: null };
     }
-  }, [address, refetchIsSubscribed]);
+  }, [address, refetchIsSubscribed, subscriptionEnds, currentPlan]);
 
   const handleSubscribe = useCallback(async (planId: string, paymentMethod: 'usdc' | 'eth' = 'eth') => {
     const planIdNumber = parseInt(planId, 10);
@@ -122,7 +132,16 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
         toast.success('ETH Subscription transaction sent! Confirm in your wallet.');
       }
 
-      await checkSubscription();
+      // Check subscription status after transaction
+      const subscriptionStatus = await checkSubscription();
+      
+      // If subscription is successful, grant explorer access
+      if (subscriptionStatus && subscriptionStatus.isActive) {
+        toast.success('🎉 Subscription successful! You now have Explorer Access to the marketplace!', {
+          autoClose: 5000,
+        });
+        console.log('Explorer access granted for user:', address);
+      }
     } catch (error) {
       console.error('Subscription error:', error);
       setError('Failed to process subscription');
@@ -151,6 +170,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Raw prices for calculations
     monthlyPrice: PLAN_PRICES.monthly.toString(),
     threeMonthsPrice: PLAN_PRICES.threeMonths.toString(),
+    yearlyPrice: PLAN_PRICES.yearly.toString(),
     // Formatted prices for display
     formattedMonthlyPrice: PLAN_PRICES.monthly.toFixed(2),
     formattedThreeMonthsPrice: PLAN_PRICES.threeMonths.toFixed(2),

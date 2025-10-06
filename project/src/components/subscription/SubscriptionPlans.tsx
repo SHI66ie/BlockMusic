@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSubscription } from '../../hooks/useSubscription';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { FaCheck, FaCrown, FaGem, FaStar, FaExclamationTriangle } from 'react-icons/fa';
@@ -90,6 +91,7 @@ export const SubscriptionPlans: React.FC = () => {
   } = useSubscription();
   
   const { isConnected, address } = useAccount();
+  const navigate = useNavigate();
   const [activePlan, setActivePlan] = useState<SubscriptionPlan | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'usdc' | 'eth'>('eth');
 
@@ -102,7 +104,16 @@ export const SubscriptionPlans: React.FC = () => {
     try {
       setActivePlan(plan);
       await subscribe(plan, paymentMethod);
-      toast.success(`Successfully subscribed to ${plan} plan!`);
+      
+      // Wait a moment for the subscription status to update
+      setTimeout(() => {
+        // Redirect to marketplace with explorer access
+        navigate('/marketplace', { 
+          state: { 
+            message: 'Welcome! You now have Explorer Access to the marketplace!' 
+          } 
+        });
+      }, 2000);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe';
       console.error('Subscription error:', message);
@@ -110,7 +121,7 @@ export const SubscriptionPlans: React.FC = () => {
     } finally {
       setActivePlan(null);
     }
-  }, [isConnected, address, subscribe, paymentMethod]);
+  }, [isConnected, address, subscribe, paymentMethod, navigate]);
 
   const plans = useMemo(() => [
     {
