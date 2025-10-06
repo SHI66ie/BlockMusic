@@ -14,7 +14,7 @@ import { SubscriptionContextType } from '../types/subscription';
 // Get contract addresses from environment variables (inside component to ensure loading)
 const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B';
 const getUsdcTokenAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
-const getEthSubscriptionContract = () => import.meta.env.VITE_ETH_SUBSCRIPTION_CONTRACT || '0x0000000000000000000000000000000000000000';
+const getEthSubscriptionContract = () => import.meta.env.VITE_ETH_SUBSCRIPTION_CONTRACT || '0x54f6f8f14Ecb6f604891e4391caC31Fe4B7D0d37';
 
 export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 

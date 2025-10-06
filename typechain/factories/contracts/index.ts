@@ -3,3 +3,6 @@
 /* eslint-disable */
 export { BlockMusic__factory } from "./BlockMusic__factory";
 export { Greeter__factory } from "./Greeter__factory";
+export { MockUSDC__factory } from "./MockUSDC__factory";
+export { SubscriptionManager__factory } from "./SubscriptionManager__factory";
+export { SubscriptionV2__factory } from "./SubscriptionV2__factory";

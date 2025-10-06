@@ -3,3 +3,6 @@
 /* eslint-disable */
 export type { BlockMusic } from "./BlockMusic";
 export type { Greeter } from "./Greeter";
+export type { MockUSDC } from "./MockUSDC";
+export type { SubscriptionManager } from "./SubscriptionManager";
+export type { SubscriptionV2 } from "./SubscriptionV2";
