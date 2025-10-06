@@ -5,6 +5,20 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// Chainlink AggregatorV3Interface
+interface AggregatorV3Interface {
+    function latestRoundData()
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
+}
+
 contract SubscriptionV2 is ReentrancyGuard, Ownable {
     // Payment recipient address
     address public constant PAYMENT_RECIPIENT = 0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B;
@@ -150,14 +164,26 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
         emit USDCTokenUpdated(_usdcToken);
     }
     
-    // Get ETH price in USD (simplified - in production use Chainlink)
+    // Get ETH price in USD
     function getETHPrice() public view returns (uint256) {
-        // This is a simplified version. In production, you would use Chainlink's price feed
-        // For Base Sepolia, you might use the following Chainlink price feed:
-        // ETH/USD: 0x694AA1769357215DE4FAC081bf1f309aDC325306
+        // If price feed is set, use it
+        if (priceFeed != address(0)) {
+            try AggregatorV3Interface(priceFeed).latestRoundData() returns (
+                uint80,
+                int256 price,
+                uint256,
+                uint256,
+                uint80
+            ) {
+                require(price > 0, "Invalid price");
+                return uint256(price); // Returns price with 8 decimals
+            } catch {
+                // Fallback to mock price if oracle fails
+                return 2000 * 10**8;
+            }
+        }
         
-        // Mock price (1 ETH = $2000 for this example)
-        // In production, replace this with actual price feed call
+        // Mock price (1 ETH = $2000 for testnet)
         return 2000 * 10**8; // 8 decimals for consistency with Chainlink
     }
     
