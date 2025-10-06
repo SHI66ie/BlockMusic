@@ -72,7 +72,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [address, refetchIsSubscribed, subscriptionEnds, currentPlan]);
 
-  const handleSubscribe = useCallback(async (planId: string, paymentMethod: 'usdc' | 'eth' = 'eth') => {
+  const handleSubscribe = useCallback(async (planId: string) => {
     if (!address) {
       toast.error('Please connect your wallet');
       return;
@@ -81,40 +81,63 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Get the plan enum value (0, 1, or 2)
     const planEnum = PLAN_TO_ENUM[planId as SubscriptionPlan];
     
-    // Get the price for this plan
-    const planPrice = PLAN_PRICES[planId as SubscriptionPlan];
+    // Get the price for this plan in USD
+    const planPriceUSD = PLAN_PRICES[planId as SubscriptionPlan];
     
-    // Convert price to wei (assuming price is in USDC, convert to ETH equivalent)
-    // For testnet: 1 USDC ≈ 0.0005 ETH (assuming ETH = $2000)
-    const priceInEth = planPrice / 2000; // Convert USDC to ETH
-    const valueInWei = BigInt(Math.floor(priceInEth * 1e18)); // Convert to wei
+    // Convert USD price to USDC amount (USDC has 6 decimals)
+    // $2.5 = 2,500,000 (2.5 * 10^6)
+    const usdcAmount = BigInt(Math.floor(planPriceUSD * 1e6));
 
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log('Initiating subscription transaction:', {
+      console.log('Initiating USDC subscription transaction:', {
         contract: SUBSCRIPTION_CONTRACT,
+        usdcToken: usdcAddress,
         planId: planId,
         planEnum: planEnum,
-        planPrice: planPrice,
-        priceInEth: priceInEth,
-        valueInWei: valueInWei.toString(),
+        planPriceUSD: `$${planPriceUSD}`,
+        usdcAmount: usdcAmount.toString(),
+        usdcAmountFormatted: `${planPriceUSD} USDC`,
         userAddress: address,
-        paymentMethod: paymentMethod,
       });
 
-      // Call the subscribe function on the contract with ETH payment
+      // Step 1: Approve USDC spending
+      toast.info(`Step 1/2: Approving $${planPriceUSD} USDC...`);
+      
+      const approvalTx = await writeContractAsync({
+        address: usdcAddress as `0x${string}`,
+        abi: [
+          {
+            name: 'approve',
+            type: 'function',
+            stateMutability: 'nonpayable',
+            inputs: [
+              { name: 'spender', type: 'address' },
+              { name: 'amount', type: 'uint256' }
+            ],
+            outputs: [{ name: '', type: 'bool' }]
+          }
+        ],
+        functionName: 'approve',
+        args: [SUBSCRIPTION_CONTRACT, usdcAmount],
+      });
+
+      console.log('USDC Approval confirmed:', approvalTx);
+      
+      // Step 2: Subscribe
+      toast.info('Step 2/2: Processing subscription...');
+      
       const tx = await writeContractAsync({
         address: SUBSCRIPTION_CONTRACT as `0x${string}`,
         abi: SubscriptionManagerABI,
         functionName: 'subscribe',
         args: [planEnum],
-        value: valueInWei, // Send ETH with the transaction
       });
 
-      console.log('Transaction sent:', tx);
-      toast.success('Subscription transaction sent! Waiting for confirmation...');
+      console.log('Subscription transaction confirmed:', tx);
+      toast.success(`Successfully subscribed for $${planPriceUSD}!`);
 
       // Check subscription status after transaction
       const subscriptionStatus = await checkSubscription();
@@ -133,7 +156,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setIsLoading(false);
     }
-  }, [address, checkSubscription, writeContractAsync, SUBSCRIPTION_CONTRACT]);
+  }, [address, checkSubscription, writeContractAsync, SUBSCRIPTION_CONTRACT, usdcAddress]);
 
   const refreshSubscription = useCallback(async () => {
     await checkSubscription();
