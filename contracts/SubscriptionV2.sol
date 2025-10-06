@@ -32,10 +32,10 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
     // Price oracle interface (simplified for this example)
     address public priceFeed;
     
-    // Subscription plans in USDC (with 18 decimals)
-    uint256 public constant DAILY_PRICE = 25 * 10**5; // $0.25 per day
-    uint256 public constant MONTHLY_PRICE = 25 * 10**17; // $2.50 per month (with 10% discount)
-    uint256 public constant YEARLY_PRICE = 25 * 10**18; // $25.00 per year (with 15% discount)
+    // Subscription plans in USDC (with 6 decimals to match USDC)
+    uint256 public constant DAILY_PRICE = 25 * 10**4; // $0.25 per day = 250,000
+    uint256 public constant MONTHLY_PRICE = 25 * 10**5; // $2.50 per month = 2,500,000
+    uint256 public constant YEARLY_PRICE = 25 * 10**6; // $25.00 per year = 25,000,000
     
     // Subscription struct
     struct SubscriptionInfo {

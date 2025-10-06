@@ -1,10 +1,10 @@
 {
   "network": "baseSepolia",
-  "contractAddress": "0x54f6f8f14Ecb6f604891e4391caC31Fe4B7D0d37",
+  "contractAddress": "0x88A1c58B702F8B280BBaa16aa52807BdE8357f9b",
   "priceFeed": "0x0000000000000000000000000000000000000000",
   "paymentRecipient": "0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B",
   "usdcToken": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-  "deployedAt": "2025-10-06T16:06:40.934Z",
+  "deployedAt": "2025-10-06T16:40:11.908Z",
   "prices": {
     "monthly": "$2.50",
     "yearly": "$25.00"

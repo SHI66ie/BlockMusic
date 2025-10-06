@@ -762,8 +762,8 @@
       ]
     },
     "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\SubscriptionV2.sol": {
-      "lastModificationDate": 1759767806879,
-      "contentHash": "72fd8005afd970d7af2f32ab927e8f89",
+      "lastModificationDate": 1759768773820,
+      "contentHash": "6fc7e2d16afa279d784c87fdbe60d7e5",
       "sourceName": "contracts/SubscriptionV2.sol",
       "solcConfig": {
         "version": "0.8.20",

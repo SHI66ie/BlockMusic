@@ -5,7 +5,7 @@ async function main() {
   const CHAINLINK_ETH_USD_BASE_SEPOLIA = "0x4aDC67696bA383F43DD60A9e78F2C97Fbbfc7cb1";
   
   // Your deployed SubscriptionV2 contract
-  const SUBSCRIPTION_CONTRACT = "0x54f6f8f14Ecb6f604891e4391caC31Fe4B7D0d37";
+  const SUBSCRIPTION_CONTRACT = "0x88A1c58B702F8B280BBaa16aa52807BdE8357f9b";
   
   console.log("Updating price feed for SubscriptionV2 contract...");
   console.log("Contract:", SUBSCRIPTION_CONTRACT);
