@@ -35,6 +35,15 @@ The subscription hooks had a circular dependency chain:
 
 This created a circular initialization loop where the provider tried to use the hook before the context was fully initialized.
 
+### 3. Function Name Collision (Fixed in commit a92d570)
+
+The `SubscriptionContext.tsx` file had two functions with the same name:
+
+1. **Line 15:** `const getUsdcAddress = () => import.meta.env.VITE_USDC_TOKEN` (getter for env variable)
+2. **Line 157:** `const getUsdcAddress = useCallback(async () => ...)` (validation function)
+
+This naming collision caused a hoisting error where variable 'B' (minified `getUsdcAddress`) was accessed before initialization in the production bundle.
+
 ## Solutions
 
 ### Fix 1: Remove Duplicate Provider Wrapping
@@ -82,10 +91,23 @@ Eliminated the circular dependency by consolidating duplicate hook files into a 
 - `components/subscription/SubscriptionStatus.tsx`
 - `pages/Subscribe.tsx`
 
+### Fix 3: Resolve Function Name Collision
+
+Renamed the environment variable getter function to avoid collision with the validation function.
+
+**Changes Made:**
+
+- ✅ Renamed `getUsdcAddress` (line 15) to `getUsdcTokenAddress`
+- ✅ Updated reference on line 29 to use `getUsdcTokenAddress()`
+- ✅ Removed unused `handleContractError` function
+- ✅ Removed redundant `getUsdcAddress` validation function and its useEffect
+
 ## Testing
+
 1. Build completed successfully without errors
 2. Production bundle generated correctly
 3. No circular dependency warnings
+4. No function hoisting errors
 
 ## Deployment
 
@@ -99,6 +121,11 @@ Eliminated the circular dependency by consolidating duplicate hook files into a 
 - Message: "fix: resolve circular dependency in subscription hooks causing production build error"
 - Pushed to: `main` branch
 
+**Commit 3:** `a92d570`
+
+- Message: "fix: resolve function name collision in SubscriptionContext causing hoisting error"
+- Pushed to: `main` branch
+
 ## Prevention
 
 To prevent this issue in the future:
@@ -108,7 +135,8 @@ To prevent this issue in the future:
 3. Application-specific contexts can be nested inside
 4. Avoid circular imports between hooks and contexts
 5. Use a single source of truth for custom hooks
-6. Test production builds before deploying
+6. **Avoid function name collisions** - use unique names for all functions in the same scope
+7. Test production builds before deploying
 
 ## Related Files
 
