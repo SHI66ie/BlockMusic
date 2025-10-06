@@ -1,9 +1,5 @@
 import { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { WagmiProvider } from 'wagmi';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { config, queryClient } from './config/web3';
 import AppContent from './AppContent';
 import { Home } from './pages/Home';
 import Marketplace from './pages/Marketplace';
@@ -37,33 +33,27 @@ const ProtectedProfile = withSubscription(Profile);
 
 function App() {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          <SubscriptionContextProvider>
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-screen bg-gray-900">
-                <div className="text-white text-xl">Loading BlockMusic...</div>
-              </div>
-            }>
-              <Router>
-                <Routes>
-                  <Route path="/" element={<AppContent />}>
-                    <Route index element={<Navigate to="/home" replace />} />
-                    <Route path="home" element={<Home />} />
-                    <Route path="marketplace" element={<ProtectedMarketplace />} />
-                    <Route path="create" element={<ProtectedCreate />} />
-                    <Route path="profile" element={<ProtectedProfile />} />
-                    <Route path="subscribe" element={<Subscribe />} />
-                    <Route path="*" element={<Navigate to="/home" replace />} />
-                  </Route>
-                </Routes>
-              </Router>
-            </Suspense>
-          </SubscriptionContextProvider>
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <SubscriptionContextProvider>
+      <Suspense fallback={
+        <div className="flex items-center justify-center min-h-screen bg-gray-900">
+          <div className="text-white text-xl">Loading BlockMusic...</div>
+        </div>
+      }>
+        <Router>
+          <Routes>
+            <Route path="/" element={<AppContent />}>
+              <Route index element={<Navigate to="/home" replace />} />
+              <Route path="home" element={<Home />} />
+              <Route path="marketplace" element={<ProtectedMarketplace />} />
+              <Route path="create" element={<ProtectedCreate />} />
+              <Route path="profile" element={<ProtectedProfile />} />
+              <Route path="subscribe" element={<Subscribe />} />
+              <Route path="*" element={<Navigate to="/home" replace />} />
+            </Route>
+          </Routes>
+        </Router>
+      </Suspense>
+    </SubscriptionContextProvider>
   );
 }
 
