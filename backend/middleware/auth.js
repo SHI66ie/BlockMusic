@@ -8,10 +8,7 @@ const protect = async (req, res, next) => {
   try {
     // 1) Get token and check if it exists
     let token;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
-    ) {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies?.jwt) {
       token = req.cookies.jwt;
@@ -64,10 +61,7 @@ const restrictTo = (...roles) => {
 const isAuthenticated = async (req, res, next) => {
   try {
     let token;
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith('Bearer')
-    ) {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     } else if (req.cookies?.jwt) {
       token = req.cookies.jwt;
@@ -92,11 +86,9 @@ const isAuthenticated = async (req, res, next) => {
  * @returns {string} - JWT token
  */
 const signToken = (userId, role = 'user') => {
-  return jwt.sign(
-    { id: userId, role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '90d' }
-  );
+  return jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '90d',
+  });
 };
 
 /**
@@ -107,12 +99,10 @@ const signToken = (userId, role = 'user') => {
  */
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id, user.role);
-  
+
   // Cookie options
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 90) * 24 * 60 * 60 * 1000
-    ),
+    expires: new Date(Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 90) * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
   };

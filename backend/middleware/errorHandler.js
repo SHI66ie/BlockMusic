@@ -1,6 +1,7 @@
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
+  // eslint-disable-next-line no-console
   console.error(err.stack);
-  
+
   // Default error status and message
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
@@ -11,8 +12,8 @@ const errorHandler = (err, req, res, next) => {
     statusCode = 400;
     message = 'Validation Error';
     errors = {};
-    
-    Object.keys(err.errors).forEach((key) => {
+
+    Object.keys(err.errors).forEach(key => {
       errors[key] = err.errors[key].message;
     });
   }
@@ -41,7 +42,7 @@ const errorHandler = (err, req, res, next) => {
     success: false,
     message,
     errors,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : {}
+    stack: process.env.NODE_ENV === 'development' ? err.stack : {},
   });
 };
 

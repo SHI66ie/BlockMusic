@@ -8,12 +8,14 @@ if (process.env.REDIS_URL) {
   redisClient = createClient({
     url: process.env.REDIS_URL,
   });
-  
-  redisClient.on('error', (err) => {
+
+  redisClient.on('error', err => {
+    // eslint-disable-next-line no-console
     console.error('Redis error:', err);
   });
-  
+
   // Don't block the application startup if Redis connection fails
+  // eslint-disable-next-line no-console
   redisClient.connect().catch(console.error);
 }
 
@@ -31,7 +33,7 @@ const createRateLimiter = (options = {}) => {
     windowMs = 15 * 60 * 1000, // 15 minutes
     max = 100, // limit each IP to 100 requests per windowMs
     message = 'Too many requests from this IP, please try again later',
-    keyGenerator = (req) => req.ip, // default key generator uses IP address
+    keyGenerator = req => req.ip, // default key generator uses IP address
     ...otherOptions
   } = options;
 
