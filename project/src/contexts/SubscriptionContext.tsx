@@ -12,7 +12,7 @@ import { SubscriptionContextType } from '../types/subscription';
 
 // Get contract addresses from environment variables (inside component to ensure loading)
 const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x...';
-const getUsdcAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x...';
+const getUsdcTokenAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x...';
 
 export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -26,7 +26,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Get addresses inside component to ensure they're loaded
   const SUBSCRIPTION_CONTRACT = getContractAddress();
-  const usdcAddress = getUsdcAddress();
+  const usdcAddress = getUsdcTokenAddress();
 
   const { writeContractAsync } = useWriteContract();
   const { sendTransactionAsync } = useSendTransaction();
@@ -146,33 +146,6 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     init();
   }, [address, checkSubscription]);
-
-  const handleContractError = useCallback((error: Error, context: string) => {
-    console.error(`Error in ${context}:`, error);
-    const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
-    setError(`Error: ${errorMessage}`);
-    toast.error(`Error: ${errorMessage}`);
-  }, []);
-
-  const getUsdcAddress = useCallback(async () => {
-    try {
-      // Validate USDC address format
-      if (usdcAddress && usdcAddress.startsWith('0x') && usdcAddress.length === 42) {
-        console.log('USDC Address validated:', usdcAddress);
-        setError(null); // Clear error on success
-      } else {
-        console.warn('USDC address validation failed:', usdcAddress);
-        // Don't set error for now, as it might be a loading issue
-      }
-    } catch (err) {
-      console.error('Error processing USDC address:', err);
-      // Don't set error for validation failures
-    }
-  }, [usdcAddress]);
-  
-  useEffect(() => {
-    getUsdcAddress();
-  }, [getUsdcAddress]);
 
   const subscriptionData = useMemo(() => ({
     // Raw prices for calculations
