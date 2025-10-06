@@ -14,6 +14,7 @@ import { SubscriptionContextType } from '../types/subscription';
 // Get contract addresses from environment variables (inside component to ensure loading)
 const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B';
 const getUsdcTokenAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+const getEthSubscriptionContract = () => import.meta.env.VITE_ETH_SUBSCRIPTION_CONTRACT || '0x0000000000000000000000000000000000000000';
 
 export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -28,14 +29,16 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Get addresses inside component to ensure they're loaded
   const SUBSCRIPTION_CONTRACT = getContractAddress();
   const usdcAddress = getUsdcTokenAddress();
+  const ETH_SUBSCRIPTION_CONTRACT = getEthSubscriptionContract();
 
   const { writeContractAsync } = useWriteContract();
 
   // Log contract addresses for debugging
   useEffect(() => {
-    console.log('Subscription Contract:', SUBSCRIPTION_CONTRACT);
+    console.log('USDC Subscription Contract:', SUBSCRIPTION_CONTRACT);
+    console.log('ETH Subscription Contract:', ETH_SUBSCRIPTION_CONTRACT);
     console.log('USDC Token:', usdcAddress);
-  }, [SUBSCRIPTION_CONTRACT, usdcAddress]);
+  }, [SUBSCRIPTION_CONTRACT, ETH_SUBSCRIPTION_CONTRACT, usdcAddress]);
 
   // Contract reads
   const { refetch: refetchIsSubscribed } = useReadContract({
