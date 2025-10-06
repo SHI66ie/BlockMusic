@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useSubscription } from '../../hooks/useSubscriptionHook';
+import { useSubscription } from '../../hooks/useSubscription';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { FaCheck, FaCrown, FaGem, FaStar, FaExclamationTriangle } from 'react-icons/fa';
 import { useAccount } from 'wagmi';

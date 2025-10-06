@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
 import { SubscriptionPlans } from '../components/subscription/SubscriptionPlans';
-import { useSubscription } from '../hooks/useSubscriptionHook';
+import { useSubscription } from '../hooks/useSubscription';
 
 const Subscribe: React.FC = () => {
   const { isConnected } = useAccount();

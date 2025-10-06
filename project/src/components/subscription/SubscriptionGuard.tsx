@@ -1,6 +1,6 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSubscription } from '../../hooks/useSubscriptionHook';
+import { useSubscription } from '../../hooks/useSubscription';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
 interface SubscriptionGuardProps {

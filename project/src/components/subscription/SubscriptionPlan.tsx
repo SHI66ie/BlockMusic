@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSubscription } from '../../hooks/useSubscriptionHook';
+import { useSubscription } from '../../hooks/useSubscription';
 import { SubscriptionPlan as PlanType } from '../../constants/subscription';
 import { toast } from 'react-toastify';
 
