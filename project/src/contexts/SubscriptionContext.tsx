@@ -75,7 +75,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [address, refetchIsSubscribed, subscriptionEnds, currentPlan]);
 
-  const handleSubscribe = useCallback(async (planId: string) => {
+  const handleSubscribe = useCallback(async (planId: string, paymentMethod: 'usdc' | 'eth' = 'usdc') => {
     if (!address) {
       toast.error('Please connect your wallet');
       return;
@@ -86,61 +86,98 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     
     // Get the price for this plan in USD
     const planPriceUSD = PLAN_PRICES[planId as SubscriptionPlan];
-    
-    // Convert USD price to USDC amount (USDC has 6 decimals)
-    // $2.5 = 2,500,000 (2.5 * 10^6)
-    const usdcAmount = BigInt(Math.floor(planPriceUSD * 1e6));
 
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log('Initiating USDC subscription transaction:', {
-        contract: SUBSCRIPTION_CONTRACT,
-        usdcToken: usdcAddress,
-        planId: planId,
-        planEnum: planEnum,
-        planPriceUSD: `$${planPriceUSD}`,
-        usdcAmount: usdcAmount.toString(),
-        usdcAmountFormatted: `${planPriceUSD} USDC`,
-        userAddress: address,
-      });
+      if (paymentMethod === 'eth') {
+        // ETH Payment
+        // Convert USD to ETH (assuming 1 ETH = $2000 for testnet)
+        const ethPrice = 2000;
+        const ethAmount = BigInt(Math.floor((planPriceUSD / ethPrice) * 1e18));
 
-      // Step 1: Approve USDC spending
-      toast.info(`Step 1/2: Approving $${planPriceUSD} USDC...`);
-      
-      const approvalTx = await writeContractAsync({
-        address: usdcAddress as `0x${string}`,
-        abi: [
-          {
-            name: 'approve',
-            type: 'function',
-            stateMutability: 'nonpayable',
-            inputs: [
-              { name: 'spender', type: 'address' },
-              { name: 'amount', type: 'uint256' }
-            ],
-            outputs: [{ name: '', type: 'bool' }]
-          }
-        ],
-        functionName: 'approve',
-        args: [SUBSCRIPTION_CONTRACT, usdcAmount],
-      });
+        console.log('Initiating ETH subscription transaction:', {
+          contract: ETH_SUBSCRIPTION_CONTRACT,
+          planId: planId,
+          planEnum: planEnum,
+          planPriceUSD: `$${planPriceUSD}`,
+          ethAmount: ethAmount.toString(),
+          ethAmountFormatted: `${(planPriceUSD / ethPrice).toFixed(6)} ETH`,
+          userAddress: address,
+        });
 
-      console.log('USDC Approval confirmed:', approvalTx);
-      
-      // Step 2: Subscribe
-      toast.info('Step 2/2: Processing subscription...');
-      
-      const tx = await writeContractAsync({
-        address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-        abi: SubscriptionManagerABI,
-        functionName: 'subscribe',
-        args: [planEnum],
-      });
+        toast.info(`Subscribing with ${(planPriceUSD / ethPrice).toFixed(6)} ETH...`);
+        
+        const tx = await writeContractAsync({
+          address: ETH_SUBSCRIPTION_CONTRACT as `0x${string}`,
+          abi: [
+            {
+              name: 'subscribeWithETH',
+              type: 'function',
+              stateMutability: 'payable',
+              inputs: [{ name: 'plan', type: 'uint256' }],
+              outputs: []
+            }
+          ],
+          functionName: 'subscribeWithETH',
+          args: [planEnum + 1], // Contract uses 1, 2, 3 instead of 0, 1, 2
+          value: ethAmount,
+        });
 
-      console.log('Subscription transaction confirmed:', tx);
-      toast.success(`Successfully subscribed for $${planPriceUSD}!`);
+        console.log('ETH Subscription transaction confirmed:', tx);
+        toast.success(`Successfully subscribed for $${planPriceUSD} in ETH!`);
+      } else {
+        // USDC Payment
+        const usdcAmount = BigInt(Math.floor(planPriceUSD * 1e6));
+
+        console.log('Initiating USDC subscription transaction:', {
+          contract: SUBSCRIPTION_CONTRACT,
+          usdcToken: usdcAddress,
+          planId: planId,
+          planEnum: planEnum,
+          planPriceUSD: `$${planPriceUSD}`,
+          usdcAmount: usdcAmount.toString(),
+          usdcAmountFormatted: `${planPriceUSD} USDC`,
+          userAddress: address,
+        });
+
+        // Step 1: Approve USDC spending
+        toast.info(`Step 1/2: Approving $${planPriceUSD} USDC...`);
+        
+        const approvalTx = await writeContractAsync({
+          address: usdcAddress as `0x${string}`,
+          abi: [
+            {
+              name: 'approve',
+              type: 'function',
+              stateMutability: 'nonpayable',
+              inputs: [
+                { name: 'spender', type: 'address' },
+                { name: 'amount', type: 'uint256' }
+              ],
+              outputs: [{ name: '', type: 'bool' }]
+            }
+          ],
+          functionName: 'approve',
+          args: [SUBSCRIPTION_CONTRACT, usdcAmount],
+        });
+
+        console.log('USDC Approval confirmed:', approvalTx);
+        
+        // Step 2: Subscribe
+        toast.info('Step 2/2: Processing subscription...');
+        
+        const tx = await writeContractAsync({
+          address: SUBSCRIPTION_CONTRACT as `0x${string}`,
+          abi: SubscriptionManagerABI,
+          functionName: 'subscribe',
+          args: [planEnum],
+        });
+
+        console.log('Subscription transaction confirmed:', tx);
+        toast.success(`Successfully subscribed for $${planPriceUSD}!`);
+      }
 
       // Check subscription status after transaction
       const subscriptionStatus = await checkSubscription();
@@ -159,7 +196,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     } finally {
       setIsLoading(false);
     }
-  }, [address, checkSubscription, writeContractAsync, SUBSCRIPTION_CONTRACT, usdcAddress]);
+  }, [address, checkSubscription, writeContractAsync, SUBSCRIPTION_CONTRACT, ETH_SUBSCRIPTION_CONTRACT, usdcAddress]);
 
   const refreshSubscription = useCallback(async () => {
     await checkSubscription();
