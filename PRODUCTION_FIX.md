@@ -6,9 +6,11 @@ The application was failing in production with the error:
 ReferenceError: Cannot access 'B' before initialization
 ```
 
-This error occurred because of **duplicate provider wrapping** causing a circular dependency during the production build process.
+This error occurred because of **multiple circular dependencies** causing initialization issues during the production build process.
 
-## Root Cause
+## Root Causes
+
+### 1. Duplicate Provider Wrapping (Fixed in commit 2d7cb78)
 The application had providers wrapped in two places:
 
 1. **main.tsx** - Wrapped the entire app with:
@@ -21,12 +23,25 @@ The application had providers wrapped in two places:
    - `QueryClientProvider`
    - `RainbowKitProvider`
 
-This double wrapping created a circular dependency that Vite's production bundler couldn't resolve, leading to the initialization error.
+This double wrapping created a circular dependency that Vite's production bundler couldn't resolve.
 
-## Solution
+### 2. Circular Hook Dependencies (Fixed in commit 971c25a)
+The subscription hooks had a circular dependency chain:
+
+1. **SubscriptionContextProvider.tsx** → imported `useSubscription` from `hooks/useSubscription.ts`
+2. **hooks/useSubscription.ts** → imported from `SubscriptionContext`
+3. **hooks/useSubscriptionHook.ts** → re-exported from `contexts/useSubscription.ts`
+4. **contexts/useSubscription.ts** → also exported `useSubscription`
+
+This created a circular initialization loop where the provider tried to use the hook before the context was fully initialized.
+
+## Solutions
+
+### Fix 1: Remove Duplicate Provider Wrapping
+
 Removed the duplicate provider wrapping from `App.tsx`, keeping only the providers in `main.tsx`.
 
-### Changes Made to App.tsx:
+**Changes Made to App.tsx:**
 - ✅ Removed `WagmiProvider` import and usage
 - ✅ Removed `QueryClientProvider` import and usage
 - ✅ Removed `RainbowKitProvider` import and usage
@@ -34,8 +49,9 @@ Removed the duplicate provider wrapping from `App.tsx`, keeping only the provide
 - ✅ Kept `SubscriptionContextProvider` (application-specific context)
 - ✅ Kept routing logic intact
 
-### Provider Hierarchy (After Fix):
-```
+**Provider Hierarchy (After Fix):**
+
+```text
 main.tsx
   └─ WagmiProvider
       └─ QueryClientProvider
@@ -46,24 +62,59 @@ main.tsx
                           └─ Routes
 ```
 
+### Fix 2: Consolidate Subscription Hooks
+
+Eliminated the circular dependency by consolidating duplicate hook files into a single source of truth.
+
+**Changes Made:**
+
+- ✅ Deleted `hooks/useSubscriptionHook.ts` (duplicate file)
+- ✅ Simplified `contexts/SubscriptionContextProvider.tsx` - removed `SubscriptionInitializer` component that was causing circular import
+- ✅ Created single `hooks/useSubscription.ts` as the canonical hook
+- ✅ Updated `contexts/useSubscription.ts` to re-export from hooks (backward compatibility)
+- ✅ Updated all component imports to use `hooks/useSubscription`
+
+**Files Updated:**
+
+- `components/subscription/SubscriptionGuard.tsx`
+- `components/subscription/SubscriptionPlan.tsx`
+- `components/subscription/SubscriptionPlans.tsx`
+- `components/subscription/SubscriptionStatus.tsx`
+- `pages/Subscribe.tsx`
+
 ## Testing
 1. Build completed successfully without errors
 2. Production bundle generated correctly
 3. No circular dependency warnings
 
 ## Deployment
-- Commit: `2d7cb78`
+
+**Commit 1:** `2d7cb78`
+
 - Message: "fix: remove duplicate provider wrapping causing circular dependency in production build"
 - Pushed to: `main` branch
 
+**Commit 2:** `971c25a`
+
+- Message: "fix: resolve circular dependency in subscription hooks causing production build error"
+- Pushed to: `main` branch
+
 ## Prevention
+
 To prevent this issue in the future:
+
 1. Always check for duplicate provider wrapping
 2. Keep Web3/wallet providers at the root level (main.tsx)
 3. Application-specific contexts can be nested inside
-4. Test production builds before deploying
+4. Avoid circular imports between hooks and contexts
+5. Use a single source of truth for custom hooks
+6. Test production builds before deploying
 
 ## Related Files
+
 - `project/src/main.tsx` - Root provider setup
 - `project/src/App.tsx` - Application routing (fixed)
 - `project/src/config/web3.ts` - Web3 configuration
+- `project/src/hooks/useSubscription.ts` - Consolidated subscription hook
+- `project/src/contexts/SubscriptionContext.tsx` - Subscription context provider
+- `project/src/contexts/SubscriptionContextProvider.tsx` - Simplified provider wrapper
