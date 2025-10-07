@@ -15,8 +15,15 @@ export async function uploadToPinata(file: File): Promise<string> {
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(`IPFS upload failed: ${errorData.message || response.statusText}`);
+    let errorMessage = response.statusText;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
+    } catch (e) {
+      // If response is not JSON, use statusText
+    }
+    console.error('Backend error:', errorMessage);
+    throw new Error(`IPFS upload failed: ${errorMessage}`);
   }
 
   const result = await response.json();

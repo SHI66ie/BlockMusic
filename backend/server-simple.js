@@ -26,15 +26,24 @@ app.get('/health', (req, res) => {
 // IPFS Upload endpoint
 app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
   try {
+    console.log('📤 Upload request received');
+    
     if (!req.file) {
+      console.log('❌ No file in request');
       return res.status(400).json({ error: 'No file provided' });
     }
+
+    console.log(`📁 File: ${req.file.originalname}, Size: ${req.file.size} bytes, Type: ${req.file.mimetype}`);
+    console.log(`🔑 API Key: ${PINATA_API_KEY ? 'Set' : 'Missing'}`);
+    console.log(`🔐 Secret Key: ${PINATA_SECRET_KEY ? 'Set' : 'Missing'}`);
 
     const formData = new FormData();
     formData.append('file', req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype,
     });
+
+    console.log('📡 Sending to Pinata...');
 
     // Upload to Pinata
     const response = await axios.post(
@@ -47,6 +56,7 @@ app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
           'pinata_secret_api_key': PINATA_SECRET_KEY,
         },
         maxBodyLength: Infinity,
+        maxContentLength: Infinity,
       }
     );
 
@@ -63,10 +73,17 @@ app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
       timestamp: response.data.Timestamp,
     });
   } catch (error) {
-    console.error('❌ IPFS upload error:', error.response?.data || error.message);
+    console.error('❌ IPFS upload error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      stack: error.stack,
+    });
+    
     res.status(500).json({
       error: 'Failed to upload to IPFS',
-      message: error.response?.data?.error || error.message,
+      message: error.response?.data?.error?.details || error.response?.data?.error || error.message,
+      details: error.response?.data,
     });
   }
 });
