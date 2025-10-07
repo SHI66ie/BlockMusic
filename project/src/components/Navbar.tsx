@@ -14,7 +14,10 @@ export function Navbar() {
               Home
             </Link>
             <Link to="/marketplace" className="hover:text-purple-300 transition-colors">
-              Marketplace
+              Explore
+            </Link>
+            <Link to="/upload" className="hover:text-purple-300 transition-colors">
+              Upload
             </Link>
             <Link to="/create" className="hover:text-purple-300 transition-colors">
               Create
