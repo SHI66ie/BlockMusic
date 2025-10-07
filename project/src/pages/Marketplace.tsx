@@ -67,24 +67,20 @@ export default function Marketplace() {
         const supply = Number(totalSupply);
         const fetchedTracks: Track[] = [];
 
-        // Fetch metadata for each NFT
+        // Fetch metadata for each NFT from the contract
+        // For now, create tracks with IDs - metadata will be fetched separately
         for (let i = 0; i < supply; i++) {
-          try {
-            // TODO: Implement actual contract call to get metadata
-            // For now, create placeholder data
-            fetchedTracks.push({
-              id: i,
-              title: `Track ${i + 1}`,
-              artist: 'Artist Name',
-              artistAddress: '0x0000...0000',
-              duration: '3:30',
-              plays: 0,
-              downloadable: false,
-              genre: 'Electronic',
-            });
-          } catch (error) {
-            console.error(`Error fetching NFT ${i}:`, error);
-          }
+          fetchedTracks.push({
+            id: i,
+            title: i === 0 ? 'Fleece' : `Track ${i + 1}`, // Hardcoded for the first track
+            artist: i === 0 ? 'Shi66ie' : 'Artist',
+            artistAddress: i === 0 ? '0xe845Ae65e9ca928690d21Dfde5B5487e58dc904D' : '0x0000...0000',
+            duration: '3:30',
+            plays: i === 0 ? 1 : 0,
+            downloadable: true,
+            genre: 'Hip Hop',
+            audioUrl: i === 0 ? 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' : undefined,
+          });
         }
 
         setTracks(fetchedTracks);
