@@ -58,6 +58,12 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
         priceFeed = _priceFeed;
     }
     
+    // Check if user is currently subscribed (for compatibility with frontend)
+    function isSubscribed(address user) public view returns (bool) {
+        SubscriptionInfo memory sub = userSubscriptions[user];
+        return sub.isActive && block.timestamp < sub.endTime;
+    }
+    
     // Get subscription status
     function getSubscriptionStatus(address user) public view returns (bool isActive, uint256 remainingTime) {
         SubscriptionInfo memory sub = userSubscriptions[user];

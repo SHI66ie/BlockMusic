@@ -14,7 +14,7 @@ import { SubscriptionContextType } from '../types/subscription';
 // Get contract addresses from environment variables (inside component to ensure loading)
 const getContractAddress = () => import.meta.env.VITE_SUBSCRIPTION_CONTRACT || '0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B';
 const getUsdcTokenAddress = () => import.meta.env.VITE_USDC_TOKEN || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
-const getEthSubscriptionContract = () => import.meta.env.VITE_ETH_SUBSCRIPTION_CONTRACT || '0x88A1c58B702F8B280BBaa16aa52807BdE8357f9b';
+const getEthSubscriptionContract = () => import.meta.env.VITE_ETH_SUBSCRIPTION_CONTRACT || '0x1d336b8cCA220d596f0e2Fd368fa2424dcbB987A';
 
 export const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
 
@@ -40,10 +40,29 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     console.log('USDC Token:', usdcAddress);
   }, [SUBSCRIPTION_CONTRACT, ETH_SUBSCRIPTION_CONTRACT, usdcAddress]);
 
-  // Contract reads
-  const { refetch: refetchIsSubscribed } = useReadContract({
+  // Contract reads - Check USDC subscription
+  const { refetch: refetchUsdcSubscription } = useReadContract({
     address: SUBSCRIPTION_CONTRACT as `0x${string}`,
-    abi: SubscriptionManagerABI as readonly unknown[], // Better type assertion
+    abi: SubscriptionManagerABI as readonly unknown[],
+    functionName: 'isSubscribed',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  // Contract reads - Check ETH subscription
+  const { refetch: refetchEthSubscription } = useReadContract({
+    address: ETH_SUBSCRIPTION_CONTRACT as `0x${string}`,
+    abi: [
+      {
+        name: 'isSubscribed',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [{ name: 'user', type: 'address' }],
+        outputs: [{ name: '', type: 'bool' }]
+      }
+    ],
     functionName: 'isSubscribed',
     args: address ? [address] : undefined,
     query: {
@@ -57,10 +76,24 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
     
     try {
-      const result = await refetchIsSubscribed();
-      const isActive = !!result.data;
+      // Check both USDC and ETH subscriptions
+      const [usdcResult, ethResult] = await Promise.all([
+        refetchUsdcSubscription(),
+        refetchEthSubscription()
+      ]);
+      
+      // User is subscribed if they have either USDC or ETH subscription
+      const isActive = !!usdcResult.data || !!ethResult.data;
+      
       setIsSubscribed(isActive);
       setError(null); // Clear error on success
+      
+      console.log('Subscription check:', {
+        address,
+        usdcSubscribed: !!usdcResult.data,
+        ethSubscribed: !!ethResult.data,
+        isActive
+      });
       
       // Return subscription status
       return {
@@ -73,7 +106,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setError('Failed to check subscription status');
       return { isActive: false, endTime: 0, plan: null };
     }
-  }, [address, refetchIsSubscribed, subscriptionEnds, currentPlan]);
+  }, [address, refetchUsdcSubscription, refetchEthSubscription, subscriptionEnds, currentPlan]);
 
   const handleSubscribe = useCallback(async (planId: string, paymentMethod: 'usdc' | 'eth' = 'usdc') => {
     if (!address) {

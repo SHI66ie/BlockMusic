@@ -36,6 +36,7 @@ export interface SubscriptionV2Interface extends utils.Interface {
     "YEARLY_PRICE()": FunctionFragment;
     "getETHPrice()": FunctionFragment;
     "getSubscriptionStatus(address)": FunctionFragment;
+    "isSubscribed(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "priceFeed()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
@@ -56,6 +57,7 @@ export interface SubscriptionV2Interface extends utils.Interface {
       | "YEARLY_PRICE"
       | "getETHPrice"
       | "getSubscriptionStatus"
+      | "isSubscribed"
       | "owner"
       | "priceFeed"
       | "renounceOwnership"
@@ -90,6 +92,10 @@ export interface SubscriptionV2Interface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getSubscriptionStatus",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isSubscribed",
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -146,6 +152,10 @@ export interface SubscriptionV2Interface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getSubscriptionStatus",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "isSubscribed",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -300,6 +310,11 @@ export interface SubscriptionV2 extends BaseContract {
       [boolean, BigNumber] & { isActive: boolean; remainingTime: BigNumber }
     >;
 
+    isSubscribed(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     priceFeed(overrides?: CallOverrides): Promise<[string]>;
@@ -365,6 +380,11 @@ export interface SubscriptionV2 extends BaseContract {
     [boolean, BigNumber] & { isActive: boolean; remainingTime: BigNumber }
   >;
 
+  isSubscribed(
+    user: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   owner(overrides?: CallOverrides): Promise<string>;
 
   priceFeed(overrides?: CallOverrides): Promise<string>;
@@ -429,6 +449,11 @@ export interface SubscriptionV2 extends BaseContract {
     ): Promise<
       [boolean, BigNumber] & { isActive: boolean; remainingTime: BigNumber }
     >;
+
+    isSubscribed(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -539,6 +564,11 @@ export interface SubscriptionV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    isSubscribed(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     priceFeed(overrides?: CallOverrides): Promise<BigNumber>;
@@ -592,6 +622,11 @@ export interface SubscriptionV2 extends BaseContract {
     getETHPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getSubscriptionStatus(
+      user: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isSubscribed(
       user: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
