@@ -3,8 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } from 'react-icons/fa';
 import { useSubscription } from '../contexts/SubscriptionContext';
-import { useAccount } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
 interface Track {
   id: number;
@@ -19,70 +21,6 @@ interface Track {
   genre: string;
 }
 
-// Mock data - replace with actual NFT data from smart contract
-const mockTracks: Track[] = [
-  {
-    id: 1,
-    title: "Midnight Dreams",
-    artist: "Luna Wave",
-    artistAddress: "0x1234...5678",
-    duration: "3:45",
-    plays: 1234,
-    downloadable: true,
-    genre: "Electronic"
-  },
-  {
-    id: 2,
-    title: "Summer Vibes",
-    artist: "DJ Sunset",
-    artistAddress: "0x2345...6789",
-    duration: "4:12",
-    plays: 2567,
-    downloadable: false,
-    genre: "House"
-  },
-  {
-    id: 3,
-    title: "Urban Rhythm",
-    artist: "Beat Master",
-    artistAddress: "0x3456...7890",
-    duration: "3:28",
-    plays: 3891,
-    downloadable: true,
-    genre: "Hip Hop"
-  },
-  {
-    id: 4,
-    title: "Cosmic Journey",
-    artist: "Space Sounds",
-    artistAddress: "0x4567...8901",
-    duration: "5:33",
-    plays: 987,
-    downloadable: true,
-    genre: "Ambient"
-  },
-  {
-    id: 5,
-    title: "Electric Soul",
-    artist: "Neon Nights",
-    artistAddress: "0x5678...9012",
-    duration: "4:01",
-    plays: 4521,
-    downloadable: false,
-    genre: "Synthwave"
-  },
-  {
-    id: 6,
-    title: "Ocean Waves",
-    artist: "Aqua Harmony",
-    artistAddress: "0x6789...0123",
-    duration: "6:15",
-    plays: 1876,
-    downloadable: true,
-    genre: "Chillout"
-  },
-];
-
 export default function Marketplace() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -94,6 +32,68 @@ export default function Marketplace() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
   const [accessChecked, setAccessChecked] = useState(false);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [isLoadingTracks, setIsLoadingTracks] = useState(true);
+  
+  // Get total supply of NFTs
+  const { data: totalSupply } = useReadContract({
+    address: MUSIC_NFT_CONTRACT as `0x${string}`,
+    abi: [
+      {
+        name: 'totalSupply',
+        type: 'function',
+        stateMutability: 'view',
+        inputs: [],
+        outputs: [{ name: '', type: 'uint256' }]
+      }
+    ],
+    functionName: 'totalSupply',
+  });
+
+  // Fetch all NFTs
+  useEffect(() => {
+    const fetchNFTs = async () => {
+      if (!totalSupply) {
+        setIsLoadingTracks(false);
+        return;
+      }
+
+      try {
+        setIsLoadingTracks(true);
+        const supply = Number(totalSupply);
+        const fetchedTracks: Track[] = [];
+
+        // Fetch metadata for each NFT
+        for (let i = 0; i < supply; i++) {
+          try {
+            // TODO: Implement actual contract call to get metadata
+            // For now, create placeholder data
+            fetchedTracks.push({
+              id: i,
+              title: `Track ${i + 1}`,
+              artist: 'Artist Name',
+              artistAddress: '0x0000...0000',
+              duration: '3:30',
+              plays: 0,
+              downloadable: false,
+              genre: 'Electronic',
+            });
+          } catch (error) {
+            console.error(`Error fetching NFT ${i}:`, error);
+          }
+        }
+
+        setTracks(fetchedTracks);
+      } catch (error) {
+        console.error('Error fetching NFTs:', error);
+        toast.error('Failed to load tracks');
+      } finally {
+        setIsLoadingTracks(false);
+      }
+    };
+
+    fetchNFTs();
+  }, [totalSupply]);
   
   // Check subscription access on mount and when wallet connects
   useEffect(() => {
@@ -167,9 +167,9 @@ export default function Marketplace() {
     setLikedTracks(newLiked);
   };
 
-  const genres = ['All', ...Array.from(new Set(mockTracks.map(t => t.genre)))];
+  const genres = ['All', ...Array.from(new Set(tracks.map(t => t.genre)))];
 
-  const filteredTracks = mockTracks.filter(track => {
+  const filteredTracks = tracks.filter(track => {
     const matchesSearch = track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          track.artist.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesGenre = selectedGenre === 'All' || track.genre === selectedGenre;
@@ -255,7 +255,12 @@ export default function Marketplace() {
 
       {/* Track List */}
       <div className="space-y-2">
-        {filteredTracks.length === 0 ? (
+        {isLoadingTracks ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <LoadingSpinner size="lg" />
+            <p className="text-gray-400 mt-4">Loading tracks from blockchain...</p>
+          </div>
+        ) : filteredTracks.length === 0 ? (
           <div className="text-center py-12 text-gray-400">
             <FaMusic className="mx-auto text-4xl mb-4 opacity-50" />
             <p>No tracks found</p>
