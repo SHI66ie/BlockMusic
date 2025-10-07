@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } from 'react-icons/fa';
 import { useSubscription } from '../contexts/SubscriptionContext';
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { AudioPlayer } from '../components/AudioPlayer';
+import { parseEther } from 'viem';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -27,6 +28,7 @@ export default function Marketplace() {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
+  const { writeContractAsync } = useWriteContract();
   
   const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
@@ -135,16 +137,51 @@ export default function Marketplace() {
     }
   }, [location]);
 
-  const handlePlay = (track: Track) => {
+  const handlePlay = async (track: Track) => {
     if (currentlyPlaying === track.id) {
       setCurrentlyPlaying(null);
       setCurrentTrack(null);
     } else {
       setCurrentlyPlaying(track.id);
       setCurrentTrack(track);
-      // TODO: Trigger smart contract payment to artist per play
-      toast.success(`Playing ${track.title} - Artist will receive payment per play`);
-      console.log(`Payment triggered for artist: ${track.artistAddress}`);
+      
+      // Trigger smart contract payment to artist per play
+      try {
+        // Payment amount per play (e.g., 0.001 ETH = ~$4.68 at current price)
+        const playFee = parseEther('0.001');
+        
+        toast.info(`Recording play on blockchain...`);
+        
+        const tx = await writeContractAsync({
+          address: MUSIC_NFT_CONTRACT as `0x${string}`,
+          abi: [
+            {
+              name: 'playTrack',
+              type: 'function',
+              stateMutability: 'payable',
+              inputs: [{ name: 'tokenId', type: 'uint256' }],
+              outputs: []
+            }
+          ],
+          functionName: 'playTrack',
+          args: [BigInt(track.id)],
+          value: playFee,
+        });
+
+        console.log('Play recorded on blockchain:', tx);
+        toast.success(`Playing ${track.title} - Artist received payment!`);
+        
+        // Update play count locally
+        setTracks(prevTracks =>
+          prevTracks.map(t =>
+            t.id === track.id ? { ...t, plays: t.plays + 1 } : t
+          )
+        );
+      } catch (error) {
+        console.error('Error recording play:', error);
+        toast.error('Failed to record play on blockchain');
+        // Still allow playback even if blockchain transaction fails
+      }
     }
   };
 
