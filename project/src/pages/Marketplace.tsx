@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } from 'react-icons/fa';
+import { useSubscription } from '../contexts/SubscriptionContext';
+import { useAccount } from 'wagmi';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 interface Track {
   id: number;
@@ -82,10 +85,41 @@ const mockTracks: Track[] = [
 
 export default function Marketplace() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { address, isConnected } = useAccount();
+  const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
+  
   const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
   const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
+  const [accessChecked, setAccessChecked] = useState(false);
+  
+  // Check subscription access on mount and when wallet connects
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!isConnected) {
+        // Not connected - redirect to home
+        toast.error('Please connect your wallet to access the Music Explorer');
+        navigate('/');
+        return;
+      }
+
+      if (address) {
+        // Check subscription status
+        const status = await checkSubscription();
+        setAccessChecked(true);
+        
+        if (!status.isActive) {
+          // No active subscription - redirect to subscribe page
+          toast.warning('You need an active subscription to access the Music Explorer');
+          navigate('/subscribe');
+        }
+      }
+    };
+
+    checkAccess();
+  }, [address, isConnected, navigate, checkSubscription]);
   
   // Show welcome message if redirected from subscription
   useEffect(() => {
@@ -142,6 +176,35 @@ export default function Marketplace() {
     return matchesSearch && matchesGenre;
   });
 
+  // Show loading while checking access
+  if (subscriptionLoading || !accessChecked) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <LoadingSpinner size="lg" />
+        <p className="text-gray-400">Verifying your subscription access...</p>
+      </div>
+    );
+  }
+
+  // If not subscribed (shouldn't reach here due to redirect, but just in case)
+  if (!isSubscribed) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <FaLock className="text-6xl text-gray-600" />
+        <h2 className="text-2xl font-bold">Subscription Required</h2>
+        <p className="text-gray-400 text-center max-w-md">
+          You need an active subscription to access the Music Explorer and stream unlimited music.
+        </p>
+        <button
+          onClick={() => navigate('/subscribe')}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-medium"
+        >
+          View Subscription Plans
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -150,8 +213,15 @@ export default function Marketplace() {
           <h1 className="text-3xl font-bold">Music Explorer</h1>
           <p className="text-gray-400 text-sm mt-1">Stream unlimited music • Artists earn per play</p>
         </div>
-        <div className="flex items-center gap-2 bg-purple-600/20 border border-purple-500/50 rounded-lg px-4 py-2">
-          <span className="text-purple-400 text-sm font-semibold">🎯 Explorer Access Active</span>
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2 bg-purple-600/20 border border-purple-500/50 rounded-lg px-4 py-2">
+            <span className="text-purple-400 text-sm font-semibold">🎯 Explorer Access Active</span>
+          </div>
+          {subscriptionData && (
+            <div className="text-xs text-gray-400">
+              {subscriptionData.formattedMonthlyPrice && `Subscription: Active`}
+            </div>
+          )}
         </div>
       </div>
 
