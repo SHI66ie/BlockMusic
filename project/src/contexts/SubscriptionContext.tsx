@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState, useMemo } from 'react';
+import { createContext, useContext, useCallback, useEffect, useState, useMemo } from 'react';
 import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 import { toast } from 'react-toastify';
 
