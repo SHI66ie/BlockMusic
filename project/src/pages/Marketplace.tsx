@@ -5,6 +5,7 @@ import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } fro
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useAccount, useReadContract } from 'wagmi';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { AudioPlayer } from '../components/AudioPlayer';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -28,6 +29,7 @@ export default function Marketplace() {
   const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
   
   const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
@@ -133,15 +135,22 @@ export default function Marketplace() {
     }
   }, [location]);
 
-  const handlePlay = (trackId: number, artistAddress: string) => {
-    if (currentlyPlaying === trackId) {
+  const handlePlay = (track: Track) => {
+    if (currentlyPlaying === track.id) {
       setCurrentlyPlaying(null);
-      toast.info('Paused');
+      setCurrentTrack(null);
     } else {
-      setCurrentlyPlaying(trackId);
+      setCurrentlyPlaying(track.id);
+      setCurrentTrack(track);
       // TODO: Trigger smart contract payment to artist per play
-      toast.success(`Playing track - Artist ${artistAddress} will receive payment per play`);
-      console.log(`Payment triggered for artist: ${artistAddress}`);
+      toast.success(`Playing ${track.title} - Artist will receive payment per play`);
+      console.log(`Payment triggered for artist: ${track.artistAddress}`);
+    }
+  };
+
+  const handlePlayPause = () => {
+    if (currentTrack) {
+      setCurrentlyPlaying(currentlyPlaying === currentTrack.id ? null : currentTrack.id);
     }
   };
 
@@ -276,7 +285,7 @@ export default function Marketplace() {
               <div className="flex items-center gap-4">
                 {/* Play Button */}
                 <button
-                  onClick={() => handlePlay(track.id, track.artistAddress)}
+                  onClick={() => handlePlay(track)}
                   className="flex-shrink-0 w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center transition-colors"
                 >
                   {currentlyPlaying === track.id ? (
@@ -352,7 +361,7 @@ export default function Marketplace() {
       </div>
 
       {/* Info Footer */}
-      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-sm text-gray-400">
+      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-sm text-gray-400 mb-24">
         <div className="flex items-start gap-3">
           <FaMusic className="text-purple-500 mt-1 flex-shrink-0" />
           <div>
@@ -366,6 +375,21 @@ export default function Marketplace() {
           </div>
         </div>
       </div>
+
+      {/* Audio Player */}
+      {currentTrack && (
+        <AudioPlayer
+          audioUrl={currentTrack.audioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'}
+          isPlaying={currentlyPlaying === currentTrack.id}
+          onPlayPause={handlePlayPause}
+          onEnded={() => {
+            setCurrentlyPlaying(null);
+            setCurrentTrack(null);
+          }}
+          trackTitle={currentTrack.title}
+          artistName={currentTrack.artist}
+        />
+      )}
     </div>
   );
 }
