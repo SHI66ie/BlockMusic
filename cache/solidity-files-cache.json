@@ -1071,8 +1071,8 @@
       "artifacts": []
     },
     "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\MusicNFT.sol": {
-      "lastModificationDate": 1759830004000,
-      "contentHash": "42898b8822f6fd1d8b9766d11c7a22c1",
+      "lastModificationDate": 1759830596085,
+      "contentHash": "572d9f45b36b20a98024ad17a372bbe3",
       "sourceName": "contracts/MusicNFT.sol",
       "solcConfig": {
         "version": "0.8.20",

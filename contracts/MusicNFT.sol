@@ -8,10 +8,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
     uint256 private _tokenIdCounter;
     
-    // Platform fee (2.5%)
-    uint256 public constant PLATFORM_FEE = 250; // 2.5% = 250 basis points
-    uint256 public constant BASIS_POINTS = 10000;
-    
     address public platformWallet;
     
     // Music NFT metadata structure
@@ -34,9 +30,6 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
     // Mapping from token ID to music metadata
     mapping(uint256 => MusicMetadata) public musicMetadata;
     
-    // Mapping from token ID to price (0 = not for sale)
-    mapping(uint256 => uint256) public tokenPrices;
-    
     // Mapping to track plays per user per track
     mapping(uint256 => mapping(address => uint256)) public userPlays;
     
@@ -49,8 +42,6 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
         string releaseType
     );
     event MusicPlayed(uint256 indexed tokenId, address indexed listener);
-    event PriceUpdated(uint256 indexed tokenId, uint256 price);
-    event MusicSold(uint256 indexed tokenId, address indexed from, address indexed to, uint256 price);
     
     constructor(address _platformWallet) ERC721("BlockMusic NFT", "BMUSIC") Ownable(msg.sender) {
         platformWallet = _platformWallet;
@@ -115,53 +106,6 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
         require(sent, "Failed to pay artist");
         
         emit MusicPlayed(tokenId, msg.sender);
-    }
-    
-    /**
-     * @dev Set price for NFT (0 = not for sale)
-     */
-    function setPrice(uint256 tokenId, uint256 price) external {
-        require(ownerOf(tokenId) == msg.sender, "Not the owner");
-        tokenPrices[tokenId] = price;
-        emit PriceUpdated(tokenId, price);
-    }
-    
-    /**
-     * @dev Buy an NFT
-     */
-    function buyNFT(uint256 tokenId) external payable nonReentrant {
-        uint256 price = tokenPrices[tokenId];
-        require(price > 0, "NFT not for sale");
-        require(msg.value >= price, "Insufficient payment");
-        
-        address seller = ownerOf(tokenId);
-        require(seller != msg.sender, "Cannot buy your own NFT");
-        
-        // Calculate platform fee
-        uint256 platformFeeAmount = (price * PLATFORM_FEE) / BASIS_POINTS;
-        uint256 sellerAmount = price - platformFeeAmount;
-        
-        // Transfer NFT
-        _transfer(seller, msg.sender, tokenId);
-        
-        // Remove from sale
-        tokenPrices[tokenId] = 0;
-        
-        // Pay seller
-        (bool sentToSeller, ) = seller.call{value: sellerAmount}("");
-        require(sentToSeller, "Failed to pay seller");
-        
-        // Pay platform
-        (bool sentToPlatform, ) = platformWallet.call{value: platformFeeAmount}("");
-        require(sentToPlatform, "Failed to pay platform");
-        
-        // Refund excess
-        if (msg.value > price) {
-            (bool refunded, ) = msg.sender.call{value: msg.value - price}("");
-            require(refunded, "Failed to refund excess");
-        }
-        
-        emit MusicSold(tokenId, seller, msg.sender, price);
     }
     
     /**

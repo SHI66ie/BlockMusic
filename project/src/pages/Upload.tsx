@@ -15,7 +15,7 @@ const GENRES = [
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Track'];
 
 export default function Upload() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
   
   const [isUploading, setIsUploading] = useState(false);
@@ -463,9 +463,10 @@ export default function Upload() {
         <ul className="space-y-1 text-gray-400">
           <li>• You own all rights to the music you upload</li>
           <li>• Files are stored on IPFS for decentralization</li>
+          <li>• NFT represents your ownership - not for sale</li>
           <li>• You earn from every play of your music</li>
-          <li>• Platform fee: 2.5% on NFT sales only</li>
           <li>• 100% of streaming revenue goes to you</li>
+          <li>• Users stream via subscription - no NFT purchase needed</li>
         </ul>
       </div>
     </div>

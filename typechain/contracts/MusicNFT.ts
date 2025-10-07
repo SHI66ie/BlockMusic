@@ -78,11 +78,8 @@ export declare namespace MusicNFT {
 
 export interface MusicNFTInterface extends utils.Interface {
   functions: {
-    "BASIS_POINTS()": FunctionFragment;
-    "PLATFORM_FEE()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "buyNFT(uint256)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getMusicMetadata(uint256)": FunctionFragment;
     "getSamples(uint256)": FunctionFragment;
@@ -98,10 +95,8 @@ export interface MusicNFTInterface extends utils.Interface {
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
-    "setPrice(uint256,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "tokenPrices(uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -112,11 +107,8 @@ export interface MusicNFTInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
-      | "BASIS_POINTS"
-      | "PLATFORM_FEE"
       | "approve"
       | "balanceOf"
-      | "buyNFT"
       | "getApproved"
       | "getMusicMetadata"
       | "getSamples"
@@ -132,10 +124,8 @@ export interface MusicNFTInterface extends utils.Interface {
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
-      | "setPrice"
       | "supportsInterface"
       | "symbol"
-      | "tokenPrices"
       | "tokenURI"
       | "totalSupply"
       | "transferFrom"
@@ -145,24 +135,12 @@ export interface MusicNFTInterface extends utils.Interface {
   ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: "BASIS_POINTS",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "PLATFORM_FEE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "approve",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "buyNFT",
-    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
@@ -240,18 +218,10 @@ export interface MusicNFTInterface extends utils.Interface {
     values: [PromiseOrValue<string>, PromiseOrValue<boolean>]
   ): string;
   encodeFunctionData(
-    functionFragment: "setPrice",
-    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "tokenPrices",
-    values: [PromiseOrValue<BigNumberish>]
-  ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [PromiseOrValue<BigNumberish>]
@@ -281,17 +251,8 @@ export interface MusicNFTInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "BASIS_POINTS",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "PLATFORM_FEE",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "buyNFT", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -334,16 +295,11 @@ export interface MusicNFTInterface extends utils.Interface {
     functionFragment: "setApprovalForAll",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setPrice", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenPrices",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
@@ -370,9 +326,7 @@ export interface MusicNFTInterface extends utils.Interface {
     "MetadataUpdate(uint256)": EventFragment;
     "MusicMinted(uint256,address,string,string,string)": EventFragment;
     "MusicPlayed(uint256,address)": EventFragment;
-    "MusicSold(uint256,address,address,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
-    "PriceUpdated(uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
@@ -382,9 +336,7 @@ export interface MusicNFTInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "MetadataUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MusicMinted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MusicPlayed"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MusicSold"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PriceUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
 
@@ -459,19 +411,6 @@ export type MusicPlayedEvent = TypedEvent<
 
 export type MusicPlayedEventFilter = TypedEventFilter<MusicPlayedEvent>;
 
-export interface MusicSoldEventObject {
-  tokenId: BigNumber;
-  from: string;
-  to: string;
-  price: BigNumber;
-}
-export type MusicSoldEvent = TypedEvent<
-  [BigNumber, string, string, BigNumber],
-  MusicSoldEventObject
->;
-
-export type MusicSoldEventFilter = TypedEventFilter<MusicSoldEvent>;
-
 export interface OwnershipTransferredEventObject {
   previousOwner: string;
   newOwner: string;
@@ -483,17 +422,6 @@ export type OwnershipTransferredEvent = TypedEvent<
 
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
-
-export interface PriceUpdatedEventObject {
-  tokenId: BigNumber;
-  price: BigNumber;
-}
-export type PriceUpdatedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  PriceUpdatedEventObject
->;
-
-export type PriceUpdatedEventFilter = TypedEventFilter<PriceUpdatedEvent>;
 
 export interface TransferEventObject {
   from: string;
@@ -534,10 +462,6 @@ export interface MusicNFT extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    BASIS_POINTS(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    PLATFORM_FEE(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -548,11 +472,6 @@ export interface MusicNFT extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    buyNFT(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     getApproved(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -664,23 +583,12 @@ export interface MusicNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    setPrice(
-      tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    tokenPrices(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -713,10 +621,6 @@ export interface MusicNFT extends BaseContract {
     ): Promise<[BigNumber]>;
   };
 
-  BASIS_POINTS(overrides?: CallOverrides): Promise<BigNumber>;
-
-  PLATFORM_FEE(overrides?: CallOverrides): Promise<BigNumber>;
-
   approve(
     to: PromiseOrValue<string>,
     tokenId: PromiseOrValue<BigNumberish>,
@@ -727,11 +631,6 @@ export interface MusicNFT extends BaseContract {
     owner: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  buyNFT(
-    tokenId: PromiseOrValue<BigNumberish>,
-    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   getApproved(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -843,23 +742,12 @@ export interface MusicNFT extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  setPrice(
-    tokenId: PromiseOrValue<BigNumberish>,
-    price: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   supportsInterface(
     interfaceId: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
-
-  tokenPrices(
-    arg0: PromiseOrValue<BigNumberish>,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
 
   tokenURI(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -892,10 +780,6 @@ export interface MusicNFT extends BaseContract {
   ): Promise<BigNumber>;
 
   callStatic: {
-    BASIS_POINTS(overrides?: CallOverrides): Promise<BigNumber>;
-
-    PLATFORM_FEE(overrides?: CallOverrides): Promise<BigNumber>;
-
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -906,11 +790,6 @@ export interface MusicNFT extends BaseContract {
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    buyNFT(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     getApproved(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1020,23 +899,12 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setPrice(
-      tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
-
-    tokenPrices(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1128,19 +996,6 @@ export interface MusicNFT extends BaseContract {
       listener?: PromiseOrValue<string> | null
     ): MusicPlayedEventFilter;
 
-    "MusicSold(uint256,address,address,uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      from?: PromiseOrValue<string> | null,
-      to?: PromiseOrValue<string> | null,
-      price?: null
-    ): MusicSoldEventFilter;
-    MusicSold(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      from?: PromiseOrValue<string> | null,
-      to?: PromiseOrValue<string> | null,
-      price?: null
-    ): MusicSoldEventFilter;
-
     "OwnershipTransferred(address,address)"(
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
@@ -1149,15 +1004,6 @@ export interface MusicNFT extends BaseContract {
       previousOwner?: PromiseOrValue<string> | null,
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
-
-    "PriceUpdated(uint256,uint256)"(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      price?: null
-    ): PriceUpdatedEventFilter;
-    PriceUpdated(
-      tokenId?: PromiseOrValue<BigNumberish> | null,
-      price?: null
-    ): PriceUpdatedEventFilter;
 
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
@@ -1172,10 +1018,6 @@ export interface MusicNFT extends BaseContract {
   };
 
   estimateGas: {
-    BASIS_POINTS(overrides?: CallOverrides): Promise<BigNumber>;
-
-    PLATFORM_FEE(overrides?: CallOverrides): Promise<BigNumber>;
-
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1185,11 +1027,6 @@ export interface MusicNFT extends BaseContract {
     balanceOf(
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    buyNFT(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     getApproved(
@@ -1274,23 +1111,12 @@ export interface MusicNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    setPrice(
-      tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    tokenPrices(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1324,10 +1150,6 @@ export interface MusicNFT extends BaseContract {
   };
 
   populateTransaction: {
-    BASIS_POINTS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    PLATFORM_FEE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1337,11 +1159,6 @@ export interface MusicNFT extends BaseContract {
     balanceOf(
       owner: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    buyNFT(
-      tokenId: PromiseOrValue<BigNumberish>,
-      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     getApproved(
@@ -1426,23 +1243,12 @@ export interface MusicNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    setPrice(
-      tokenId: PromiseOrValue<BigNumberish>,
-      price: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     supportsInterface(
       interfaceId: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    tokenPrices(
-      arg0: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     tokenURI(
       tokenId: PromiseOrValue<BigNumberish>,
