@@ -13,6 +13,6 @@ services:
       - key: PORT
         value: 5000
       - key: PINATA_API_KEY
-        sync: false
+        value: 8ebf0ddd93c752935da7
       - key: PINATA_SECRET_KEY
-        sync: false
+        value: 598dfe4a0f1b31400223a4142f6ad0341fe2bf05a9a5a1dd7771154193f92fc7
