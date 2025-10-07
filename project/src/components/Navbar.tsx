@@ -19,9 +19,6 @@ export function Navbar() {
             <Link to="/upload" className="hover:text-purple-300 transition-colors">
               Upload
             </Link>
-            <Link to="/create" className="hover:text-purple-300 transition-colors">
-              Create
-            </Link>
             <Link to="/profile" className="hover:text-purple-300 transition-colors">
               Profile
             </Link>

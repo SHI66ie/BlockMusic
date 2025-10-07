@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import AppContent from './AppContent';
 import { Home } from './pages/Home';
 import Marketplace from './pages/Marketplace';
-import Create from './pages/Create';
 import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
 import Upload from './pages/Upload';
@@ -29,7 +28,6 @@ const withSubscription = <P extends ComponentProps>(
 
 // Protected components
 const ProtectedMarketplace = withSubscription(Marketplace);
-const ProtectedCreate = withSubscription(Create);
 const ProtectedProfile = withSubscription(Profile);
 const ProtectedUpload = withSubscription(Upload);
 
@@ -48,7 +46,6 @@ function App() {
               <Route path="home" element={<Home />} />
               <Route path="marketplace" element={<ProtectedMarketplace />} />
               <Route path="upload" element={<ProtectedUpload />} />
-              <Route path="create" element={<ProtectedCreate />} />
               <Route path="profile" element={<ProtectedProfile />} />
               <Route path="subscribe" element={<Subscribe />} />
               <Route path="*" element={<Navigate to="/home" replace />} />

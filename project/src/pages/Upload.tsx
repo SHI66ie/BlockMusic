@@ -25,7 +25,6 @@ export default function Upload() {
     albumName: '',
     releaseType: 'Single',
     genre: 'Hip Hop',
-    duration: '',
     isExplicit: false,
     samples: [''],
     coverArtFile: null as File | null,
@@ -178,7 +177,7 @@ export default function Upload() {
           samples,
           coverArtURI,
           audioURI,
-          BigInt(parseInt(formData.duration) || 0),
+          BigInt(0), // Duration will be extracted from audio file
           formData.isExplicit,
           tokenURI
         ],
@@ -194,7 +193,6 @@ export default function Upload() {
         albumName: '',
         releaseType: 'Single',
         genre: 'Hip Hop',
-        duration: '',
         isExplicit: false,
         samples: [''],
         coverArtFile: null,
@@ -314,21 +312,6 @@ export default function Upload() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Duration (seconds) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="duration"
-                value={formData.duration}
-                onChange={handleInputChange}
-                required
-                min="1"
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
-                placeholder="e.g., 180"
-              />
-            </div>
           </div>
 
           <div className="flex items-center">
