@@ -70,16 +70,19 @@ export default function Marketplace() {
         // Fetch metadata for each NFT from the contract
         // For now, create tracks with IDs - metadata will be fetched separately
         for (let i = 0; i < supply; i++) {
+          // TODO: Fetch actual metadata from contract using getMusicMetadata(i)
+          // For now, hardcoded data for the first track
           fetchedTracks.push({
             id: i,
-            title: i === 0 ? 'Fleece' : `Track ${i + 1}`, // Hardcoded for the first track
+            title: i === 0 ? 'Fleece' : `Track ${i + 1}`,
             artist: i === 0 ? 'Shi66ie' : 'Artist',
             artistAddress: i === 0 ? '0xe845Ae65e9ca928690d21Dfde5B5487e58dc904D' : '0x0000...0000',
             duration: '3:30',
             plays: i === 0 ? 1 : 0,
             downloadable: true,
             genre: 'Hip Hop',
-            audioUrl: i === 0 ? 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' : undefined,
+            // Note: Audio URL is mock IPFS - need to implement real IPFS upload
+            audioUrl: undefined, // Will use demo audio until real IPFS is implemented
           });
         }
 

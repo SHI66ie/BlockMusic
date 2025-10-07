@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { toast } from 'react-toastify';
 import { FaMusic, FaImage, FaUpload, FaPlus, FaTimes } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { uploadToPinata, uploadMetadataToPinata, getIPFSGatewayUrl } from '../utils/pinata';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -84,10 +84,16 @@ export default function Upload() {
   };
 
   const uploadToIPFS = async (file: File): Promise<string> => {
-    // TODO: Implement actual IPFS upload
-    // For now, return a mock URI
-    console.log('Uploading to IPFS:', file.name);
-    return `ipfs://mock-${file.name}-${Date.now()}`;
+    // Upload to Pinata IPFS
+    try {
+      const ipfsHash = await uploadToPinata(file);
+      const gatewayUrl = getIPFSGatewayUrl(ipfsHash);
+      console.log('✅ Uploaded to IPFS:', gatewayUrl);
+      return gatewayUrl;
+    } catch (error) {
+      console.error('❌ IPFS upload failed:', error);
+      throw error;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -128,12 +134,11 @@ export default function Upload() {
           { trait_type: 'Album', value: formData.albumName || 'N/A' },
           { trait_type: 'Release Type', value: formData.releaseType },
           { trait_type: 'Genre', value: formData.genre },
-          { trait_type: 'Duration', value: formData.duration },
           { trait_type: 'Explicit', value: formData.isExplicit ? 'Yes' : 'No' },
         ]
       };
       
-      // Upload metadata to IPFS
+      // Upload metadata to IPFS using Pinata
       const metadataBlob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
       const metadataFile = new File([metadataBlob], 'metadata.json');
       const tokenURI = await uploadToIPFS(metadataFile);
