@@ -29,6 +29,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC721Errors__factory>;
     getContractFactory(
+      name: "IERC4906",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IERC4906__factory>;
+    getContractFactory(
       name: "ERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20__factory>;
@@ -44,6 +48,10 @@ declare module "hardhat/types/runtime" {
       name: "ERC721",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC721__factory>;
+    getContractFactory(
+      name: "ERC721URIStorage",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ERC721URIStorage__factory>;
     getContractFactory(
       name: "IERC721Metadata",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -89,6 +97,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.MockUSDC__factory>;
     getContractFactory(
+      name: "MusicNFT",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MusicNFT__factory>;
+    getContractFactory(
       name: "SubscriptionManager",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SubscriptionManager__factory>;
@@ -122,6 +134,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC721Errors>;
     getContractAt(
+      name: "IERC4906",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IERC4906>;
+    getContractAt(
       name: "ERC20",
       address: string,
       signer?: ethers.Signer
@@ -141,6 +158,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.ERC721>;
+    getContractAt(
+      name: "ERC721URIStorage",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ERC721URIStorage>;
     getContractAt(
       name: "IERC721Metadata",
       address: string,
@@ -196,6 +218,11 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.MockUSDC>;
+    getContractAt(
+      name: "MusicNFT",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MusicNFT>;
     getContractAt(
       name: "SubscriptionManager",
       address: string,

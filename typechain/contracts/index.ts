@@ -6,4 +6,5 @@ export type { subscriptionV2Sol };
 export type { BlockMusic } from "./BlockMusic";
 export type { Greeter } from "./Greeter";
 export type { MockUSDC } from "./MockUSDC";
+export type { MusicNFT } from "./MusicNFT";
 export type { SubscriptionManager } from "./SubscriptionManager";
