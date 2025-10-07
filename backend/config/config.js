@@ -6,12 +6,10 @@ const config = {
   port: process.env.PORT || 5000,
   host: process.env.HOST || '0.0.0.0',
   
-  // MongoDB configuration
+  // MongoDB configuration (optional)
   mongo: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/blockmusic',
+    uri: process.env.MONGODB_URI || null,
     options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
     },
   },
@@ -84,13 +82,10 @@ const config = {
   },
 };
 
-// Validate required configuration
+// Validate required configuration (only IPFS keys for now)
 const requiredConfig = [
   'PINATA_API_KEY',
-  'PINATA_SECRET_API_KEY',
-  'PRIVATE_KEY',
-  'CONTRACT_ADDRESS',
-  'JWT_SECRET',
+  'PINATA_SECRET_KEY',
 ];
 
 // Check for missing required configuration in production
@@ -98,8 +93,7 @@ if (config.nodeEnv === 'production') {
   const missingConfig = requiredConfig.filter(key => !process.env[key]);
   
   if (missingConfig.length > 0) {
-    console.error('Missing required environment variables:', missingConfig.join(', '));
-    process.exit(1);
+    console.warn('Missing optional environment variables:', missingConfig.join(', '));
   }
 }
 
