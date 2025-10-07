@@ -1,9 +1,91 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart } from 'react-icons/fa';
+
+interface Track {
+  id: number;
+  title: string;
+  artist: string;
+  artistAddress: string;
+  duration: string;
+  plays: number;
+  coverArt?: string;
+  audioUrl?: string;
+  downloadable: boolean;
+  genre: string;
+}
+
+// Mock data - replace with actual NFT data from smart contract
+const mockTracks: Track[] = [
+  {
+    id: 1,
+    title: "Midnight Dreams",
+    artist: "Luna Wave",
+    artistAddress: "0x1234...5678",
+    duration: "3:45",
+    plays: 1234,
+    downloadable: true,
+    genre: "Electronic"
+  },
+  {
+    id: 2,
+    title: "Summer Vibes",
+    artist: "DJ Sunset",
+    artistAddress: "0x2345...6789",
+    duration: "4:12",
+    plays: 2567,
+    downloadable: false,
+    genre: "House"
+  },
+  {
+    id: 3,
+    title: "Urban Rhythm",
+    artist: "Beat Master",
+    artistAddress: "0x3456...7890",
+    duration: "3:28",
+    plays: 3891,
+    downloadable: true,
+    genre: "Hip Hop"
+  },
+  {
+    id: 4,
+    title: "Cosmic Journey",
+    artist: "Space Sounds",
+    artistAddress: "0x4567...8901",
+    duration: "5:33",
+    plays: 987,
+    downloadable: true,
+    genre: "Ambient"
+  },
+  {
+    id: 5,
+    title: "Electric Soul",
+    artist: "Neon Nights",
+    artistAddress: "0x5678...9012",
+    duration: "4:01",
+    plays: 4521,
+    downloadable: false,
+    genre: "Synthwave"
+  },
+  {
+    id: 6,
+    title: "Ocean Waves",
+    artist: "Aqua Harmony",
+    artistAddress: "0x6789...0123",
+    duration: "6:15",
+    plays: 1876,
+    downloadable: true,
+    genre: "Chillout"
+  },
+];
 
 export default function Marketplace() {
   const location = useLocation();
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
+  const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState<string>('All');
   
   // Show welcome message if redirected from subscription
   useEffect(() => {
@@ -17,28 +99,197 @@ export default function Marketplace() {
     }
   }, [location]);
 
+  const handlePlay = (trackId: number, artistAddress: string) => {
+    if (currentlyPlaying === trackId) {
+      setCurrentlyPlaying(null);
+      toast.info('Paused');
+    } else {
+      setCurrentlyPlaying(trackId);
+      // TODO: Trigger smart contract payment to artist per play
+      toast.success(`Playing track - Artist ${artistAddress} will receive payment per play`);
+      console.log(`Payment triggered for artist: ${artistAddress}`);
+    }
+  };
+
+  const handleDownload = (track: Track) => {
+    if (!track.downloadable) {
+      toast.warning('This track is not available for download');
+      return;
+    }
+    // TODO: Implement actual download functionality
+    toast.success(`Downloading "${track.title}" by ${track.artist}`);
+    console.log(`Download initiated for track: ${track.id}`);
+  };
+
+  const toggleLike = (trackId: number) => {
+    const newLiked = new Set(likedTracks);
+    if (newLiked.has(trackId)) {
+      newLiked.delete(trackId);
+      toast.info('Removed from favorites');
+    } else {
+      newLiked.add(trackId);
+      toast.success('Added to favorites');
+    }
+    setLikedTracks(newLiked);
+  };
+
+  const genres = ['All', ...Array.from(new Set(mockTracks.map(t => t.genre)))];
+
+  const filteredTracks = mockTracks.filter(track => {
+    const matchesSearch = track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         track.artist.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGenre = selectedGenre === 'All' || track.genre === selectedGenre;
+    return matchesSearch && matchesGenre;
+  });
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Music Marketplace</h1>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Music Explorer</h1>
+          <p className="text-gray-400 text-sm mt-1">Stream unlimited music • Artists earn per play</p>
+        </div>
         <div className="flex items-center gap-2 bg-purple-600/20 border border-purple-500/50 rounded-lg px-4 py-2">
           <span className="text-purple-400 text-sm font-semibold">🎯 Explorer Access Active</span>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1, 2, 3, 4, 5, 6].map((item) => (
-          <div key={item} className="bg-gray-800 rounded-lg p-4 hover:bg-gray-700 transition-colors">
-            <div className="aspect-square bg-gray-700 rounded mb-4"></div>
-            <h3 className="font-semibold">Song Title {item}</h3>
-            <p className="text-gray-400 text-sm">Artist Name</p>
-            <div className="mt-2 flex justify-between items-center">
-              <span className="text-purple-400">0.05 ETH</span>
-              <button className="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm">
-                Buy
-              </button>
-            </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1">
+          <input
+            type="text"
+            placeholder="Search tracks or artists..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+          />
+        </div>
+        <div className="flex gap-2 overflow-x-auto">
+          {genres.map(genre => (
+            <button
+              key={genre}
+              onClick={() => setSelectedGenre(genre)}
+              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                selectedGenre === genre
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              {genre}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Track List */}
+      <div className="space-y-2">
+        {filteredTracks.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <FaMusic className="mx-auto text-4xl mb-4 opacity-50" />
+            <p>No tracks found</p>
           </div>
-        ))}
+        ) : (
+          filteredTracks.map((track) => (
+            <div
+              key={track.id}
+              className={`bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-all ${
+                currentlyPlaying === track.id ? 'ring-2 ring-purple-500' : ''
+              }`}
+            >
+              <div className="flex items-center gap-4">
+                {/* Play Button */}
+                <button
+                  onClick={() => handlePlay(track.id, track.artistAddress)}
+                  className="flex-shrink-0 w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center transition-colors"
+                >
+                  {currentlyPlaying === track.id ? (
+                    <FaPause className="text-white" />
+                  ) : (
+                    <FaPlay className="text-white ml-1" />
+                  )}
+                </button>
+
+                {/* Cover Art Placeholder */}
+                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded flex items-center justify-center">
+                  <FaMusic className="text-white text-xl" />
+                </div>
+
+                {/* Track Info */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold truncate">{track.title}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-400">
+                    <span className="truncate">{track.artist}</span>
+                    <span>•</span>
+                    <span className="text-xs bg-gray-700 px-2 py-0.5 rounded">{track.genre}</span>
+                  </div>
+                </div>
+
+                {/* Stats and Actions */}
+                <div className="flex items-center gap-4">
+                  <div className="hidden md:block text-sm text-gray-400">
+                    <div>{track.duration}</div>
+                    <div className="text-xs">{track.plays.toLocaleString()} plays</div>
+                  </div>
+
+                  {/* Like Button */}
+                  <button
+                    onClick={() => toggleLike(track.id)}
+                    className="text-gray-400 hover:text-pink-500 transition-colors"
+                  >
+                    {likedTracks.has(track.id) ? (
+                      <FaHeart className="text-pink-500" />
+                    ) : (
+                      <FaRegHeart />
+                    )}
+                  </button>
+
+                  {/* Download Button */}
+                  {track.downloadable && (
+                    <button
+                      onClick={() => handleDownload(track)}
+                      className="text-gray-400 hover:text-green-500 transition-colors"
+                      title="Download track"
+                    >
+                      <FaDownload />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Currently Playing Indicator */}
+              {currentlyPlaying === track.id && (
+                <div className="mt-3 pt-3 border-t border-gray-700">
+                  <div className="flex items-center gap-2 text-sm text-purple-400">
+                    <div className="flex gap-1">
+                      <div className="w-1 h-4 bg-purple-500 animate-pulse"></div>
+                      <div className="w-1 h-4 bg-purple-500 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-1 h-4 bg-purple-500 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                    </div>
+                    <span>Now Playing • Artist earning per play</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Info Footer */}
+      <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4 text-sm text-gray-400">
+        <div className="flex items-start gap-3">
+          <FaMusic className="text-purple-500 mt-1 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-white mb-1">How it works:</p>
+            <ul className="space-y-1">
+              <li>• Stream unlimited music with your Explorer Access subscription</li>
+              <li>• Artists receive payment automatically for every play</li>
+              <li>• Download tracks when available (marked with download icon)</li>
+              <li>• Support your favorite artists by playing their music</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
