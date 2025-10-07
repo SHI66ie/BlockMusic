@@ -1,6 +1,7 @@
-import { http, createConfig } from 'wagmi';
+import { http } from 'wagmi';
 import { baseSepolia } from 'viem/chains';
 import { QueryClient } from '@tanstack/react-query';
+import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 
 // Get Alchemy API key from environment variables
 const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY || '';
@@ -48,8 +49,11 @@ if (!projectId) {
   console.warn('Missing WalletConnect Project ID. Some features may not work correctly.');
 }
 
-// Create a custom configuration without using getDefaultConfig
-export const config = createConfig({
+// Create configuration using RainbowKit's getDefaultConfig
+// This automatically includes all popular wallet connectors
+export const config = getDefaultConfig({
+  appName: 'BlockMusic',
+  projectId,
   chains: [baseSepoliaConfig],
   transports: {
     [baseSepoliaConfig.id]: http(
@@ -64,13 +68,7 @@ export const config = createConfig({
       }
     ),
   },
-  // Add connectors
-  connectors: [
-    // Add wallet connectors here if needed
-  ],
-  // Add wallet connection options
   ssr: true,
-  // Add any additional configuration options
 });
 
 // Setup queryClient
