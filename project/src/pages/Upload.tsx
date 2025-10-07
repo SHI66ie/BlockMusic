@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { FaMusic, FaImage, FaUpload, FaPlus, FaTimes } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
-const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0x187403C8339B3A3B7AcEf8f04a6fF62457727d51';
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
 const GENRES = [
   'Hip Hop', 'R&B', 'Pop', 'Rock', 'Electronic', 'House', 'Techno',
