@@ -1,6 +1,6 @@
 // Pinata IPFS Upload Configuration
-const PINATA_API_KEY = '8ebf0ddd93c752935da7';
-const PINATA_SECRET_KEY = '598dfe4a0f1b31400223a4142f6ad0341fe2bf05a9a5a1dd7771154193f92fc7';
+const PINATA_API_KEY = import.meta.env.VITE_PINATA_API_KEY || '8ebf0ddd93c752935da7';
+const PINATA_SECRET_KEY = import.meta.env.VITE_PINATA_SECRET_KEY || '598dfe4a0f1b31400223a4142f6ad0341fe2bf05a9a5a1dd7771154193f92fc7';
 const PINATA_GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 
 /**
