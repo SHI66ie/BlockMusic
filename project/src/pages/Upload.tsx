@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { useAccount, useWriteContract } from 'wagmi';
 import { toast } from 'react-toastify';
 import { FaMusic, FaImage, FaUpload, FaPlus, FaTimes } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { uploadToPinata, uploadMetadataToPinata, getIPFSGatewayUrl } from '../utils/pinata';
+import { uploadToPinata, getIPFSGatewayUrl } from '../utils/pinata';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
