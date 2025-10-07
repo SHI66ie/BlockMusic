@@ -1,31 +1,44 @@
-import { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { useBlockchain } from '../hooks/useBlockchain';
-import { FaUpload, FaMusic, FaEthereum, FaLink } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { useAccount, useReadContract } from 'wagmi';
+import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import styles from './ArtistDashboard.module.css';
+import { useNavigate } from 'react-router-dom';
+
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
+
+interface Track {
+  id: number;
+  title: string;
+  plays: number;
+  revenue: string;
+  releaseDate: string;
+}
+
+interface MerchItem {
+  id: number;
+  name: string;
+  price: string;
+  stock: number;
+  sold: number;
+}
+
+interface Concert {
+  id: number;
+  title: string;
+  date: string;
+  venue: string;
+  ticketsSold: number;
+  totalTickets: number;
+  revenue: string;
+}
 
 const ArtistDashboard = () => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  // Preview state is not currently used but kept for future use
-  // const [preview, setPreview] = useState<string>('');
-  const [trackName, setTrackName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('0.01');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  interface MintedTrack {
-    id: number;
-    name: string;
-    description: string;
-    price: string;
-    uri: string;
-    txHash: string;
-  }
-
-  const [mintedTrack, setMintedTrack] = useState<MintedTrack | null>(null);
+  const { address, isConnected } = useAccount();
+  const navigate = useNavigate();
   
-  const { isConnected } = useBlockchain();
+  const [activeTab, setActiveTab] = useState<'overview' | 'music' | 'merch' | 'concerts'>('overview');
+  const [myTracks, setMyTracks] = useState<Track[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];

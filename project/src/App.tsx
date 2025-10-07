@@ -6,6 +6,7 @@ import Marketplace from './pages/Marketplace';
 import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
 import Upload from './pages/Upload';
+import Artist from './pages/Artist';
 import SubscriptionContextProvider from './contexts/SubscriptionContextProvider';
 import { SubscriptionGuard } from './components/subscription/SubscriptionGuard';
 
@@ -30,6 +31,7 @@ const withSubscription = <P extends ComponentProps>(
 const ProtectedMarketplace = withSubscription(Marketplace);
 const ProtectedProfile = withSubscription(Profile);
 const ProtectedUpload = withSubscription(Upload);
+const ProtectedArtist = withSubscription(Artist);
 
 function App() {
   return (
@@ -46,6 +48,7 @@ function App() {
               <Route path="home" element={<Home />} />
               <Route path="marketplace" element={<ProtectedMarketplace />} />
               <Route path="upload" element={<ProtectedUpload />} />
+              <Route path="artist" element={<ProtectedArtist />} />
               <Route path="profile" element={<ProtectedProfile />} />
               <Route path="subscribe" element={<Subscribe />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
