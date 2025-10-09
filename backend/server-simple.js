@@ -21,7 +21,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// IPFS Upload endpoint using Web3.Storage
+// IPFS Upload endpoint using Storacha client
 app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
   try {
     console.log('📤 Upload request received');
@@ -32,11 +32,19 @@ app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
     }
 
     console.log(`📁 File: ${req.file.originalname}, Size: ${req.file.size} bytes, Type: ${req.file.mimetype}`);
-    console.log(`🔑 Storacha Token: ${STORACHA_TOKEN ? 'Set' : 'Missing'}`);
+
+    // For now, use simple HTTP API until Storacha account is set up
+    // This works with just an API token from console.storacha.network
+    if (!STORACHA_TOKEN) {
+      return res.status(500).json({
+        error: 'Storacha token not configured',
+        message: 'Please set STORACHA_TOKEN environment variable',
+      });
+    }
 
     console.log('📡 Uploading to Storacha (IPFS)...');
 
-    // Upload to Storacha (formerly Web3.Storage)
+    // Upload using HTTP API (simpler, works with console token)
     const response = await axios.post(
       'https://up.storacha.network/upload',
       req.file.buffer,
