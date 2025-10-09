@@ -54,7 +54,7 @@ export default function Marketplace() {
     functionName: 'totalSupply',
   });
 
-  // Fetch all NFTs
+  // Fetch all NFTs with real metadata from IPFS
   useEffect(() => {
     const fetchNFTs = async () => {
       if (!totalSupply) {
@@ -67,23 +67,53 @@ export default function Marketplace() {
         const supply = Number(totalSupply);
         const fetchedTracks: Track[] = [];
 
-        // Fetch metadata for each NFT from the contract
-        // For now, create tracks with IDs - metadata will be fetched separately
+        // Fetch metadata for each NFT from IPFS
         for (let i = 0; i < supply; i++) {
-          // TODO: Fetch actual metadata from contract using getMusicMetadata(i)
-          // For now, hardcoded data for the first track
-          fetchedTracks.push({
-            id: i,
-            title: i === 0 ? 'Fleece' : `Track ${i + 1}`,
-            artist: i === 0 ? 'Shi66ie' : 'Artist',
-            artistAddress: i === 0 ? '0xe845Ae65e9ca928690d21Dfde5B5487e58dc904D' : '0x0000...0000',
-            duration: '3:30',
-            plays: i === 0 ? 1 : 0,
-            downloadable: true,
-            genre: 'Hip Hop',
-            // Note: Audio URL is mock IPFS - need to implement real IPFS upload
-            audioUrl: undefined, // Will use demo audio until real IPFS is implemented
-          });
+          try {
+            // Fetch token URI from contract
+            const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:5000/api'}/nfts/${MUSIC_NFT_CONTRACT}/${i}`);
+            
+            if (response.ok) {
+              const metadata = await response.json();
+              fetchedTracks.push({
+                id: i,
+                title: metadata.name || `Track ${i + 1}`,
+                artist: metadata.artist || 'Unknown Artist',
+                artistAddress: metadata.artistAddress || '0x0000...0000',
+                duration: metadata.duration || '0:00',
+                plays: metadata.plays || 0,
+                downloadable: metadata.downloadable !== false,
+                genre: metadata.genre || 'Unknown',
+                coverArt: metadata.image,
+                audioUrl: metadata.animation_url || metadata.audio_url, // Real IPFS URL
+              });
+            } else {
+              // Fallback for tracks without metadata
+              fetchedTracks.push({
+                id: i,
+                title: `Track ${i + 1}`,
+                artist: 'Unknown',
+                artistAddress: '0x0000...0000',
+                duration: '0:00',
+                plays: 0,
+                downloadable: false,
+                genre: 'Unknown',
+              });
+            }
+          } catch (err) {
+            console.error(`Error fetching metadata for token ${i}:`, err);
+            // Add track with minimal info on error
+            fetchedTracks.push({
+              id: i,
+              title: `Track ${i + 1}`,
+              artist: 'Unknown',
+              artistAddress: '0x0000...0000',
+              duration: '0:00',
+              plays: 0,
+              downloadable: false,
+              genre: 'Unknown',
+            });
+          }
         }
 
         setTracks(fetchedTracks);
