@@ -22,28 +22,75 @@ router.get('/:contractAddress/:tokenId', async (req, res) => {
     // Get contract instance
     const contract = new ethers.Contract(contractAddress, ERC721_ABI, provider);
     
-    // Fetch tokenURI from contract
-    const tokenURI = await contract.tokenURI(tokenId);
+    // Try to fetch tokenURI from contract
+    let tokenURI;
+    try {
+      tokenURI = await contract.tokenURI(tokenId);
+    } catch (err) {
+      console.log(`No tokenURI for token ${tokenId}, returning placeholder`);
+      // Return placeholder metadata if tokenURI doesn't exist
+      return res.json({
+        name: `Track ${parseInt(tokenId) + 1}`,
+        artist: 'Unknown Artist',
+        genre: 'Unknown',
+        duration: '0:00',
+        plays: 0,
+        downloadable: false,
+        tokenId,
+        contractAddress,
+      });
+    }
     
     if (!tokenURI) {
-      return res.status(404).json({ error: 'Token URI not found' });
+      return res.json({
+        name: `Track ${parseInt(tokenId) + 1}`,
+        artist: 'Unknown Artist',
+        genre: 'Unknown',
+        duration: '0:00',
+        plays: 0,
+        downloadable: false,
+        tokenId,
+        contractAddress,
+      });
     }
     
     // Fetch metadata from IPFS
-    const metadataResponse = await axios.get(tokenURI);
-    const metadata = metadataResponse.data;
-    
-    // Add token ID and contract address to response
-    res.json({
-      ...metadata,
-      tokenId,
-      contractAddress,
-    });
+    try {
+      const metadataResponse = await axios.get(tokenURI, { timeout: 5000 });
+      const metadata = metadataResponse.data;
+      
+      // Add token ID and contract address to response
+      res.json({
+        ...metadata,
+        tokenId,
+        contractAddress,
+      });
+    } catch (ipfsError) {
+      console.error('Error fetching from IPFS:', ipfsError.message);
+      // Return placeholder if IPFS fetch fails
+      return res.json({
+        name: `Track ${parseInt(tokenId) + 1}`,
+        artist: 'Unknown Artist',
+        genre: 'Unknown',
+        duration: '0:00',
+        plays: 0,
+        downloadable: false,
+        tokenId,
+        contractAddress,
+      });
+    }
   } catch (error) {
     console.error('Error fetching NFT metadata:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch NFT metadata',
-      message: error.message 
+    // Return placeholder instead of error
+    res.json({
+      name: `Track ${parseInt(req.params.tokenId) + 1}`,
+      artist: 'Unknown Artist',
+      genre: 'Unknown',
+      duration: '0:00',
+      plays: 0,
+      downloadable: false,
+      tokenId: req.params.tokenId,
+      contractAddress: req.params.contractAddress,
     });
   }
 });
