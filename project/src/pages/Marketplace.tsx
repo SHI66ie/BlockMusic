@@ -67,11 +67,11 @@ export default function Marketplace() {
         const supply = Number(totalSupply);
         const fetchedTracks: Track[] = [];
 
-        // Fetch metadata for each NFT from IPFS
+        // Fetch metadata for each NFT from backend API
         for (let i = 0; i < supply; i++) {
           try {
-            // Fetch token URI from contract
-            const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:5000/api'}/nfts/${MUSIC_NFT_CONTRACT}/${i}`);
+            const backendUrl = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:5000/api';
+            const response = await fetch(`${backendUrl}/nfts/${MUSIC_NFT_CONTRACT}/${i}`);
             
             if (response.ok) {
               const metadata = await response.json();
