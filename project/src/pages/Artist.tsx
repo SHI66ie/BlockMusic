@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
+import { readContract } from '@wagmi/core';
+import { config } from '../config/web3';
 import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -70,16 +72,56 @@ export default function Artist() {
         const supply = Number(totalSupply);
         const artistTracks: Track[] = [];
 
-        // For demo, create mock data for artist's tracks
-        // In production, fetch from contract where artist === address
-        if (supply > 0) {
-          artistTracks.push({
-            id: 0,
-            title: 'Fleece',
-            plays: 1,
-            revenue: '0.001',
-            releaseDate: '2025-10-07'
-          });
+        // Fetch all tracks and filter by artist address
+        for (let i = 0; i < supply; i++) {
+          try {
+            // Get metadata from contract
+            const metadata = await readContract(config, {
+              address: MUSIC_NFT_CONTRACT as `0x${string}`,
+              abi: [
+                {
+                  name: 'getMusicMetadata',
+                  type: 'function',
+                  stateMutability: 'view',
+                  inputs: [{ name: 'tokenId', type: 'uint256' }],
+                  outputs: [{
+                    type: 'tuple',
+                    components: [
+                      { name: 'trackTitle', type: 'string' },
+                      { name: 'artistName', type: 'string' },
+                      { name: 'albumName', type: 'string' },
+                      { name: 'releaseType', type: 'string' },
+                      { name: 'genre', type: 'string' },
+                      { name: 'samples', type: 'string[]' },
+                      { name: 'coverArtURI', type: 'string' },
+                      { name: 'audioURI', type: 'string' },
+                      { name: 'duration', type: 'uint256' },
+                      { name: 'releaseDate', type: 'uint256' },
+                      { name: 'artist', type: 'address' },
+                      { name: 'playCount', type: 'uint256' },
+                      { name: 'isExplicit', type: 'bool' }
+                    ]
+                  }]
+                }
+              ] as const,
+              functionName: 'getMusicMetadata',
+              args: [BigInt(i)],
+            });
+
+            // Only include tracks where artist matches connected address
+            if (metadata && metadata.artist.toLowerCase() === address.toLowerCase()) {
+              const releaseDate = new Date(Number(metadata.releaseDate) * 1000);
+              artistTracks.push({
+                id: i,
+                title: metadata.trackTitle || `Track ${i + 1}`,
+                plays: Number(metadata.playCount) || 0,
+                revenue: '0.000', // Calculate based on plays * play fee
+                releaseDate: releaseDate.toISOString().split('T')[0]
+              });
+            }
+          } catch (err) {
+            console.error(`Error fetching track ${i}:`, err);
+          }
         }
 
         setMyTracks(artistTracks);
