@@ -23,6 +23,14 @@ interface MusicPlayerContextType {
   volume: number;
   setVolume: (volume: number) => void;
   seek: (time: number) => void;
+  playlist: Track[];
+  setPlaylist: (tracks: Track[]) => void;
+  playNext: () => void;
+  playPrevious: () => void;
+  isShuffled: boolean;
+  toggleShuffle: () => void;
+  repeatMode: 'off' | 'all' | 'one';
+  setRepeatMode: (mode: 'off' | 'all' | 'one') => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -33,6 +41,9 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
+  const [playlist, setPlaylist] = useState<Track[]>([]);
+  const [isShuffled, setIsShuffled] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize audio element
@@ -51,7 +62,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       });
 
       audioRef.current.addEventListener('ended', () => {
-        setIsPlaying(false);
+        handleTrackEnd();
       });
 
       audioRef.current.addEventListener('error', (e) => {
@@ -126,6 +137,73 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
 
+  const handleTrackEnd = () => {
+    if (repeatMode === 'one') {
+      // Repeat current track
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(console.error);
+      }
+    } else if (repeatMode === 'all' || playlist.length > 0) {
+      // Play next track
+      playNext();
+    } else {
+      setIsPlaying(false);
+    }
+  };
+
+  const getCurrentTrackIndex = () => {
+    if (!currentTrack || playlist.length === 0) return -1;
+    return playlist.findIndex(track => track.id === currentTrack.id);
+  };
+
+  const playNext = () => {
+    const currentIndex = getCurrentTrackIndex();
+    if (currentIndex === -1 || playlist.length === 0) return;
+
+    let nextIndex = currentIndex + 1;
+    
+    if (nextIndex >= playlist.length) {
+      if (repeatMode === 'all') {
+        nextIndex = 0; // Loop back to start
+      } else {
+        setIsPlaying(false);
+        return;
+      }
+    }
+
+    playTrack(playlist[nextIndex]);
+  };
+
+  const playPrevious = () => {
+    const currentIndex = getCurrentTrackIndex();
+    if (currentIndex === -1 || playlist.length === 0) return;
+
+    // If more than 3 seconds played, restart current track
+    if (currentTime > 3) {
+      seek(0);
+      return;
+    }
+
+    let prevIndex = currentIndex - 1;
+    
+    if (prevIndex < 0) {
+      if (repeatMode === 'all') {
+        prevIndex = playlist.length - 1; // Loop to end
+      } else {
+        seek(0); // Just restart current track
+        return;
+      }
+    }
+
+    playTrack(playlist[prevIndex]);
+  };
+
+  const toggleShuffle = () => {
+    setIsShuffled(!isShuffled);
+    // TODO: Implement shuffle logic - reorder playlist
+  };
+
   return (
     <MusicPlayerContext.Provider
       value={{
@@ -138,8 +216,16 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         currentTime,
         duration,
         volume,
-        setVolume: handleSetVolume,
+        setVolume,
         seek,
+        playlist,
+        setPlaylist,
+        playNext,
+        playPrevious,
+        isShuffled,
+        toggleShuffle,
+        repeatMode,
+        setRepeatMode,
       }}
     >
       {children}

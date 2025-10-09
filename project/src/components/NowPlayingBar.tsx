@@ -24,11 +24,15 @@ export const NowPlayingBar: React.FC = () => {
     volume,
     setVolume,
     seek,
+    playNext,
+    playPrevious,
+    isShuffled,
+    toggleShuffle,
+    repeatMode,
+    setRepeatMode,
   } = useMusicPlayer();
 
   const [isLiked, setIsLiked] = useState(false);
-  const [isShuffled, setIsShuffled] = useState(false);
-  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
 
   if (!currentTrack) return null;
 
@@ -48,9 +52,7 @@ export const NowPlayingBar: React.FC = () => {
     setVolume(parseFloat(e.target.value));
   };
 
-  const toggleShuffle = () => setIsShuffled(!isShuffled);
-  
-  const toggleRepeat = () => {
+  const handleToggleRepeat = () => {
     if (repeatMode === 'off') setRepeatMode('all');
     else if (repeatMode === 'all') setRepeatMode('one');
     else setRepeatMode('off');
@@ -110,6 +112,7 @@ export const NowPlayingBar: React.FC = () => {
 
               {/* Previous */}
               <button
+                onClick={playPrevious}
                 className="text-purple-300 hover:text-white transition-colors"
                 aria-label="Previous"
                 title="Previous track"
@@ -132,6 +135,7 @@ export const NowPlayingBar: React.FC = () => {
 
               {/* Next */}
               <button
+                onClick={playNext}
                 className="text-purple-300 hover:text-white transition-colors"
                 aria-label="Next"
                 title="Next track"
@@ -141,7 +145,7 @@ export const NowPlayingBar: React.FC = () => {
 
               {/* Repeat */}
               <button
-                onClick={toggleRepeat}
+                onClick={handleToggleRepeat}
                 className={`transition-colors ${
                   repeatMode !== 'off' ? 'text-green-400' : 'text-purple-300 hover:text-white'
                 }`}

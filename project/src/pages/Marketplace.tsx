@@ -30,7 +30,7 @@ export default function Marketplace() {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
-  const { playTrack, currentTrack, isPlaying } = useMusicPlayer();
+  const { playTrack, currentTrack, isPlaying, setPlaylist } = useMusicPlayer();
   
   const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -168,6 +168,7 @@ export default function Marketplace() {
         }
 
         setTracks(fetchedTracks);
+        setPlaylist(fetchedTracks); // Set playlist for next/previous functionality
       } catch (error) {
         console.error('Error fetching NFTs:', error);
         toast.error('Failed to load tracks');
