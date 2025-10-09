@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAccount, useSwitchChain, useChainId } from 'wagmi';
 import { Navbar } from './components/Navbar';
+import { NowPlayingBar } from './components/NowPlayingBar';
 import { baseSepolia } from 'wagmi/chains';
 
 function AppContent() {
@@ -28,11 +29,12 @@ function AppContent() {
   }, [isConnected, chainId, switchChain]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white pb-24">
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <Outlet />
       </main>
+      <NowPlayingBar />
     </div>
   );
 }

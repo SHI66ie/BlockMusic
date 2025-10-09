@@ -3,10 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } from 'react-icons/fa';
 import { useSubscription } from '../contexts/SubscriptionContext';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import { useAccount, useReadContract } from 'wagmi';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { AudioPlayer } from '../components/AudioPlayer';
-import { parseEther } from 'viem';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -28,10 +27,8 @@ export default function Marketplace() {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
-  const { writeContractAsync } = useWriteContract();
+  const { playTrack, currentTrack, isPlaying } = useMusicPlayer();
   
-  const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
-  const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
@@ -166,58 +163,10 @@ export default function Marketplace() {
     }
   }, [location]);
 
-  const handlePlay = async (track: Track) => {
-    if (currentlyPlaying === track.id) {
-      setCurrentlyPlaying(null);
-      setCurrentTrack(null);
-    } else {
-      setCurrentlyPlaying(track.id);
-      setCurrentTrack(track);
-      
-      // Trigger smart contract payment to artist per play
-      try {
-        // Payment amount per play (e.g., 0.001 ETH = ~$4.68 at current price)
-        const playFee = parseEther('0.001');
-        
-        toast.info(`Recording play on blockchain...`);
-        
-        const tx = await writeContractAsync({
-          address: MUSIC_NFT_CONTRACT as `0x${string}`,
-          abi: [
-            {
-              name: 'playTrack',
-              type: 'function',
-              stateMutability: 'payable',
-              inputs: [{ name: 'tokenId', type: 'uint256' }],
-              outputs: []
-            }
-          ],
-          functionName: 'playTrack',
-          args: [BigInt(track.id)],
-          value: playFee,
-        });
-
-        console.log('Play recorded on blockchain:', tx);
-        toast.success(`Playing ${track.title} - Artist received payment!`);
-        
-        // Update play count locally
-        setTracks(prevTracks =>
-          prevTracks.map(t =>
-            t.id === track.id ? { ...t, plays: t.plays + 1 } : t
-          )
-        );
-      } catch (error) {
-        console.error('Error recording play:', error);
-        toast.error('Failed to record play on blockchain');
-        // Still allow playback even if blockchain transaction fails
-      }
-    }
-  };
-
-  const handlePlayPause = () => {
-    if (currentTrack) {
-      setCurrentlyPlaying(currentlyPlaying === currentTrack.id ? null : currentTrack.id);
-    }
+  const handlePlay = (track: Track) => {
+    // Use global music player - no transactions, just play!
+    playTrack(track);
+    console.log(`Playing track: ${track.title} by ${track.artist}`);
   };
 
   const handleDownload = (track: Track) => {
@@ -345,7 +294,7 @@ export default function Marketplace() {
             <div
               key={track.id}
               className={`bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-all ${
-                currentlyPlaying === track.id ? 'ring-2 ring-purple-500' : ''
+                currentTrack?.id === track.id && isPlaying ? 'ring-2 ring-purple-500' : ''
               }`}
             >
               <div className="flex items-center gap-4">
@@ -354,7 +303,7 @@ export default function Marketplace() {
                   onClick={() => handlePlay(track)}
                   className="flex-shrink-0 w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center transition-colors"
                 >
-                  {currentlyPlaying === track.id ? (
+                  {currentTrack?.id === track.id && isPlaying ? (
                     <FaPause className="text-white" />
                   ) : (
                     <FaPlay className="text-white ml-1" />
@@ -407,20 +356,6 @@ export default function Marketplace() {
                   )}
                 </div>
               </div>
-
-              {/* Currently Playing Indicator */}
-              {currentlyPlaying === track.id && (
-                <div className="mt-3 pt-3 border-t border-gray-700">
-                  <div className="flex items-center gap-2 text-sm text-purple-400">
-                    <div className="flex gap-1">
-                      <div className="w-1 h-4 bg-purple-500 animate-pulse"></div>
-                      <div className="w-1 h-4 bg-purple-500 animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                      <div className="w-1 h-4 bg-purple-500 animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                    </div>
-                    <span>Now Playing • Artist earning per play</span>
-                  </div>
-                </div>
-              )}
             </div>
           ))
         )}
@@ -442,20 +377,6 @@ export default function Marketplace() {
         </div>
       </div>
 
-      {/* Audio Player */}
-      {currentTrack && (
-        <AudioPlayer
-          audioUrl={currentTrack.audioUrl || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'}
-          isPlaying={currentlyPlaying === currentTrack.id}
-          onPlayPause={handlePlayPause}
-          onEnded={() => {
-            setCurrentlyPlaying(null);
-            setCurrentTrack(null);
-          }}
-          trackTitle={currentTrack.title}
-          artistName={currentTrack.artist}
-        />
-      )}
     </div>
   );
 }

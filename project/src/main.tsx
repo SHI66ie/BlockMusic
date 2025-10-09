@@ -8,6 +8,7 @@ import '@rainbow-me/rainbowkit/styles.css';
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary';
 import { config, queryClient, rainbowKitConfig } from './config/web3';
+import { MusicPlayerProvider } from './contexts/MusicPlayerContext';
 import styles from './App.module.css';
 import './index.css';
 
@@ -40,14 +41,16 @@ if (!rootElement) {
               }}
               {...rainbowKitConfig}
             >
-              <Suspense fallback={
-                <div className={styles.loadingContainer}>
-                  <div className={styles.loadingSpinner}></div>
-                  <p>Loading...</p>
-                </div>
-              }>
-                <App />
-              </Suspense>
+              <MusicPlayerProvider>
+                <Suspense fallback={
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loadingSpinner}></div>
+                    <p>Loading...</p>
+                  </div>
+                }>
+                  <App />
+                </Suspense>
+              </MusicPlayerProvider>
             </RainbowKitProvider>
           </QueryClientProvider>
         </WagmiProvider>
