@@ -6,8 +6,8 @@ const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Web3.Storage API token (get from https://web3.storage)
-const WEB3_STORAGE_TOKEN = process.env.WEB3_STORAGE_TOKEN || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDVENjk4MzQzRjg0NjQxMzE5MjQwNjQ2NjQxNjQ2NTY0NjQ2NTY0NjQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2MzAwMDAwMDAwMDAsIm5hbWUiOiJCbG9ja011c2ljIn0.fake';
+// Storacha (formerly Web3.Storage) API token (get from https://console.storacha.network)
+const STORACHA_TOKEN = process.env.STORACHA_TOKEN || process.env.WEB3_STORAGE_TOKEN || '';
 
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
@@ -32,19 +32,19 @@ app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
     }
 
     console.log(`📁 File: ${req.file.originalname}, Size: ${req.file.size} bytes, Type: ${req.file.mimetype}`);
-    console.log(`🔑 Web3.Storage Token: ${WEB3_STORAGE_TOKEN ? 'Set' : 'Missing'}`);
+    console.log(`🔑 Storacha Token: ${STORACHA_TOKEN ? 'Set' : 'Missing'}`);
 
-    console.log('📡 Uploading to Web3.Storage (IPFS)...');
+    console.log('📡 Uploading to Storacha (IPFS)...');
 
-    // Upload to Web3.Storage
+    // Upload to Storacha (formerly Web3.Storage)
     const response = await axios.post(
-      'https://api.web3.storage/upload',
+      'https://up.storacha.network/upload',
       req.file.buffer,
       {
         headers: {
-          'Authorization': `Bearer ${WEB3_STORAGE_TOKEN}`,
+          'Authorization': `Bearer ${STORACHA_TOKEN}`,
           'Content-Type': req.file.mimetype,
-          'X-NAME': req.file.originalname,
+          'X-Name': req.file.originalname,
         },
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
@@ -52,7 +52,7 @@ app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
     );
 
     const cid = response.data.cid;
-    const gatewayUrl = `https://w3s.link/ipfs/${cid}`;
+    const gatewayUrl = `https://${cid}.ipfs.w3s.link`;
 
     console.log('✅ File uploaded to IPFS:', gatewayUrl);
 
@@ -103,5 +103,5 @@ app.use((req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
   console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✅ Web3.Storage Token: ${WEB3_STORAGE_TOKEN ? 'Set' : 'Missing'}`);
+  console.log(`✅ Storacha Token: ${STORACHA_TOKEN ? 'Set' : 'Missing'}`);
 });

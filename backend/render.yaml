@@ -12,5 +12,5 @@ services:
         value: production
       - key: PORT
         value: 5000
-      - key: WEB3_STORAGE_TOKEN
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDVENjk4MzQzRjg0NjQxMzE5MjQwNjQ2NjQxNjQ2NTY0NjQ2NTY0NjQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2MzAwMDAwMDAwMDAsIm5hbWUiOiJCbG9ja011c2ljIn0.fake
+      - key: STORACHA_TOKEN
+        value: YOUR_STORACHA_TOKEN_HERE
