@@ -8,6 +8,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { convertIPFSUrl } from '../utils/ipfs';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -146,8 +147,8 @@ export default function Marketplace() {
                 plays: Number(contractMetadata.playCount) || 0,
                 downloadable: true,
                 genre: contractMetadata.genre || 'Unknown',
-                coverArt: contractMetadata.coverArtURI,
-                audioUrl: contractMetadata.audioURI,
+                coverArt: convertIPFSUrl(contractMetadata.coverArtURI),
+                audioUrl: convertIPFSUrl(contractMetadata.audioURI),
               });
             }
           } catch (err) {
