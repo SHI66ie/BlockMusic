@@ -97,6 +97,31 @@ export default function Upload() {
     }
   };
 
+  const getAudioDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      
+      audio.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(audio.src);
+        resolve(audio.duration);
+      };
+      
+      audio.onerror = () => {
+        window.URL.revokeObjectURL(audio.src);
+        reject(new Error('Failed to load audio metadata'));
+      };
+      
+      audio.src = URL.createObjectURL(file);
+    });
+  };
+
+  const formatDuration = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -118,6 +143,12 @@ export default function Upload() {
     setIsUploading(true);
 
     try {
+      toast.info('Extracting audio duration...');
+      
+      // Get audio duration
+      const durationInSeconds = await getAudioDuration(formData.audioFile);
+      const durationFormatted = formatDuration(durationInSeconds);
+      
       toast.info('Uploading files to IPFS...');
       
       // Upload files to IPFS
@@ -133,7 +164,7 @@ export default function Upload() {
         audio_url: audioURI, // Backup field
         artist: formData.artistName,
         genre: formData.genre,
-        duration: '0:00', // Will be updated when we add duration extraction
+        duration: durationFormatted,
         plays: 0,
         downloadable: true,
         attributes: [
@@ -142,6 +173,7 @@ export default function Upload() {
           { trait_type: 'Release Type', value: formData.releaseType },
           { trait_type: 'Genre', value: formData.genre },
           { trait_type: 'Explicit', value: formData.isExplicit ? 'Yes' : 'No' },
+          { trait_type: 'Duration', value: durationFormatted },
         ]
       };
       
