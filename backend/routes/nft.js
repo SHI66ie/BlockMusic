@@ -56,8 +56,26 @@ router.get('/:contractAddress/:tokenId', async (req, res) => {
     
     // Fetch metadata from IPFS
     try {
-      const metadataResponse = await axios.get(tokenURI, { timeout: 5000 });
+      // Convert ipfs:// to https:// gateway URL
+      let metadataUrl = tokenURI;
+      if (tokenURI.startsWith('ipfs://')) {
+        const hash = tokenURI.replace('ipfs://', '');
+        metadataUrl = `https://gateway.pinata.cloud/ipfs/${hash}`;
+      }
+      
+      const metadataResponse = await axios.get(metadataUrl, { timeout: 10000 });
       const metadata = metadataResponse.data;
+      
+      // Convert ipfs:// URLs in metadata to gateway URLs
+      if (metadata.image && metadata.image.startsWith('ipfs://')) {
+        metadata.image = metadata.image.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+      }
+      if (metadata.animation_url && metadata.animation_url.startsWith('ipfs://')) {
+        metadata.animation_url = metadata.animation_url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+      }
+      if (metadata.audio_url && metadata.audio_url.startsWith('ipfs://')) {
+        metadata.audio_url = metadata.audio_url.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+      }
       
       // Add token ID and contract address to response
       res.json({
