@@ -364,8 +364,19 @@ export default function Marketplace() {
                   )}
                 </button>
 
-                {/* Cover Art Placeholder */}
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded flex items-center justify-center">
+                {/* Cover Art */}
+                {track.coverArt ? (
+                  <img 
+                    src={track.coverArt} 
+                    alt={track.title}
+                    className="flex-shrink-0 w-12 h-12 rounded object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded flex items-center justify-center ${track.coverArt ? 'hidden' : ''}`}>
                   <FaMusic className="text-white text-xl" />
                 </div>
 
