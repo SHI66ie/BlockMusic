@@ -152,6 +152,11 @@ export default function Upload() {
       
       toast.info('Minting NFT...');
       
+      console.log('🎵 Minting to contract:', MUSIC_NFT_CONTRACT);
+      console.log('📝 Token URI:', tokenURI);
+      console.log('🎨 Cover Art URI:', coverArtURI);
+      console.log('🎵 Audio URI:', audioURI);
+      
       // Filter out empty samples
       const samples = formData.samples.filter(s => s.trim() !== '');
       
