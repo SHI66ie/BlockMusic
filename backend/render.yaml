@@ -12,5 +12,5 @@ services:
         value: production
       - key: PORT
         value: 5000
-      - key: STORACHA_TOKEN
-        value: YOUR_STORACHA_TOKEN_HERE
+      - key: PINATA_JWT
+        value: YOUR_PINATA_JWT_HERE
