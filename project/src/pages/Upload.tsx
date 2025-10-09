@@ -124,12 +124,18 @@ export default function Upload() {
       const coverArtURI = await uploadToIPFS(formData.coverArtFile);
       const audioURI = await uploadToIPFS(formData.audioFile);
       
-      // Create metadata JSON
+      // Create metadata JSON (NFT standard format)
       const metadata = {
         name: formData.trackTitle,
         description: `${formData.trackTitle} by ${formData.artistName}`,
         image: coverArtURI,
-        audio: audioURI,
+        animation_url: audioURI, // Standard NFT field for audio/video
+        audio_url: audioURI, // Backup field
+        artist: formData.artistName,
+        genre: formData.genre,
+        duration: '0:00', // Will be updated when we add duration extraction
+        plays: 0,
+        downloadable: true,
         attributes: [
           { trait_type: 'Artist', value: formData.artistName },
           { trait_type: 'Album', value: formData.albumName || 'N/A' },
