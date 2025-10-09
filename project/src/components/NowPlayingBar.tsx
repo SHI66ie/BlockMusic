@@ -62,10 +62,10 @@ export const NowPlayingBar: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-900 via-purple-800 to-indigo-900 border-t border-purple-700 shadow-2xl z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center gap-4">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Track Info */}
-          <div className="flex items-center gap-3 flex-shrink-0 w-64">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 w-32 sm:w-64">
             {currentTrack.coverArt ? (
               <img
                 src={currentTrack.coverArt}
@@ -78,17 +78,17 @@ export const NowPlayingBar: React.FC = () => {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold truncate text-sm">
+              <p className="text-white font-semibold truncate text-xs sm:text-sm">
                 {currentTrack.title}
               </p>
-              <p className="text-purple-300 text-xs truncate">
+              <p className="text-purple-300 text-xs truncate hidden sm:block">
                 {currentTrack.artist}
               </p>
             </div>
-            {/* Like Button */}
+            {/* Like Button - Hidden on mobile */}
             <button
               onClick={toggleLike}
-              className="text-purple-300 hover:text-pink-500 transition-colors"
+              className="hidden sm:block text-purple-300 hover:text-pink-500 transition-colors"
               aria-label={isLiked ? 'Unlike' : 'Like'}
             >
               {isLiked ? <FaHeart className="text-pink-500" /> : <FaRegHeart />}
@@ -96,12 +96,12 @@ export const NowPlayingBar: React.FC = () => {
           </div>
 
           {/* Player Controls */}
-          <div className="flex-1 flex flex-col gap-2">
-            <div className="flex items-center justify-center gap-4">
-              {/* Shuffle */}
+          <div className="flex-1 flex flex-col gap-1 sm:gap-2">
+            <div className="flex items-center justify-center gap-2 sm:gap-4">
+              {/* Shuffle - Hidden on mobile */}
               <button
                 onClick={toggleShuffle}
-                className={`transition-colors ${
+                className={`hidden sm:block transition-colors ${
                   isShuffled ? 'text-green-400' : 'text-purple-300 hover:text-white'
                 }`}
                 aria-label="Shuffle"
@@ -143,10 +143,10 @@ export const NowPlayingBar: React.FC = () => {
                 <FaStepForward />
               </button>
 
-              {/* Repeat */}
+              {/* Repeat - Hidden on mobile */}
               <button
                 onClick={handleToggleRepeat}
-                className={`transition-colors ${
+                className={`hidden sm:block transition-colors ${
                   repeatMode !== 'off' ? 'text-green-400' : 'text-purple-300 hover:text-white'
                 }`}
                 aria-label={`Repeat ${repeatMode}`}
@@ -160,8 +160,8 @@ export const NowPlayingBar: React.FC = () => {
             </div>
 
             {/* Progress Bar */}
-            <div className="flex items-center gap-2">
-              <span className="text-purple-300 text-xs w-10 text-right">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <span className="text-purple-300 text-xs w-8 sm:w-10 text-right">
                 {formatTime(currentTime)}
               </span>
               <input
@@ -177,14 +177,14 @@ export const NowPlayingBar: React.FC = () => {
                   }%, #7c3aed ${(currentTime / duration) * 100}%, #7c3aed 100%)`,
                 }}
               />
-              <span className="text-purple-300 text-xs w-10">
+              <span className="text-purple-300 text-xs w-8 sm:w-10">
                 {formatTime(duration)}
               </span>
             </div>
           </div>
 
-          {/* Volume Control */}
-          <div className="flex items-center gap-2 flex-shrink-0 w-32">
+          {/* Volume Control - Hidden on mobile */}
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0 w-32">
             <button
               onClick={() => setVolume(volume > 0 ? 0 : 1)}
               className="text-white hover:text-purple-300 transition-colors"
