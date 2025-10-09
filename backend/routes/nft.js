@@ -7,6 +7,10 @@ const { ethers } = require('ethers');
 const RPC_URL = process.env.RPC_URL || 'https://sepolia.base.org';
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 
+// Simple in-memory cache to reduce IPFS requests
+const metadataCache = new Map();
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
 // Simple ERC721 ABI for tokenURI
 const ERC721_ABI = [
   'function tokenURI(uint256 tokenId) view returns (string)',
@@ -18,6 +22,13 @@ const ERC721_ABI = [
 router.get('/:contractAddress/:tokenId', async (req, res) => {
   try {
     const { contractAddress, tokenId } = req.params;
+    const cacheKey = `${contractAddress}-${tokenId}`;
+    
+    // Check cache first
+    const cached = metadataCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return res.json(cached.data);
+    }
     
     // Get contract instance
     const contract = new ethers.Contract(contractAddress, ERC721_ABI, provider);
@@ -78,11 +89,19 @@ router.get('/:contractAddress/:tokenId', async (req, res) => {
       }
       
       // Add token ID and contract address to response
-      res.json({
+      const responseData = {
         ...metadata,
         tokenId,
         contractAddress,
+      };
+      
+      // Cache the result
+      metadataCache.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now(),
       });
+      
+      res.json(responseData);
     } catch (ipfsError) {
       console.error('Error fetching from IPFS:', ipfsError.message);
       // Return placeholder if IPFS fetch fails
