@@ -5,6 +5,8 @@ import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } fro
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 import { useAccount, useReadContract } from 'wagmi';
+import { readContract } from '@wagmi/core';
+import { config } from '../config/web3';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
@@ -67,34 +69,85 @@ export default function Marketplace() {
         // Fetch metadata for each NFT from backend API
         for (let i = 0; i < supply; i++) {
           try {
+            // Try backend first (with short timeout)
             const backendUrl = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:5000/api';
-            const response = await fetch(`${backendUrl}/nfts/${MUSIC_NFT_CONTRACT}/${i}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
             
-            if (response.ok) {
-              const metadata = await response.json();
-              fetchedTracks.push({
-                id: i,
-                title: metadata.name || `Track ${i + 1}`,
-                artist: metadata.artist || 'Unknown Artist',
-                artistAddress: metadata.artistAddress || '0x0000...0000',
-                duration: metadata.duration || '0:00',
-                plays: metadata.plays || 0,
-                downloadable: metadata.downloadable !== false,
-                genre: metadata.genre || 'Unknown',
-                coverArt: metadata.image,
-                audioUrl: metadata.animation_url || metadata.audio_url, // Real IPFS URL
+            try {
+              const response = await fetch(`${backendUrl}/nfts/${MUSIC_NFT_CONTRACT}/${i}`, {
+                signal: controller.signal
               });
-            } else {
-              // Fallback for tracks without metadata
+              clearTimeout(timeoutId);
+              
+              if (response.ok) {
+                const metadata = await response.json();
+                if (metadata.animation_url || metadata.audio_url) {
+                  // Backend returned real data
+                  fetchedTracks.push({
+                    id: i,
+                    title: metadata.name || `Track ${i + 1}`,
+                    artist: metadata.artist || 'Unknown Artist',
+                    artistAddress: metadata.artistAddress || '0x0000...0000',
+                    duration: metadata.duration || '0:00',
+                    plays: metadata.plays || 0,
+                    downloadable: metadata.downloadable !== false,
+                    genre: metadata.genre || 'Unknown',
+                    coverArt: metadata.image,
+                    audioUrl: metadata.animation_url || metadata.audio_url,
+                  });
+                  continue;
+                }
+              }
+            } catch {
+              console.log(`Backend timeout for token ${i}, fetching from contract...`);
+            }
+            
+            // Fallback: Fetch directly from contract
+            const contractMetadata = await readContract(config, {
+              address: MUSIC_NFT_CONTRACT as `0x${string}`,
+              abi: [
+                {
+                  name: 'getMusicMetadata',
+                  type: 'function',
+                  stateMutability: 'view',
+                  inputs: [{ name: 'tokenId', type: 'uint256' }],
+                  outputs: [{
+                    type: 'tuple',
+                    components: [
+                      { name: 'trackTitle', type: 'string' },
+                      { name: 'artistName', type: 'string' },
+                      { name: 'albumName', type: 'string' },
+                      { name: 'releaseType', type: 'string' },
+                      { name: 'genre', type: 'string' },
+                      { name: 'samples', type: 'string[]' },
+                      { name: 'coverArtURI', type: 'string' },
+                      { name: 'audioURI', type: 'string' },
+                      { name: 'duration', type: 'uint256' },
+                      { name: 'releaseDate', type: 'uint256' },
+                      { name: 'artist', type: 'address' },
+                      { name: 'playCount', type: 'uint256' },
+                      { name: 'isExplicit', type: 'bool' }
+                    ]
+                  }]
+                }
+              ] as const,
+              functionName: 'getMusicMetadata',
+              args: [BigInt(i)],
+            });
+            
+            if (contractMetadata) {
               fetchedTracks.push({
                 id: i,
-                title: `Track ${i + 1}`,
-                artist: 'Unknown',
-                artistAddress: '0x0000...0000',
+                title: contractMetadata.trackTitle || `Track ${i + 1}`,
+                artist: contractMetadata.artistName || 'Unknown Artist',
+                artistAddress: contractMetadata.artist || '0x0000...0000',
                 duration: '0:00',
-                plays: 0,
-                downloadable: false,
-                genre: 'Unknown',
+                plays: Number(contractMetadata.playCount) || 0,
+                downloadable: true,
+                genre: contractMetadata.genre || 'Unknown',
+                coverArt: contractMetadata.coverArtURI,
+                audioUrl: contractMetadata.audioURI,
               });
             }
           } catch (err) {

@@ -29,5 +29,20 @@ module.exports = {
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD"
+  },
+  etherscan: {
+    apiKey: {
+      baseSepolia: "PLACEHOLDER" // Base Sepolia doesn't require API key
+    },
+    customChains: [
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org"
+        }
+      }
+    ]
   }
 };
