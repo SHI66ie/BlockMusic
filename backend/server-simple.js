@@ -90,6 +90,10 @@ app.post('/api/ipfs/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+// Mount NFT routes
+const nftRoutes = require('./routes/nft');
+app.use('/api/nfts', nftRoutes);
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
@@ -99,6 +103,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       ipfsUpload: 'POST /api/ipfs/upload',
+      nftMetadata: 'GET /api/nfts/:contractAddress/:tokenId',
     },
   });
 });
