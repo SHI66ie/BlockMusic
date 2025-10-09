@@ -19,7 +19,7 @@ export async function uploadToPinata(file: File): Promise<string> {
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-    } catch (e) {
+    } catch {
       // If response is not JSON, use statusText
     }
     console.error('Backend error:', errorMessage);

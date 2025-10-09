@@ -154,7 +154,7 @@ export const SubscriptionProvider: React.FC<{ children: React.ReactNode }> = ({ 
             }
           ],
           functionName: 'subscribeWithETH',
-          args: [planEnum + 1], // Contract uses 1, 2, 3 instead of 0, 1, 2
+          args: [BigInt(planEnum + 1)], // Contract uses 1, 2, 3 instead of 0, 1, 2
           value: ethAmount,
         });
 
