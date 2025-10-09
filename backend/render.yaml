@@ -12,7 +12,5 @@ services:
         value: production
       - key: PORT
         value: 5000
-      - key: PINATA_API_KEY
-        value: 8ebf0ddd93c752935da7
-      - key: PINATA_SECRET_KEY
-        value: 598dfe4a0f1b31400223a4142f6ad0341fe2bf05a9a5a1dd7771154193f92fc7
+      - key: WEB3_STORAGE_TOKEN
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDVENjk4MzQzRjg0NjQxMzE5MjQwNjQ2NjQxNjQ2NTY0NjQ2NTY0NjQiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2MzAwMDAwMDAwMDAsIm5hbWUiOiJCbG9ja011c2ljIn0.fake
