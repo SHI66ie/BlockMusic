@@ -434,10 +434,11 @@ export default function Marketplace() {
           <div>
             <p className="font-semibold text-white mb-1">How it works:</p>
             <ul className="space-y-1">
-              <li>• Stream unlimited music with your Explorer Access subscription</li>
-              <li>• Artists receive payment automatically for every play</li>
-              <li>• Download tracks when available (marked with download icon)</li>
-              <li>• Support your favorite artists by playing their music</li>
+              <li>• Subscribe for $2.50/month to unlock unlimited streaming</li>
+              <li>• Each play costs 0.0001 ETH (~$0.30) - 85% goes directly to the artist</li>
+              <li>• Artists earn automatically with every play, no manual withdrawals</li>
+              <li>• Platform takes 15% commission to sustain operations</li>
+              <li>• All transactions are transparent and recorded on the blockchain</li>
             </ul>
           </div>
         </div>

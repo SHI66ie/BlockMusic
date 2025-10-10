@@ -96,10 +96,10 @@ export const Home = () => {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-900 to-blue-900 rounded-2xl p-8 text-white">
         <div className="max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Discover, collect, and sell extraordinary music NFTs</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Stream Music, Support Artists Directly</h1>
           <p className="text-lg text-gray-200 mb-8">
-            BlockMusic is the world's first and largest music NFT marketplace. 
-            Own a piece of music history or create and sell your own tracks.
+            BlockMusic is a decentralized music streaming platform where artists earn 85% from every play. 
+            Subscribe once, stream unlimited music, and support creators with every listen.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link 
@@ -110,10 +110,10 @@ export const Home = () => {
             </Link>
             {isConnected && (
               <Link 
-                to="/create" 
+                to="/upload" 
                 className="border-2 border-white text-white hover:bg-white hover:bg-opacity-10 px-6 py-3 rounded-full font-medium transition-colors"
               >
-                Create
+                Upload Music
               </Link>
             )}
           </div>
