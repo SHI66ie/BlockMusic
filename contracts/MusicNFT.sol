@@ -91,7 +91,7 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
     }
     
     /**
-     * @dev Record a play and pay artist
+     * @dev Record a play and pay artist with platform commission
      */
     function playTrack(uint256 tokenId) external payable nonReentrant {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
@@ -101,9 +101,17 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
         metadata.playCount++;
         userPlays[tokenId][msg.sender]++;
         
-        // Pay artist (100% of play fee goes to artist)
-        (bool sent, ) = metadata.artist.call{value: msg.value}("");
-        require(sent, "Failed to pay artist");
+        // Calculate platform commission (15%) and artist payment (85%)
+        uint256 platformFee = (msg.value * 15) / 100;
+        uint256 artistPayment = msg.value - platformFee;
+        
+        // Pay platform
+        (bool platformSent, ) = platformWallet.call{value: platformFee}("");
+        require(platformSent, "Failed to pay platform");
+        
+        // Pay artist
+        (bool artistSent, ) = metadata.artist.call{value: artistPayment}("");
+        require(artistSent, "Failed to pay artist");
         
         emit MusicPlayed(tokenId, msg.sender);
     }
@@ -136,5 +144,32 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
      */
     function updatePlatformWallet(address _platformWallet) external onlyOwner {
         platformWallet = _platformWallet;
+    }
+    
+    /**
+     * @dev Get artist's total earnings from their tracks
+     */
+    function getArtistEarnings(address artist) external view returns (uint256 totalPlays, uint256 estimatedEarnings) {
+        totalPlays = 0;
+        
+        // Iterate through all tokens to find artist's tracks
+        for (uint256 i = 0; i < _tokenIdCounter; i++) {
+            if (musicMetadata[i].artist == artist) {
+                totalPlays += musicMetadata[i].playCount;
+            }
+        }
+        
+        // Estimate earnings: assuming 0.0001 ETH per play * 85% artist share
+        // This is an estimate since actual payments are made per play
+        estimatedEarnings = totalPlays * 85 * 10**14 / 100; // 0.000085 ETH per play
+        
+        return (totalPlays, estimatedEarnings);
+    }
+    
+    /**
+     * @dev Get play fee (constant for now, can be made dynamic)
+     */
+    function getPlayFee() external pure returns (uint256) {
+        return 0.0001 ether; // 0.0001 ETH per play
     }
 }

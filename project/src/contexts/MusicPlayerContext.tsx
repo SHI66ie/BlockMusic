@@ -1,4 +1,9 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { writeContract } from '@wagmi/core';
+import { config } from '../config/web3';
+import { parseEther } from 'viem';
+
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
 interface Track {
   id: number;
@@ -79,6 +84,31 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
   }, []);
 
+  const payForPlay = async (tokenId: number) => {
+    try {
+      // Call playTrack on smart contract with 0.0001 ETH payment
+      await writeContract(config, {
+        address: MUSIC_NFT_CONTRACT as `0x${string}`,
+        abi: [
+          {
+            name: 'playTrack',
+            type: 'function',
+            stateMutability: 'payable',
+            inputs: [{ name: 'tokenId', type: 'uint256' }],
+            outputs: []
+          }
+        ] as const,
+        functionName: 'playTrack',
+        args: [BigInt(tokenId)],
+        value: parseEther('0.0001'), // 0.0001 ETH per play
+      });
+      console.log(`✅ Paid for play: Track ${tokenId}`);
+    } catch (error) {
+      console.error('❌ Failed to pay for play:', error);
+      // Don't block playback if payment fails
+    }
+  };
+
   const playTrack = (track: Track) => {
     if (!audioRef.current || !track.audioUrl) return;
 
@@ -94,11 +124,14 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return;
     }
 
-    // New track
+    // New track - pay for play
     setCurrentTrack(track);
     audioRef.current.src = track.audioUrl;
     audioRef.current.play().catch(console.error);
     setIsPlaying(true);
+    
+    // Pay for play in background (don't block playback)
+    payForPlay(track.id);
   };
 
   const pauseTrack = () => {

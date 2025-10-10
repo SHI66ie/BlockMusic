@@ -111,11 +111,15 @@ export default function Artist() {
             // Only include tracks where artist matches connected address
             if (metadata && metadata.artist.toLowerCase() === address.toLowerCase()) {
               const releaseDate = new Date(Number(metadata.releaseDate) * 1000);
+              const plays = Number(metadata.playCount) || 0;
+              // Calculate revenue: 0.0001 ETH per play * 85% artist share
+              const revenue = (plays * 0.000085).toFixed(6);
+              
               artistTracks.push({
                 id: i,
                 title: metadata.trackTitle || `Track ${i + 1}`,
-                plays: Number(metadata.playCount) || 0,
-                revenue: '0.000', // Calculate based on plays * play fee
+                plays: plays,
+                revenue: revenue,
                 releaseDate: releaseDate.toISOString().split('T')[0]
               });
             }
