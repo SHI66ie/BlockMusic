@@ -1,7 +1,7 @@
 {
   "network": "baseSepolia",
-  "contractAddress": "0x11Afd68F00230dfaC3970496F4185fd8643e7e0C",
+  "contractAddress": "0x019211130714DEF2a46FFeF084D559313181BDFA",
   "platformWallet": "0x49eC6Fff8d915DC8F1FF382941D0c5DADF9F013B",
   "platformFee": "2.5%",
-  "deployedAt": "2025-10-09T13:37:28.711Z"
+  "deployedAt": "2025-10-10T15:59:23.505Z"
 }

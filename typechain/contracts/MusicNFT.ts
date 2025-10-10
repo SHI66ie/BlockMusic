@@ -81,7 +81,9 @@ export interface MusicNFTInterface extends utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getArtistEarnings(address)": FunctionFragment;
     "getMusicMetadata(uint256)": FunctionFragment;
+    "getPlayFee()": FunctionFragment;
     "getSamples(uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mintMusic(string,string,string,string,string,string[],string,string,uint256,bool,string)": FunctionFragment;
@@ -110,7 +112,9 @@ export interface MusicNFTInterface extends utils.Interface {
       | "approve"
       | "balanceOf"
       | "getApproved"
+      | "getArtistEarnings"
       | "getMusicMetadata"
+      | "getPlayFee"
       | "getSamples"
       | "isApprovedForAll"
       | "mintMusic"
@@ -147,8 +151,16 @@ export interface MusicNFTInterface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getArtistEarnings",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getMusicMetadata",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getPlayFee",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getSamples",
@@ -258,9 +270,14 @@ export interface MusicNFTInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getArtistEarnings",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getMusicMetadata",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getPlayFee", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getSamples", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
@@ -478,10 +495,22 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getArtistEarnings(
+      artist: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        totalPlays: BigNumber;
+        estimatedEarnings: BigNumber;
+      }
+    >;
+
     getMusicMetadata(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[MusicNFT.MusicMetadataStructOutput]>;
+
+    getPlayFee(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getSamples(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -637,10 +666,22 @@ export interface MusicNFT extends BaseContract {
     overrides?: CallOverrides
   ): Promise<string>;
 
+  getArtistEarnings(
+    artist: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber] & {
+      totalPlays: BigNumber;
+      estimatedEarnings: BigNumber;
+    }
+  >;
+
   getMusicMetadata(
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<MusicNFT.MusicMetadataStructOutput>;
+
+  getPlayFee(overrides?: CallOverrides): Promise<BigNumber>;
 
   getSamples(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -796,10 +837,22 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getArtistEarnings(
+      artist: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & {
+        totalPlays: BigNumber;
+        estimatedEarnings: BigNumber;
+      }
+    >;
+
     getMusicMetadata(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<MusicNFT.MusicMetadataStructOutput>;
+
+    getPlayFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getSamples(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1034,10 +1087,17 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getArtistEarnings(
+      artist: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getMusicMetadata(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    getPlayFee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getSamples(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1166,10 +1226,17 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getArtistEarnings(
+      artist: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getMusicMetadata(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    getPlayFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getSamples(
       tokenId: PromiseOrValue<BigNumberish>,
