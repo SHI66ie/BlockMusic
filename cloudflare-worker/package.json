@@ -11,6 +11,9 @@
   "keywords": ["cloudflare", "workers", "blockchain", "music"],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "ethers": "^6.13.0"
+  },
   "devDependencies": {
     "wrangler": "^3.0.0"
   }

@@ -205,16 +205,54 @@ async function batchUpdateBlockchain(env) {
       return;
     }
 
-    console.log(`Processing ${updates.length} track updates`);
+    console.log(`Processing ${updates.length} track updates:`, updates);
 
-    // TODO: Call smart contract to batch update
-    // This requires a backend wallet with gas funds
-    // For now, just log the updates
-    console.log('Updates to process:', updates);
-
-    // Clear pending counts after successful update
-    for (const key of pendingList.keys) {
-      await env.PLAY_COUNTS.delete(key.name);
+    // Update blockchain with play counts
+    if (env.BACKEND_PRIVATE_KEY) {
+      try {
+        const { ethers } = await import('ethers');
+        
+        // Setup provider and wallet
+        const provider = new ethers.JsonRpcProvider(env.BASE_SEPOLIA_RPC);
+        const wallet = new ethers.Wallet(env.BACKEND_PRIVATE_KEY, provider);
+        
+        // MusicNFT contract ABI (only the function we need)
+        const abi = [
+          'function incrementPlayCount(uint256 tokenId, uint256 plays) external'
+        ];
+        
+        const contract = new ethers.Contract(env.MUSIC_NFT_CONTRACT, abi, wallet);
+        
+        console.log('Updating blockchain with backend wallet:', wallet.address);
+        
+        // Update each track's play count
+        for (const update of updates) {
+          console.log(`Updating token ${update.tokenId} with ${update.plays} plays...`);
+          
+          const tx = await contract.incrementPlayCount(update.tokenId, update.plays);
+          console.log(`Transaction sent: ${tx.hash}`);
+          
+          const receipt = await tx.wait();
+          console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+        }
+        
+        console.log('✅ All blockchain updates successful!');
+        
+        // Clear pending counts after successful update
+        for (const key of pendingList.keys) {
+          await env.PLAY_COUNTS.delete(key.name);
+        }
+        
+        console.log('Pending counts cleared');
+      } catch (blockchainError) {
+        console.error('❌ Blockchain update failed:', blockchainError);
+        // Don't clear pending counts if blockchain update failed
+        throw blockchainError;
+      }
+    } else {
+      console.warn('⚠️ BACKEND_PRIVATE_KEY not set - skipping blockchain update');
+      console.log('Updates that would be processed:', updates);
+      // Don't clear pending counts if we didn't update blockchain
     }
 
     console.log('Batch update complete');
