@@ -113,7 +113,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       alreadyRecorded: playRecordedRef.current.has(track.id),
     });
     
-    if (track.id && address && !playRecordedRef.current.has(track.id)) {
+    if (track.id !== undefined && track.id !== null && address && !playRecordedRef.current.has(track.id)) {
       playRecordedRef.current.add(track.id);
       console.log('📡 Calling recordPlay API...');
       recordPlay({
@@ -130,7 +130,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         });
     } else {
       console.log('⚠️ Play NOT recorded. Reason:', {
-        noTrackId: !track.id,
+        noTrackId: track.id === undefined || track.id === null,
         noAddress: !address,
         alreadyRecorded: playRecordedRef.current.has(track.id),
       });
