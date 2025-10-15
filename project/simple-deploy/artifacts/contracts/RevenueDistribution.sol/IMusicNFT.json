@@ -1,0 +1,103 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IMusicNFT",
+  "sourceName": "contracts/RevenueDistribution.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMusicMetadata",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "trackTitle",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "artistName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "albumName",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "releaseType",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "genre",
+          "type": "string"
+        },
+        {
+          "internalType": "string[]",
+          "name": "samples",
+          "type": "string[]"
+        },
+        {
+          "internalType": "string",
+          "name": "coverArtURI",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "audioURI",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "releaseDate",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "artist",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "playCount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isExplicit",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalSupply",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

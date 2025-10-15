@@ -6,6 +6,7 @@ import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDolla
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import RevenueClaimCard from '../components/artist/RevenueClaimCard';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -312,6 +313,9 @@ export default function Artist() {
       {/* Tab Content */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
+          {/* Revenue Claim Card */}
+          <RevenueClaimCard />
+
           {/* Recent Performance */}
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Recent Performance</h2>

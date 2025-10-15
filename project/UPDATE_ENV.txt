@@ -1,0 +1,13 @@
+========================================
+UPDATE YOUR .ENV FILE
+========================================
+
+Copy these lines and add them to your .env file:
+
+VITE_REVENUE_DISTRIBUTION_CONTRACT=0xa61eAfed9c3B7cF6575FB7E35E18ABe425306f02
+VITE_SUBSCRIPTION_CONTRACT=0x4371eE0797e2590d2650395FDc8666795DceB92A
+
+Then restart your dev server:
+npm run dev
+
+========================================
