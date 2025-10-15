@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
-import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus, FaSync } from 'react-icons/fa';
+import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus, FaSync, FaClock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import RevenueClaimCard from '../components/artist/RevenueClaimCard';
+import { getPlayCount } from '../services/playTracker';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -14,6 +15,7 @@ interface Track {
   id: number;
   title: string;
   plays: number;
+  pendingPlays: number;
   revenue: string;
   releaseDate: string;
 }
@@ -115,14 +117,27 @@ export default function Artist() {
             // Only include tracks where artist matches connected address
             if (metadata && metadata.artist.toLowerCase() === address.toLowerCase()) {
               const releaseDate = new Date(Number(metadata.releaseDate) * 1000);
-              const plays = Number(metadata.playCount) || 0;
+              const confirmedPlays = Number(metadata.playCount) || 0;
+              
+              // Fetch pending plays from Cloudflare
+              let pendingPlays = 0;
+              try {
+                const cloudflareData = await getPlayCount(i);
+                pendingPlays = cloudflareData.totalPlays - confirmedPlays;
+                if (pendingPlays < 0) pendingPlays = 0; // Safety check
+              } catch (err) {
+                console.log(`No pending plays for track ${i}`);
+              }
+              
+              const totalPlays = confirmedPlays + pendingPlays;
               // Calculate revenue: 0.0001 ETH per play * 85% artist share
-              const revenue = (plays * 0.000085).toFixed(6);
+              const revenue = (totalPlays * 0.000085).toFixed(6);
               
               artistTracks.push({
                 id: i,
                 title: metadata.trackTitle || `Track ${i + 1}`,
-                plays: plays,
+                plays: confirmedPlays,
+                pendingPlays: pendingPlays,
                 revenue: revenue,
                 releaseDate: releaseDate.toISOString().split('T')[0]
               });
@@ -191,7 +206,8 @@ export default function Artist() {
 
   // Calculate total earnings
   const totalEarnings = myTracks.reduce((sum, track) => sum + parseFloat(track.revenue), 0);
-  const totalPlays = myTracks.reduce((sum, track) => sum + track.plays, 0);
+  const totalPlays = myTracks.reduce((sum, track) => sum + track.plays + track.pendingPlays, 0);
+  const totalPendingPlays = myTracks.reduce((sum, track) => sum + track.pendingPlays, 0);
   const merchRevenue = merchItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.sold), 0);
   const eventRevenue = events.reduce((sum, event) => sum + parseFloat(event.revenue), 0);
   const grandTotalEarnings = totalEarnings + merchRevenue + eventRevenue;
@@ -379,7 +395,14 @@ export default function Artist() {
                     <FaTrophy className={index === 0 ? 'text-yellow-400' : 'text-gray-600'} />
                     <div>
                       <p className="font-medium">{track.title}</p>
-                      <p className="text-sm text-gray-400">{track.plays} plays</p>
+                      <p className="text-sm text-gray-400">
+                        {(track.plays + track.pendingPlays).toLocaleString()} plays
+                        {track.pendingPlays > 0 && (
+                          <span className="ml-2 text-yellow-400" title="Pending blockchain confirmation">
+                            (+{track.pendingPlays} <FaClock className="inline" size={10} />)
+                          </span>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -428,7 +451,19 @@ export default function Artist() {
                           <span className="font-medium">{track.title}</span>
                         </div>
                       </td>
-                      <td className="py-4">{track.plays.toLocaleString()}</td>
+                      <td className="py-4">
+                        <div>
+                          <div className="font-medium">{(track.plays + track.pendingPlays).toLocaleString()}</div>
+                          {track.pendingPlays > 0 && (
+                            <div className="text-xs text-yellow-400 flex items-center gap-1" title="Pending blockchain confirmation">
+                              <FaClock size={10} /> +{track.pendingPlays} pending
+                            </div>
+                          )}
+                          {track.plays > 0 && track.pendingPlays === 0 && (
+                            <div className="text-xs text-green-400">✓ Confirmed</div>
+                          )}
+                        </div>
+                      </td>
                       <td className="py-4">
                         <span className="flex items-center gap-1">
                           <FaEthereum className="text-blue-400" />
