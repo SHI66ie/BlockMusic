@@ -1,0 +1,28 @@
+name = "blockmusic-play-tracker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Cloudflare Workers configuration
+# Run: npm install -g wrangler
+# Deploy: wrangler deploy
+
+[vars]
+MUSIC_NFT_CONTRACT = "0x019211130714DEF2a46FFeF084D559313181BDFA"
+REVENUE_DISTRIBUTION_CONTRACT = "0xa61eAfed9c3B7cF6575FB7E35E18ABe425306f02"
+BASE_SEPOLIA_RPC = "https://sepolia.base.org"
+
+# KV namespace for storing play counts
+[[kv_namespaces]]
+binding = "PLAY_COUNTS"
+id = "39869a47af564b6aa25e93d8d1e4f05c"
+preview_id = "ff90074e03834dddb5493056d91617dc"
+
+# D1 Database (optional - for more complex queries)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "blockmusic-plays"
+# database_id = "your_database_id"
+
+# Cron trigger for batch updates (runs every hour)
+[triggers]
+crons = ["0 * * * *"]  # Every hour at minute 0

@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { recordPlay } from '../services/playTracker';
+import { useAccount } from 'wagmi';
 
 interface Track {
   id: number;
@@ -36,6 +38,7 @@ interface MusicPlayerContextType {
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
 export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { address } = useAccount();
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -45,6 +48,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isShuffled, setIsShuffled] = useState(false);
   const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playRecordedRef = useRef<Set<number>>(new Set()); // Track which plays have been recorded
 
   // Initialize audio element
   useEffect(() => {
@@ -101,8 +105,23 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     audioRef.current.play().catch(console.error);
     setIsPlaying(true);
     
-    // Track play count in background (for analytics/artist earnings)
-    // This doesn't require a transaction - just updates local state
+    // Record play to Cloudflare Worker (non-blocking)
+    if (track.id && address && !playRecordedRef.current.has(track.id)) {
+      playRecordedRef.current.add(track.id);
+      recordPlay({
+        tokenId: track.id,
+        userAddress: address,
+      })
+        .then((response) => {
+          console.log(`✅ Play recorded: ${track.title} (Total: ${response.totalPlays})`);
+        })
+        .catch((error) => {
+          console.error('Failed to record play:', error);
+          // Remove from recorded set so we can retry
+          playRecordedRef.current.delete(track.id);
+        });
+    }
+    
     console.log(`▶️ Playing: ${track.title} by ${track.artist}`);
   };
 

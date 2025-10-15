@@ -1,0 +1,17 @@
+{
+  "name": "blockmusic-play-tracker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for tracking BlockMusic plays",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "keywords": ["cloudflare", "workers", "blockchain", "music"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
