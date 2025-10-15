@@ -82,7 +82,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     if (!audio) return;
     
     if (isMuted) {
-      audio.volume = volume || 0.5;
+      const newVolume = volume > 0 ? volume : 0.5;
+      audio.volume = newVolume;
+      setVolume(newVolume);
       setIsMuted(false);
     } else {
       audio.volume = 0;
@@ -157,6 +159,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             value={isMuted ? 0 : volume}
             onChange={handleVolumeChange}
             className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, #9333ea 0%, #9333ea ${(isMuted ? 0 : volume) * 100}%, #374151 ${(isMuted ? 0 : volume) * 100}%, #374151 100%)`
+            }}
           />
         </div>
       </div>

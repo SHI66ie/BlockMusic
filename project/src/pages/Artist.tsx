@@ -26,7 +26,7 @@ interface MerchItem {
   sold: number;
 }
 
-interface Concert {
+interface Event {
   id: number;
   title: string;
   date: string;
@@ -40,10 +40,10 @@ export default function Artist() {
   const { address, isConnected } = useAccount();
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'music' | 'merch' | 'concerts'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'music' | 'merch' | 'events'>('overview');
   const [myTracks, setMyTracks] = useState<Track[]>([]);
   const [merchItems, setMerchItems] = useState<MerchItem[]>([]);
-  const [concerts, setConcerts] = useState<Concert[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Get total supply to fetch artist's tracks
@@ -150,9 +150,9 @@ export default function Artist() {
     ]);
   }, []);
 
-  // Load concerts (mock data for now)
+  // Load events (mock data for now)
   useEffect(() => {
-    setConcerts([
+    setEvents([
       {
         id: 1,
         title: 'BlockMusic Live 2025',
@@ -178,8 +178,8 @@ export default function Artist() {
   const totalEarnings = myTracks.reduce((sum, track) => sum + parseFloat(track.revenue), 0);
   const totalPlays = myTracks.reduce((sum, track) => sum + track.plays, 0);
   const merchRevenue = merchItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.sold), 0);
-  const concertRevenue = concerts.reduce((sum, concert) => sum + parseFloat(concert.revenue), 0);
-  const grandTotalEarnings = totalEarnings + merchRevenue + concertRevenue;
+  const eventRevenue = events.reduce((sum, event) => sum + parseFloat(event.revenue), 0);
+  const grandTotalEarnings = totalEarnings + merchRevenue + eventRevenue;
 
   if (!isConnected) {
     return (
@@ -297,15 +297,15 @@ export default function Artist() {
             Merch
           </button>
           <button
-            onClick={() => setActiveTab('concerts')}
+            onClick={() => setActiveTab('events')}
             className={`pb-3 px-2 font-medium transition-colors ${
-              activeTab === 'concerts'
+              activeTab === 'events'
                 ? 'text-purple-500 border-b-2 border-purple-500'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
             <FaCalendar className="inline mr-2" />
-            Concerts
+            Events
           </button>
         </div>
       </div>
@@ -331,8 +331,8 @@ export default function Artist() {
                 <p className="text-green-400 text-sm mt-1">+8% from last month</p>
               </div>
               <div className="bg-gray-750 rounded-lg p-4">
-                <p className="text-gray-400 text-sm">Concert Revenue</p>
-                <p className="text-2xl font-bold mt-2">{concertRevenue.toFixed(2)} ETH</p>
+                <p className="text-gray-400 text-sm">Event Revenue</p>
+                <p className="text-2xl font-bold mt-2">{eventRevenue.toFixed(2)} ETH</p>
                 <p className="text-blue-400 text-sm mt-1">2 upcoming events</p>
               </div>
             </div>
@@ -472,37 +472,27 @@ export default function Artist() {
         </div>
       )}
 
-      {activeTab === 'concerts' && (
+      {activeTab === 'events' && (
         <div className="space-y-6">
           <div className="bg-gray-800 rounded-lg p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Upcoming Concerts</h2>
+              <h2 className="text-xl font-semibold">Upcoming Events</h2>
               <button className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-medium">
-                <FaPlus /> Add Concert
+                <FaPlus /> Add Event
               </button>
             </div>
 
             <div className="space-y-4">
-              {concerts.map((concert) => (
-                <div key={concert.id} className="bg-gray-750 rounded-lg p-4">
-                  <div className="flex justify-between items-start">
+              {events.map((event) => (
+                <div key={event.id} className="bg-gray-750 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="font-semibold text-lg mb-2">{concert.title}</h3>
-                      <div className="space-y-1 text-sm">
-                        <p className="text-gray-400">
-                          <FaCalendar className="inline mr-2" />
-                          {new Date(concert.date).toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
-                        </p>
-                        <p className="text-gray-400">📍 {concert.venue}</p>
-                      </div>
+                      <h3 className="font-semibold text-lg">{event.title}</h3>
+                      <p className="text-gray-400 text-sm mt-1">{event.venue}</p>
+                      <p className="text-gray-400 text-sm">{new Date(event.date).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-green-400">{concert.revenue} ETH</p>
+                      <p className="text-2xl font-bold text-green-400">{event.revenue} ETH</p>
                       <p className="text-sm text-gray-400">Revenue</p>
                     </div>
                   </div>
@@ -510,12 +500,12 @@ export default function Artist() {
                     <div>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-gray-400">Tickets Sold:</span>
-                        <span className="font-semibold">{concert.ticketsSold} / {concert.totalTickets}</span>
+                        <span className="font-semibold">{event.ticketsSold} / {event.totalTickets}</span>
                       </div>
                       <div className="w-64 bg-gray-700 rounded-full h-2 mt-2">
                         <div 
                           className="bg-purple-600 h-2 rounded-full" 
-                          style={{ width: `${(concert.ticketsSold / concert.totalTickets) * 100}%` }}
+                          style={{ width: `${(event.ticketsSold / event.totalTickets) * 100}%` }}
                         />
                       </div>
                     </div>

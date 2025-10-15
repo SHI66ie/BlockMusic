@@ -199,6 +199,9 @@ export const NowPlayingBar: React.FC = () => {
               value={volume}
               onChange={handleVolumeChange}
               className="flex-1 h-1 bg-purple-700 rounded-lg appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, #fff 0%, #fff ${volume * 100}%, #7c3aed ${volume * 100}%, #7c3aed 100%)`,
+              }}
             />
           </div>
         </div>

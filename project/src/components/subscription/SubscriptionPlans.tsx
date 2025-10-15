@@ -163,7 +163,7 @@ export const SubscriptionPlans: React.FC = () => {
         'Save 15% compared to monthly',
         'Highest audio quality (FLAC)',
         'Exclusive content and events',
-        'Early access to concerts',
+        'Early access to events',
       ],
       icon: <FaGem className="w-6 h-6" />,
     },
