@@ -170,11 +170,11 @@ export const NowPlayingBar: React.FC = () => {
                 max={duration || 0}
                 value={currentTime}
                 onChange={handleSeek}
-                className="flex-1 h-1 bg-purple-700 rounded-lg appearance-none cursor-pointer slider"
+                className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
                 style={{
-                  background: `linear-gradient(to right, #fff 0%, #fff ${
-                    (currentTime / duration) * 100
-                  }%, #7c3aed ${(currentTime / duration) * 100}%, #7c3aed 100%)`,
+                  background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${
+                    duration > 0 ? (currentTime / duration) * 100 : 0
+                  }%, #374151 ${duration > 0 ? (currentTime / duration) * 100 : 0}%, #374151 100%)`,
                 }}
               />
               <span className="text-purple-300 text-xs w-8 sm:w-10">
