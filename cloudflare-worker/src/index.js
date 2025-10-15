@@ -42,6 +42,15 @@ export default {
         return await getArtistStats(address, env, corsHeaders);
       }
 
+      // Route: POST /api/trigger-sync (manual blockchain sync for testing)
+      if (url.pathname === '/api/trigger-sync' && request.method === 'POST') {
+        console.log('Manual sync triggered via API');
+        await batchUpdateBlockchain(env);
+        return new Response(JSON.stringify({ success: true, message: 'Blockchain sync triggered' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       return new Response('Not Found', { status: 404, headers: corsHeaders });
     } catch (error) {
       console.error('Error:', error);
