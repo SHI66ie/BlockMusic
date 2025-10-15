@@ -11,9 +11,20 @@ import { getPlayCount } from '../services/playTracker';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
+// Helper function to format duration from seconds to MM:SS
+const formatDuration = (seconds: number | bigint): string => {
+  const totalSeconds = Number(seconds);
+  if (!totalSeconds || totalSeconds <= 0) return '0:00';
+  
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 interface Track {
   id: number;
   title: string;
+  duration: string;
   plays: number;
   pendingPlays: number;
   revenue: string;
@@ -136,6 +147,7 @@ export default function Artist() {
               artistTracks.push({
                 id: i,
                 title: metadata.trackTitle || `Track ${i + 1}`,
+                duration: formatDuration(metadata.duration),
                 plays: confirmedPlays,
                 pendingPlays: pendingPlays,
                 revenue: revenue,
@@ -434,6 +446,7 @@ export default function Artist() {
                 <thead className="text-left text-gray-400 text-sm border-b border-gray-700">
                   <tr>
                     <th className="pb-3">Track</th>
+                    <th className="pb-3">Duration</th>
                     <th className="pb-3">Plays</th>
                     <th className="pb-3">Revenue</th>
                     <th className="pb-3">Release Date</th>
@@ -451,6 +464,7 @@ export default function Artist() {
                           <span className="font-medium">{track.title}</span>
                         </div>
                       </td>
+                      <td className="py-4 text-gray-400">{track.duration}</td>
                       <td className="py-4">
                         <div>
                           <div className="font-medium">{(track.plays + track.pendingPlays).toLocaleString()}</div>

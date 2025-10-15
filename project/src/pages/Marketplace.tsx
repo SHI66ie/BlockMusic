@@ -13,6 +13,16 @@ import { getPlayCount } from '../services/playTracker';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
+// Helper function to format duration from seconds to MM:SS
+const formatDuration = (seconds: number | bigint): string => {
+  const totalSeconds = Number(seconds);
+  if (!totalSeconds || totalSeconds <= 0) return '0:00';
+  
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 interface Track {
   id: number;
   title: string;
@@ -145,7 +155,7 @@ export default function Marketplace() {
                 title: contractMetadata.trackTitle || `Track ${i + 1}`,
                 artist: contractMetadata.artistName || 'Unknown Artist',
                 artistAddress: contractMetadata.artist || '0x0000...0000',
-                duration: '0:00',
+                duration: formatDuration(contractMetadata.duration),
                 plays: Number(contractMetadata.playCount) || 0,
                 downloadable: true,
                 genre: contractMetadata.genre || 'Unknown',
