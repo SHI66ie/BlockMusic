@@ -34,19 +34,25 @@ export interface StatsResponse {
  */
 export async function recordPlay(data: PlayData): Promise<PlayResponse> {
   try {
+    const payload = {
+      ...data,
+      timestamp: data.timestamp || Date.now(),
+    };
+    
+    console.log('📤 Sending play data:', payload);
+    
     const response = await fetch(`${PLAY_TRACKER_API}/api/track-play`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...data,
-        timestamp: data.timestamp || Date.now(),
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
 
     return await response.json();

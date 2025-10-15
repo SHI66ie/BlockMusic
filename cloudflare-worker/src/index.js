@@ -66,8 +66,8 @@ async function handleTrackPlay(request, env, corsHeaders) {
   const data = await request.json();
   const { tokenId, userAddress, timestamp } = data;
 
-  // Validate input
-  if (!tokenId || !userAddress) {
+  // Validate input (allow tokenId 0)
+  if (tokenId === undefined || tokenId === null || !userAddress) {
     return new Response(
       JSON.stringify({ error: 'Missing tokenId or userAddress' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
