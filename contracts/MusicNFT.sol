@@ -1,11 +1,19 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.22;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
+contract MusicNFT is 
+    Initializable,
+    ERC721URIStorageUpgradeable, 
+    OwnableUpgradeable, 
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable 
+{
     uint256 private _tokenIdCounter;
     
     address public platformWallet;
@@ -42,10 +50,24 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
         string releaseType
     );
     event MusicPlayed(uint256 indexed tokenId, address indexed listener);
+    event PlayCountIncremented(uint256 indexed tokenId, uint256 plays);
     
-    constructor(address _platformWallet) ERC721("BlockMusic NFT", "BMUSIC") Ownable(msg.sender) {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+    
+    function initialize(address _platformWallet) public initializer {
+        __ERC721_init("BlockMusic NFT", "BMUSIC");
+        __ERC721URIStorage_init();
+        __Ownable_init(msg.sender);
+        __ReentrancyGuard_init();
+        __UUPSUpgradeable_init();
+        
         platformWallet = _platformWallet;
     }
+    
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
     
     /**
      * @dev Mint a new music NFT
@@ -171,5 +193,22 @@ contract MusicNFT is ERC721URIStorage, Ownable, ReentrancyGuard {
      */
     function getPlayFee() external pure returns (uint256) {
         return 0.0001 ether; // 0.0001 ETH per play
+    }
+    
+    /**
+     * @dev Increment play count (for subscription-based plays)
+     * Only owner can call this (backend wallet via Cloudflare Worker)
+     */
+    function incrementPlayCount(uint256 tokenId, uint256 plays) external onlyOwner {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        musicMetadata[tokenId].playCount += plays;
+        emit PlayCountIncremented(tokenId, plays);
+    }
+    
+    /**
+     * @dev Get contract version
+     */
+    function version() external pure returns (string memory) {
+        return "2.0.0-upgradeable";
     }
 }

@@ -78,6 +78,7 @@ export declare namespace MusicNFT {
 
 export interface MusicNFTInterface extends utils.Interface {
   functions: {
+    "UPGRADE_INTERFACE_VERSION()": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
@@ -85,6 +86,8 @@ export interface MusicNFTInterface extends utils.Interface {
     "getMusicMetadata(uint256)": FunctionFragment;
     "getPlayFee()": FunctionFragment;
     "getSamples(uint256)": FunctionFragment;
+    "incrementPlayCount(uint256,uint256)": FunctionFragment;
+    "initialize(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mintMusic(string,string,string,string,string,string[],string,string,uint256,bool,string)": FunctionFragment;
     "musicMetadata(uint256)": FunctionFragment;
@@ -93,6 +96,7 @@ export interface MusicNFTInterface extends utils.Interface {
     "ownerOf(uint256)": FunctionFragment;
     "platformWallet()": FunctionFragment;
     "playTrack(uint256)": FunctionFragment;
+    "proxiableUUID()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
@@ -104,11 +108,14 @@ export interface MusicNFTInterface extends utils.Interface {
     "transferFrom(address,address,uint256)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "updatePlatformWallet(address)": FunctionFragment;
+    "upgradeToAndCall(address,bytes)": FunctionFragment;
     "userPlays(uint256,address)": FunctionFragment;
+    "version()": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "UPGRADE_INTERFACE_VERSION"
       | "approve"
       | "balanceOf"
       | "getApproved"
@@ -116,6 +123,8 @@ export interface MusicNFTInterface extends utils.Interface {
       | "getMusicMetadata"
       | "getPlayFee"
       | "getSamples"
+      | "incrementPlayCount"
+      | "initialize"
       | "isApprovedForAll"
       | "mintMusic"
       | "musicMetadata"
@@ -124,6 +133,7 @@ export interface MusicNFTInterface extends utils.Interface {
       | "ownerOf"
       | "platformWallet"
       | "playTrack"
+      | "proxiableUUID"
       | "renounceOwnership"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
@@ -135,9 +145,15 @@ export interface MusicNFTInterface extends utils.Interface {
       | "transferFrom"
       | "transferOwnership"
       | "updatePlatformWallet"
+      | "upgradeToAndCall"
       | "userPlays"
+      | "version"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "UPGRADE_INTERFACE_VERSION",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
@@ -165,6 +181,14 @@ export interface MusicNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getSamples",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "incrementPlayCount",
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -203,6 +227,10 @@ export interface MusicNFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "playTrack",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "proxiableUUID",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -259,10 +287,19 @@ export interface MusicNFTInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
+    functionFragment: "upgradeToAndCall",
+    values: [PromiseOrValue<string>, PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "userPlays",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
   ): string;
+  encodeFunctionData(functionFragment: "version", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "UPGRADE_INTERFACE_VERSION",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
@@ -280,6 +317,11 @@ export interface MusicNFTInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "getPlayFee", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getSamples", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "incrementPlayCount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
@@ -296,6 +338,10 @@ export interface MusicNFTInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "playTrack", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "proxiableUUID",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -334,27 +380,38 @@ export interface MusicNFTInterface extends utils.Interface {
     functionFragment: "updatePlatformWallet",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "upgradeToAndCall",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "userPlays", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "BatchMetadataUpdate(uint256,uint256)": EventFragment;
+    "Initialized(uint64)": EventFragment;
     "MetadataUpdate(uint256)": EventFragment;
     "MusicMinted(uint256,address,string,string,string)": EventFragment;
     "MusicPlayed(uint256,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
+    "PlayCountIncremented(uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
+    "Upgraded(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BatchMetadataUpdate"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MetadataUpdate"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MusicMinted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "MusicPlayed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PlayCountIncremented"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
 export interface ApprovalEventObject {
@@ -392,6 +449,13 @@ export type BatchMetadataUpdateEvent = TypedEvent<
 
 export type BatchMetadataUpdateEventFilter =
   TypedEventFilter<BatchMetadataUpdateEvent>;
+
+export interface InitializedEventObject {
+  version: BigNumber;
+}
+export type InitializedEvent = TypedEvent<[BigNumber], InitializedEventObject>;
+
+export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface MetadataUpdateEventObject {
   _tokenId: BigNumber;
@@ -440,6 +504,18 @@ export type OwnershipTransferredEvent = TypedEvent<
 export type OwnershipTransferredEventFilter =
   TypedEventFilter<OwnershipTransferredEvent>;
 
+export interface PlayCountIncrementedEventObject {
+  tokenId: BigNumber;
+  plays: BigNumber;
+}
+export type PlayCountIncrementedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  PlayCountIncrementedEventObject
+>;
+
+export type PlayCountIncrementedEventFilter =
+  TypedEventFilter<PlayCountIncrementedEvent>;
+
 export interface TransferEventObject {
   from: string;
   to: string;
@@ -451,6 +527,13 @@ export type TransferEvent = TypedEvent<
 >;
 
 export type TransferEventFilter = TypedEventFilter<TransferEvent>;
+
+export interface UpgradedEventObject {
+  implementation: string;
+}
+export type UpgradedEvent = TypedEvent<[string], UpgradedEventObject>;
+
+export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
 export interface MusicNFT extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -479,6 +562,8 @@ export interface MusicNFT extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    UPGRADE_INTERFACE_VERSION(overrides?: CallOverrides): Promise<[string]>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -516,6 +601,17 @@ export interface MusicNFT extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string[]]>;
+
+    incrementPlayCount(
+      tokenId: PromiseOrValue<BigNumberish>,
+      plays: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    initialize(
+      _platformWallet: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
@@ -587,6 +683,8 @@ export interface MusicNFT extends BaseContract {
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    proxiableUUID(overrides?: CallOverrides): Promise<[string]>;
+
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
@@ -643,12 +741,22 @@ export interface MusicNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     userPlays(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    version(overrides?: CallOverrides): Promise<[string]>;
   };
+
+  UPGRADE_INTERFACE_VERSION(overrides?: CallOverrides): Promise<string>;
 
   approve(
     to: PromiseOrValue<string>,
@@ -687,6 +795,17 @@ export interface MusicNFT extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string[]>;
+
+  incrementPlayCount(
+    tokenId: PromiseOrValue<BigNumberish>,
+    plays: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  initialize(
+    _platformWallet: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   isApprovedForAll(
     owner: PromiseOrValue<string>,
@@ -758,6 +877,8 @@ export interface MusicNFT extends BaseContract {
     overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  proxiableUUID(overrides?: CallOverrides): Promise<string>;
+
   renounceOwnership(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
@@ -814,13 +935,23 @@ export interface MusicNFT extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  upgradeToAndCall(
+    newImplementation: PromiseOrValue<string>,
+    data: PromiseOrValue<BytesLike>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   userPlays(
     arg0: PromiseOrValue<BigNumberish>,
     arg1: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  version(overrides?: CallOverrides): Promise<string>;
+
   callStatic: {
+    UPGRADE_INTERFACE_VERSION(overrides?: CallOverrides): Promise<string>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -858,6 +989,17 @@ export interface MusicNFT extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string[]>;
+
+    incrementPlayCount(
+      tokenId: PromiseOrValue<BigNumberish>,
+      plays: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    initialize(
+      _platformWallet: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     isApprovedForAll(
       owner: PromiseOrValue<string>,
@@ -929,6 +1071,8 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    proxiableUUID(overrides?: CallOverrides): Promise<string>;
+
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     "safeTransferFrom(address,address,uint256)"(
@@ -983,11 +1127,19 @@ export interface MusicNFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     userPlays(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    version(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -1021,6 +1173,9 @@ export interface MusicNFT extends BaseContract {
       _fromTokenId?: null,
       _toTokenId?: null
     ): BatchMetadataUpdateEventFilter;
+
+    "Initialized(uint64)"(version?: null): InitializedEventFilter;
+    Initialized(version?: null): InitializedEventFilter;
 
     "MetadataUpdate(uint256)"(_tokenId?: null): MetadataUpdateEventFilter;
     MetadataUpdate(_tokenId?: null): MetadataUpdateEventFilter;
@@ -1058,6 +1213,15 @@ export interface MusicNFT extends BaseContract {
       newOwner?: PromiseOrValue<string> | null
     ): OwnershipTransferredEventFilter;
 
+    "PlayCountIncremented(uint256,uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      plays?: null
+    ): PlayCountIncrementedEventFilter;
+    PlayCountIncremented(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
+      plays?: null
+    ): PlayCountIncrementedEventFilter;
+
     "Transfer(address,address,uint256)"(
       from?: PromiseOrValue<string> | null,
       to?: PromiseOrValue<string> | null,
@@ -1068,9 +1232,18 @@ export interface MusicNFT extends BaseContract {
       to?: PromiseOrValue<string> | null,
       tokenId?: PromiseOrValue<BigNumberish> | null
     ): TransferEventFilter;
+
+    "Upgraded(address)"(
+      implementation?: PromiseOrValue<string> | null
+    ): UpgradedEventFilter;
+    Upgraded(
+      implementation?: PromiseOrValue<string> | null
+    ): UpgradedEventFilter;
   };
 
   estimateGas: {
+    UPGRADE_INTERFACE_VERSION(overrides?: CallOverrides): Promise<BigNumber>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1102,6 +1275,17 @@ export interface MusicNFT extends BaseContract {
     getSamples(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    incrementPlayCount(
+      tokenId: PromiseOrValue<BigNumberish>,
+      plays: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    initialize(
+      _platformWallet: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isApprovedForAll(
@@ -1145,6 +1329,8 @@ export interface MusicNFT extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    proxiableUUID(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1202,14 +1388,26 @@ export interface MusicNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     userPlays(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    version(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    UPGRADE_INTERFACE_VERSION(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     approve(
       to: PromiseOrValue<string>,
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1241,6 +1439,17 @@ export interface MusicNFT extends BaseContract {
     getSamples(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    incrementPlayCount(
+      tokenId: PromiseOrValue<BigNumberish>,
+      plays: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    initialize(
+      _platformWallet: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
@@ -1284,6 +1493,8 @@ export interface MusicNFT extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    proxiableUUID(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1341,10 +1552,18 @@ export interface MusicNFT extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    upgradeToAndCall(
+      newImplementation: PromiseOrValue<string>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     userPlays(
       arg0: PromiseOrValue<BigNumberish>,
       arg1: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
