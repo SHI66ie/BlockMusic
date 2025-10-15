@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
-import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus } from 'react-icons/fa';
+import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -45,6 +45,8 @@ export default function Artist() {
   const [merchItems, setMerchItems] = useState<MerchItem[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   // Get total supply to fetch artist's tracks
   const { data: totalSupply } = useReadContract({
@@ -66,6 +68,7 @@ export default function Artist() {
     const loadTracks = async () => {
       if (!address || !totalSupply) {
         setIsLoading(false);
+        setIsRefreshing(false);
         return;
       }
 
@@ -130,16 +133,28 @@ export default function Artist() {
         }
 
         setMyTracks(artistTracks);
+        setLastRefresh(new Date());
       } catch (error) {
         console.error('Error loading tracks:', error);
         toast.error('Failed to load your tracks');
       } finally {
         setIsLoading(false);
+        setIsRefreshing(false);
       }
     };
 
     loadTracks();
   }, [address, totalSupply]);
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    toast.info('Refreshing data from blockchain...');
+    
+    // Trigger reload by updating a dependency
+    // This will re-run the useEffect above
+    window.location.reload();
+  };
 
   // Load merch items (mock data for now)
   useEffect(() => {
@@ -208,13 +223,28 @@ export default function Artist() {
         <div>
           <h1 className="text-3xl font-bold">Artist Dashboard</h1>
           <p className="text-gray-400 mt-1">Welcome back, {address?.slice(0, 6)}...{address?.slice(-4)}</p>
+          {lastRefresh && (
+            <p className="text-xs text-gray-500 mt-1">
+              Last updated: {lastRefresh.toLocaleTimeString()}
+            </p>
+          )}
         </div>
-        <button
-          onClick={() => navigate('/upload')}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          <FaPlus /> Upload New Track
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg font-medium transition-colors disabled:opacity-50"
+            title="Refresh data from blockchain"
+          >
+            <FaSync className={isRefreshing ? 'animate-spin' : ''} /> Refresh
+          </button>
+          <button
+            onClick={() => navigate('/upload')}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <FaPlus /> Upload New Track
+          </button>
+        </div>
       </div>
 
       {/* Stats Overview */}
