@@ -9,6 +9,7 @@ import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { convertIPFSUrl } from '../utils/ipfs';
+import { getPlayCount } from '../services/playTracker';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -19,6 +20,7 @@ interface Track {
   artistAddress: string;
   duration: string;
   plays: number;
+  livePlayCount?: number;
   coverArt?: string;
   audioUrl?: string;
   downloadable: boolean;
@@ -169,6 +171,9 @@ export default function Marketplace() {
 
         setTracks(fetchedTracks);
         setPlaylist(fetchedTracks); // Set playlist for next/previous functionality
+        
+        // Fetch live play counts from Cloudflare
+        fetchLivePlayCounts(fetchedTracks);
       } catch (error) {
         console.error('Error fetching NFTs:', error);
         toast.error('Failed to load tracks');
@@ -179,6 +184,35 @@ export default function Marketplace() {
 
     fetchNFTs();
   }, [totalSupply]);
+  
+  // Fetch live play counts from Cloudflare
+  const fetchLivePlayCounts = async (trackList: Track[]) => {
+    const updatedTracks = await Promise.all(
+      trackList.map(async (track) => {
+        try {
+          const cloudflareData = await getPlayCount(track.id);
+          return {
+            ...track,
+            livePlayCount: cloudflareData.totalPlays,
+          };
+        } catch {
+          return track; // Keep original if fetch fails
+        }
+      })
+    );
+    setTracks(updatedTracks);
+  };
+  
+  // Refresh live play counts every 10 seconds
+  useEffect(() => {
+    if (tracks.length === 0) return;
+    
+    const interval = setInterval(() => {
+      fetchLivePlayCounts(tracks);
+    }, 10000); // 10 seconds
+    
+    return () => clearInterval(interval);
+  }, [tracks.length]);
   
   // Check subscription access on mount and when wallet connects
   useEffect(() => {
@@ -395,7 +429,12 @@ export default function Marketplace() {
                 <div className="flex items-center gap-4">
                   <div className="hidden md:block text-sm text-gray-400">
                     <div>{track.duration}</div>
-                    <div className="text-xs">{track.plays.toLocaleString()} plays</div>
+                    <div className="text-xs">
+                      {(track.livePlayCount !== undefined ? track.livePlayCount : track.plays).toLocaleString()} plays
+                      {track.livePlayCount !== undefined && track.livePlayCount > track.plays && (
+                        <span className="ml-1 text-green-400">●</span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Like Button */}
