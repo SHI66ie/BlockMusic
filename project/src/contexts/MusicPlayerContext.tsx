@@ -106,8 +106,16 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setIsPlaying(true);
     
     // Record play to Cloudflare Worker (non-blocking)
+    console.log('🔍 Play tracking debug:', {
+      trackId: track.id,
+      hasAddress: !!address,
+      address: address,
+      alreadyRecorded: playRecordedRef.current.has(track.id),
+    });
+    
     if (track.id && address && !playRecordedRef.current.has(track.id)) {
       playRecordedRef.current.add(track.id);
+      console.log('📡 Calling recordPlay API...');
       recordPlay({
         tokenId: track.id,
         userAddress: address,
@@ -116,10 +124,16 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           console.log(`✅ Play recorded: ${track.title} (Total: ${response.totalPlays})`);
         })
         .catch((error) => {
-          console.error('Failed to record play:', error);
+          console.error('❌ Failed to record play:', error);
           // Remove from recorded set so we can retry
           playRecordedRef.current.delete(track.id);
         });
+    } else {
+      console.log('⚠️ Play NOT recorded. Reason:', {
+        noTrackId: !track.id,
+        noAddress: !address,
+        alreadyRecorded: playRecordedRef.current.has(track.id),
+      });
     }
     
     console.log(`▶️ Playing: ${track.title} by ${track.artist}`);
