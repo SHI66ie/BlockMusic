@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_cors import CORS
+from flask_recaptcha import ReCaptcha
 from models import Database
 from datetime import datetime, timedelta
 import jwt
@@ -14,6 +15,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['RECAPTCHA_PUBLIC_KEY'] = os.getenv('RECAPTCHA_PUBLIC_KEY')
+app.config['RECAPTCHA_PRIVATE_KEY'] = os.getenv('RECAPTCHA_PRIVATE_KEY')
+
+recaptcha = ReCaptcha(app)
 
 CORS(app)
 db = Database(os.getenv('DATABASE_URL', 'sqlite:///artist_platform.db'))
@@ -32,13 +37,16 @@ def load_user(user_id):
         return user
     return None
 
-@app.route('/api/register', methods=['POST'])
+@app.route('/api/auth/signup', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('displayName')
     email = data.get('email')
     password = data.get('password')
-    is_artist = data.get('is_artist', False)
+    recaptcha_token = data.get('recaptcha_token')
+    
+    if not recaptcha.verify(recaptcha_token):
+        return jsonify({'error': 'Captcha verification failed'}), 400
     
     if db.get_user_by_username(username):
         return jsonify({'error': 'Username already exists'}), 400
@@ -46,18 +54,22 @@ def register():
     if db.get_user_by_email(email):
         return jsonify({'error': 'Email already exists'}), 400
     
-    db.create_user(username, email, password, is_artist)
+    db.create_user(username, email, password, False)  # is_artist False by default
     
     return jsonify({'message': 'Registration successful'}), 201
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/auth/login', methods=['POST'])
 def login():
     data = request.get_json()
-    username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
+    recaptcha_token = data.get('recaptcha_token')
     
-    if db.verify_password(username, password):
-        user = db.get_user_by_username(username)
+    if not recaptcha.verify(recaptcha_token):
+        return jsonify({'error': 'Captcha verification failed'}), 400
+    
+    user = db.get_user_by_email(email)
+    if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
         token = jwt.encode({
             'user_id': user['id'],
             'exp': datetime.utcnow() + timedelta(hours=1)

@@ -141,6 +141,29 @@ class Database:
         finally:
             conn.close()
 
+    def get_user_by_email(self, email):
+        conn = self.get_db_connection()
+        try:
+            cursor = conn.cursor()
+            if self.db_url:
+                cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
+            else:
+                cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
+            user = cursor.fetchone()
+            if user:
+                return {
+                    'id': user[0],
+                    'username': user[1],
+                    'email': user[2],
+                    'password_hash': user[3],
+                    'is_artist': bool(user[4]),
+                    'balance': user[5],
+                    'date_created': user[6]
+                }
+            return None
+        finally:
+            conn.close()
+
     def create_user(self, username, email, password, is_artist=False):
         conn = self.get_db_connection()
         try:

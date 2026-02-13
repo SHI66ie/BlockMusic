@@ -3,6 +3,7 @@ import { X, Eye, EyeOff, Wallet } from 'lucide-react';
 import { googleAuth, GoogleUser } from '../services/googleAuth';
 import { emailAuth, EmailUser } from '../services/emailAuth';
 import WalletConnectModal from './WalletConnectModal';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
   const [googleInitialized, setGoogleInitialized] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [loggedInUser, setLoggedInUser] = useState<string>('');
+  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
 
   // Handle successful authentication and show wallet modal
   const handleAuthSuccess = (userName: string) => {
@@ -138,6 +140,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
       }
     }
 
+    if (!recaptchaToken) {
+      newErrors.recaptcha = 'Please complete the captcha';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -153,12 +159,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
             displayName: formData.displayName,
             email: formData.email,
             password: formData.password,
-            confirmPassword: formData.confirmPassword
+            confirmPassword: formData.confirmPassword,
+            recaptcha_token: recaptchaToken
           });
         } else {
           response = await emailAuth.login({
             email: formData.email,
-            password: formData.password
+            password: formData.password,
+            recaptcha_token: recaptchaToken
           });
         }
 
@@ -173,6 +181,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
             confirmPassword: '',
             displayName: '',
           });
+          setRecaptchaToken('');
         } else {
           alert(`${mode === 'login' ? 'Login' : 'Signup'} failed: ${response.error}`);
         }
@@ -374,6 +383,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
                   <p className="text-error-400 text-sm mt-1">{errors.confirmPassword}</p>
                 )}
               </div>
+            )}
+
+            <ReCAPTCHA
+              sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''}
+              onChange={setRecaptchaToken}
+              className="mt-4"
+            />
+            {errors.recaptcha && (
+              <p className="text-error-400 text-sm mt-1">{errors.recaptcha}</p>
             )}
 
             <button

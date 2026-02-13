@@ -22,6 +22,7 @@ interface EmailAuthResponse {
 interface LoginCredentials {
   email: string;
   password: string;
+  recaptcha_token?: string;
 }
 
 interface SignupCredentials {
@@ -29,6 +30,7 @@ interface SignupCredentials {
   email: string;
   password: string;
   confirmPassword: string;
+  recaptcha_token?: string;
 }
 
 class EmailAuthService {

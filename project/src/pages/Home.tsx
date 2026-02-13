@@ -1,7 +1,8 @@
 import React from 'react';
-import { FaMusic } from 'react-icons/fa';
+import { FaMusic, FaGoogle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useAccount } from 'wagmi';
+import { googleAuth } from '../services/googleAuth';
 
 const FeaturedCard = ({ title, description, imageUrl, category }: { title: string; description: string; imageUrl: string; category: string }) => (
   <div className="relative group bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-colors">
@@ -61,6 +62,28 @@ const TrackItem = ({ title, artist, duration, isPlaying = false }: { title: stri
 
 export const Home = () => {
   const { isConnected } = useAccount();
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+
+  // Initialize Google Auth on mount
+  React.useEffect(() => {
+    googleAuth.init().catch(error => {
+      console.error('Failed to initialize Google Auth:', error);
+    });
+  }, []);
+
+  const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true);
+    try {
+      const response = await googleAuth.signIn();
+      if (!response.success) {
+        alert('Google signup failed: ' + response.error);
+      }
+    } catch (error) {
+      alert('Google signup failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
 
   const featuredItems = [
     {
@@ -108,6 +131,18 @@ export const Home = () => {
             >
               Explore
             </Link>
+            <button
+              onClick={handleGoogleSignUp}
+              disabled={isGoogleLoading}
+              className="bg-white text-purple-900 hover:bg-gray-100 px-6 py-3 rounded-full font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {isGoogleLoading ? (
+                <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+              ) : (
+                <FaGoogle className="w-4 h-4" />
+              )}
+              Sign up with Google
+            </button>
             {isConnected && (
               <Link 
                 to="/upload" 
