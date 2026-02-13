@@ -13,6 +13,7 @@ const errorHandler = require('./middleware/errorHandler');
 // Import routes
 const nftRoutes = require('./routes/nft');
 const ipfsRoutes = require('./routes/ipfs');
+const authRoutes = require('./routes/auth');
 
 // Initialize Express app
 const app = express();
@@ -44,6 +45,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use(`${config.api.prefix}/nfts`, nftRoutes);
 app.use(`${config.api.prefix}/ipfs`, ipfsRoutes);
+app.use(`${config.api.prefix}/auth`, authRoutes);
 
 // Serve static files in production
 if (config.nodeEnv === 'production') {

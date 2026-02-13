@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Eye, EyeOff, Wallet } from 'lucide-react';
 import { googleAuth, GoogleUser } from '../services/googleAuth';
+import { emailAuth, EmailUser } from '../services/emailAuth';
 import WalletConnectModal from './WalletConnectModal';
 
 interface AuthModalProps {
@@ -42,12 +43,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
     }
   }, [isOpen]);
 
-  // Listen for Google auth events
+  // Listen for auth events
   useEffect(() => {
-    const handleGoogleSuccess = (event: CustomEvent) => {
-      const { user } = event.detail;
+    const handleGoogleSuccess = async (event: CustomEvent) => {
+      const { user, token } = event.detail;
       setIsGoogleLoading(false);
-      handleAuthSuccess(user.name);
+      
+      try {
+        // Send Google auth data to backend
+        const response = await emailAuth.linkGoogleAccount({
+          googleId: user.id,
+          email: user.email,
+          displayName: user.name,
+          photo: user.picture
+        });
+        
+        if (response.success) {
+          const userName = response.user?.displayName || user.name;
+          handleAuthSuccess(userName);
+        } else {
+          alert(`Google ${mode} failed: ${response.error}`);
+        }
+      } catch (error) {
+        alert(`Google ${mode} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     };
 
     const handleGoogleError = (event: CustomEvent) => {
@@ -55,12 +74,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
       alert(`Google ${mode} failed: ${event.detail.error}`);
     };
 
+    const handleEmailSuccess = (event: CustomEvent) => {
+      const { user } = event.detail;
+      const userName = user?.displayName || user?.email?.split('@')[0];
+      handleAuthSuccess(userName);
+    };
+
     window.addEventListener('googleAuthSuccess', handleGoogleSuccess as EventListener);
     window.addEventListener('googleAuthError', handleGoogleError as EventListener);
+    window.addEventListener('emailAuthSuccess', handleEmailSuccess as EventListener);
 
     return () => {
       window.removeEventListener('googleAuthSuccess', handleGoogleSuccess as EventListener);
       window.removeEventListener('googleAuthError', handleGoogleError as EventListener);
+      window.removeEventListener('emailAuthSuccess', handleEmailSuccess as EventListener);
     };
   }, [mode, handleAuthSuccess]);
 
@@ -115,20 +142,43 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onSwitchMo
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // Handle successful email login/signup
-      const userName = formData.displayName || formData.email.split('@')[0];
-      handleAuthSuccess(userName);
-      
-      // Reset form
-      setFormData({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        displayName: '',
-      });
+      try {
+        let response;
+        
+        if (mode === 'signup') {
+          response = await emailAuth.signup({
+            displayName: formData.displayName,
+            email: formData.email,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword
+          });
+        } else {
+          response = await emailAuth.login({
+            email: formData.email,
+            password: formData.password
+          });
+        }
+
+        if (response.success) {
+          const userName = response.user?.displayName || formData.email.split('@')[0];
+          handleAuthSuccess(userName);
+          
+          // Reset form
+          setFormData({
+            email: '',
+            password: '',
+            confirmPassword: '',
+            displayName: '',
+          });
+        } else {
+          alert(`${mode === 'login' ? 'Login' : 'Signup'} failed: ${response.error}`);
+        }
+      } catch (error) {
+        alert(`${mode === 'login' ? 'Login' : 'Signup'} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
   };
 

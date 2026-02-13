@@ -24,7 +24,7 @@ class GoogleAuthService {
 
   constructor() {
     // These would normally come from environment variables
-    this.clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || 'your-google-client-id';
+    this.clientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || 'your-google-client-id';
     this.redirectUri = `${window.location.origin}/auth/google/callback`;
     this.scope = 'openid email profile';
   }
