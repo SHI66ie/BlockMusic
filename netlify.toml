@@ -1,11 +1,12 @@
 [build]
   base = "project"
-  command = "npm install && npm run build"
+  command = "npm install --legacy-peer-deps && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
-  PYTHON_VERSION = "3.9"
+  NPM_FLAGS = "--legacy-peer-deps"
+  NODE_OPTIONS = "--max-old-space-size=4096"
 
 [[redirects]]
   from = "/*"
