@@ -206,37 +206,9 @@ export default function Artist() {
   const totalPlays = revenueSummary ? Number(revenueSummary[5]) : 0;
 
   // Calculate total earnings from blockchain data
-  const totalEarnings = Number(formatEther(claimableETH)) + Number(formatEther(totalClaimedETH));
-  const totalUSDC = Number(formatUnits(claimableUSDC, 6)) + Number(formatUnits(totalClaimedUSDC, 6));
-
-  // Load events (mock data for now)
-  useEffect(() => {
-    setEvents([
-      {
-        id: 1,
-        title: 'BlockMusic Live 2025',
-        date: '2025-12-15',
-        venue: 'Crypto Arena',
-        ticketsSold: 450,
-        totalTickets: 500,
-        revenue: '4.5'
-      },
-      {
-        id: 2,
-        title: 'Summer Festival',
-        date: '2025-08-20',
-        venue: 'Digital Park',
-        ticketsSold: 1200,
-        totalTickets: 1500,
-        revenue: '12.0'
-      },
-    ]);
-  }, []);
-
-  // Calculate total earnings from blockchain data only
-  const totalEarnings = Number(formatEther(claimableETH)) + Number(formatEther(totalClaimedETH));
-  const totalUSDC = Number(formatUnits(claimableUSDC, 6)) + Number(formatUnits(totalClaimedUSDC, 6));
-  const grandTotalEarnings = totalEarnings + totalUSDC;
+  const blockchainEarnings = Number(formatEther(claimableETH)) + Number(formatEther(totalClaimedETH));
+  const blockchainUSDC = Number(formatUnits(claimableUSDC, 6)) + Number(formatUnits(totalClaimedUSDC, 6));
+  const grandTotalEarnings = blockchainEarnings + blockchainUSDC;
 
   if (!isConnected) {
     return (
@@ -397,7 +369,7 @@ export default function Artist() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-gray-800 rounded-lg p-4">
                 <p className="text-gray-400 text-sm">Streaming Revenue</p>
-                <p className="text-2xl font-bold mt-2">{totalEarnings.toFixed(4)} ETH</p>
+                <p className="text-2xl font-bold mt-2">{blockchainEarnings.toFixed(4)} ETH</p>
                 <p className="text-green-400 text-sm mt-1">
                   {formatEther(claimableETH)} ETH claimable • {formatUnits(claimableUSDC, 6)} USDC claimable
                 </p>

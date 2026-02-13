@@ -3,8 +3,8 @@ import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }: { mode: string }) => {
-  // Load env file based on `mode` in the current directory and parent directories
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in current directory and parent directories
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
@@ -29,9 +29,21 @@ export default defineConfig(({ mode }: { mode: string }) => {
       'process.env': {
         ...env,
         VITE_ALCHEMY_API_KEY: JSON.stringify(env.VITE_ALCHEMY_API_KEY || ''),
-        VITE_WALLET_CONNECT_PROJECT_ID: JSON.stringify(env.VITE_WALLET_CONNECT_PROJECT_ID || '')
+        VITE_WALLET_CONNECT_PROJECT_ID: JSON.stringify(env.VITE_WALLET_CONNECT_PROJECT_ID || ''),
+        VITE_REVENUE_DISTRIBUTION_CONTRACT: JSON.stringify(env.VITE_REVENUE_DISTRIBUTION_CONTRACT || ''),
+        VITE_MUSIC_NFT_CONTRACT: JSON.stringify(env.VITE_MUSIC_NFT_CONTRACT || ''),
+        VITE_SUBSCRIPTION_CONTRACT: JSON.stringify(env.VITE_SUBSCRIPTION_CONTRACT || ''),
+        VITE_ETH_SUBSCRIPTION_CONTRACT: JSON.stringify(env.VITE_ETH_SUBSCRIPTION_CONTRACT || ''),
+        VITE_USDC_TOKEN: JSON.stringify(env.VITE_USDC_TOKEN || ''),
+        VITE_PLAY_TRACKER_API: JSON.stringify(env.VITE_PLAY_TRACKER_API || ''),
       },
       'import.meta.env.MODE': JSON.stringify(mode),
+      'import.meta.env.VITE_REVENUE_DISTRIBUTION_CONTRACT': JSON.stringify(env.VITE_REVENUE_DISTRIBUTION_CONTRACT || ''),
+      'import.meta.env.VITE_MUSIC_NFT_CONTRACT': JSON.stringify(env.VITE_MUSIC_NFT_CONTRACT || ''),
+      'import.meta.env.VITE_SUBSCRIPTION_CONTRACT': JSON.stringify(env.VITE_SUBSCRIPTION_CONTRACT || ''),
+      'import.meta.env.VITE_ETH_SUBSCRIPTION_CONTRACT': JSON.stringify(env.VITE_ETH_SUBSCRIPTION_CONTRACT || ''),
+      'import.meta.env.VITE_USDC_TOKEN': JSON.stringify(env.VITE_USDC_TOKEN || ''),
+      'import.meta.env.VITE_PLAY_TRACKER_API': JSON.stringify(env.VITE_PLAY_TRACKER_API || ''),
       global: 'globalThis',  // Fix for global object
     },
     server: {
@@ -40,12 +52,11 @@ export default defineConfig(({ mode }: { mode: string }) => {
       host: true,
       open: true,
       headers: {
-        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.alchemy.com https://sepolia.base.org;"
+        'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' connect-src 'self' https://*.alchemy.com https://sepolia.base.org;"
       }
     },
     // Build configuration
     build: {
-      target: 'esnext',
       outDir: 'dist',
       sourcemap: true,
       emptyOutDir: true,
