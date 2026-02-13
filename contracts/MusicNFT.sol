@@ -17,6 +17,13 @@ contract MusicNFT is
     uint256 private _tokenIdCounter;
     
     address public platformWallet;
+    address public revenueDistributor;
+    
+    // Minting fee to prevent spam and generate platform revenue
+    uint256 public mintFee;
+    
+    // Total fees collected
+    uint256 public totalFeesCollected;
     
     // Music NFT metadata structure
     struct MusicMetadata {
@@ -47,10 +54,14 @@ contract MusicNFT is
         address indexed artist,
         string trackTitle,
         string artistName,
-        string releaseType
+        string releaseType,
+        uint256 mintFee
     );
     event MusicPlayed(uint256 indexed tokenId, address indexed listener);
     event PlayCountIncremented(uint256 indexed tokenId, uint256 plays);
+    event MintFeeUpdated(uint256 newFee);
+    event RevenueDistributorUpdated(address newDistributor);
+    event FeesWithdrawn(address indexed to, uint256 amount);
     
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -65,6 +76,7 @@ contract MusicNFT is
         __UUPSUpgradeable_init();
         
         platformWallet = _platformWallet;
+        mintFee = 0.001 ether; // Default: ~$2-3 at current ETH prices
     }
     
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
@@ -84,9 +96,26 @@ contract MusicNFT is
         uint256 duration,
         bool isExplicit,
         string memory tokenURI
-    ) external returns (uint256) {
+    ) external payable returns (uint256) {
+        require(msg.value >= mintFee, "Insufficient mint fee");
+        
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter++;
+        
+        // Collect mint fee
+        if (mintFee > 0) {
+            totalFeesCollected += mintFee;
+            
+            // Send fee to platform wallet
+            (bool sent, ) = platformWallet.call{value: mintFee}("");
+            require(sent, "Failed to send mint fee");
+            
+            // Refund excess payment
+            if (msg.value > mintFee) {
+                (bool refunded, ) = msg.sender.call{value: msg.value - mintFee}("");
+                require(refunded, "Failed to refund excess");
+            }
+        }
         
         _safeMint(msg.sender, tokenId);
         _setTokenURI(tokenId, tokenURI);
@@ -107,7 +136,18 @@ contract MusicNFT is
             isExplicit: isExplicit
         });
         
-        emit MusicMinted(tokenId, msg.sender, trackTitle, artistName, releaseType);
+        // Register track with RevenueDistributor if set
+        if (revenueDistributor != address(0)) {
+            (bool success, ) = revenueDistributor.call(
+                abi.encodeWithSignature("registerTrack(uint256,address)", tokenId, msg.sender)
+            );
+            // Don't revert if registration fails, just continue
+            if (!success) {
+                // Could emit an event here for monitoring
+            }
+        }
+        
+        emit MusicMinted(tokenId, msg.sender, trackTitle, artistName, releaseType, mintFee);
         
         return tokenId;
     }
@@ -209,6 +249,50 @@ contract MusicNFT is
      * @dev Get contract version
      */
     function version() external pure returns (string memory) {
-        return "2.0.0-upgradeable";
+        return "2.1.0-upgradeable-revenue";
     }
+    
+    /**
+     * @dev Set revenue distributor address (only owner)
+     */
+    function setRevenueDistributor(address _revenueDistributor) external onlyOwner {
+        revenueDistributor = _revenueDistributor;
+        emit RevenueDistributorUpdated(_revenueDistributor);
+    }
+    
+    /**
+     * @dev Update mint fee (only owner)
+     */
+    function setMintFee(uint256 _mintFee) external onlyOwner {
+        mintFee = _mintFee;
+        emit MintFeeUpdated(_mintFee);
+    }
+    
+    /**
+     * @dev Withdraw accumulated fees (only owner)
+     * Note: Mint fees are sent immediately to platformWallet,
+     * this is for any other accumulated funds
+     */
+    function withdrawFees(address payable to) external onlyOwner nonReentrant {
+        require(to != address(0), "Invalid address");
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No balance to withdraw");
+        
+        (bool sent, ) = to.call{value: balance}("");
+        require(sent, "Withdrawal failed");
+        
+        emit FeesWithdrawn(to, balance);
+    }
+    
+    /**
+     * @dev Get current mint fee
+     */
+    function getMintFee() external view returns (uint256) {
+        return mintFee;
+    }
+    
+    /**
+     * @dev Receive function to accept ETH
+     */
+    receive() external payable {}
 }

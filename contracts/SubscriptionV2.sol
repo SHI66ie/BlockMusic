@@ -29,6 +29,12 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
     // Base ETH address for native token payments
     address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     
+    // Revenue Distributor contract address (for artist payments)
+    address public revenueDistributor;
+    
+    // Platform fee from subscriptions (20%, rest goes to artists)
+    uint256 public constant PLATFORM_FEE_PERCENT = 20;
+    
     // Price oracle interface (simplified for this example)
     address public priceFeed;
     
@@ -53,6 +59,8 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
     event SubscriptionExtended(address indexed user, uint256 plan, uint256 amount, uint256 newEndTime);
     event PriceFeedUpdated(address newPriceFeed);
     event USDCTokenUpdated(address newUSDCToken);
+    event RevenueDistributorUpdated(address newDistributor);
+    event RevenueSplit(uint256 platformAmount, uint256 artistPoolAmount);
     
     constructor(address _priceFeed) Ownable(msg.sender) {
         priceFeed = _priceFeed;
@@ -100,7 +108,7 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
         emit Subscribed(msg.sender, plan, amount, duration);
     }
     
-    // Subscribe with native token (ETH) - Modified to send directly to PAYMENT_RECIPIENT
+    // Subscribe with native token (ETH) - Split between platform and artist pool
     function subscribeWithETH(uint256 plan) external payable nonReentrant {
         require(plan == 1 || plan == 2 || plan == 3, "Invalid plan");
         
@@ -124,9 +132,24 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
         
         require(msg.value >= requiredETH, "Insufficient ETH sent");
         
-        // Send payment directly to PAYMENT_RECIPIENT
-        (bool sent, ) = PAYMENT_RECIPIENT.call{value: requiredETH}("");
-        require(sent, "Failed to send ETH");
+        // Split payment: 20% to platform, 80% to artist pool
+        uint256 platformAmount = (requiredETH * PLATFORM_FEE_PERCENT) / 100;
+        uint256 artistPoolAmount = requiredETH - platformAmount;
+        
+        // Send platform fee
+        (bool platformSent, ) = PAYMENT_RECIPIENT.call{value: platformAmount}("");
+        require(platformSent, "Failed to send platform fee");
+        
+        // Send to revenue distributor for artists
+        if (revenueDistributor != address(0) && artistPoolAmount > 0) {
+            (bool artistSent, ) = revenueDistributor.call{value: artistPoolAmount}("");
+            require(artistSent, "Failed to send to artist pool");
+            emit RevenueSplit(platformAmount, artistPoolAmount);
+        } else {
+            // Fallback: send to platform if distributor not set
+            (bool fallbackSent, ) = PAYMENT_RECIPIENT.call{value: artistPoolAmount}("");
+            require(fallbackSent, "Failed to send fallback");
+        }
         
         // Refund excess ETH
         if (msg.value > requiredETH) {
@@ -195,4 +218,20 @@ contract SubscriptionV2 is ReentrancyGuard, Ownable {
     
     // Receive function to accept ETH (in case of accidental transfers)
     receive() external payable {}
+    
+    /**
+     * @dev Set revenue distributor address (only owner)
+     */
+    function setRevenueDistributor(address _revenueDistributor) external onlyOwner {
+        require(_revenueDistributor != address(0), "Invalid address");
+        revenueDistributor = _revenueDistributor;
+        emit RevenueDistributorUpdated(_revenueDistributor);
+    }
+    
+    /**
+     * @dev Get revenue distributor address
+     */
+    function getRevenueDistributor() external view returns (address) {
+        return revenueDistributor;
+    }
 }
