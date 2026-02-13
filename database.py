@@ -52,11 +52,14 @@ class Database:
         try:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            columns = [col[0] for col in cursor.description]
-            results = []
-            for row in cursor.fetchall():
-                results.append(dict(zip(columns, row)))
-            return results
+            # Check if cursor has description (for SELECT queries)
+            if cursor.description:
+                columns = [col[0] for col in cursor.description]
+                results = []
+                for row in cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+                return results
+            return []
         finally:
             conn.close()
 
@@ -66,7 +69,9 @@ class Database:
         try:
             cursor = conn.cursor()
             cursor.execute(query, params)
-            return cursor.fetchone()[0]
+            row_id = cursor.fetchone()[0]
+            conn.commit()
+            return row_id
         finally:
             conn.close()
 
@@ -76,6 +81,7 @@ class Database:
         try:
             cursor = conn.cursor()
             cursor.execute(query, params)
+            conn.commit()
         finally:
             conn.close()
 

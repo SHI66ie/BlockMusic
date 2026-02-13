@@ -49,10 +49,3 @@ function startServer() {
     });
   });
 }
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (error) => {
-  logger.error(`Unhandled Rejection: ${error.message}`);
-  // Optionally exit the process with a failure code
-  // process.exit(1);
-});
