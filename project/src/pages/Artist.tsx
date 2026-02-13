@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
+import { formatEther, formatUnits } from 'viem';
 import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus, FaSync, FaClock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import RevenueClaimCard from '../components/artist/RevenueClaimCard';
 import { getPlayCount } from '../services/playTracker';
+import { RevenueDistribution } from '../abis/RevenueDistribution';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
+const REVENUE_DISTRIBUTION_CONTRACT = import.meta.env.VITE_REVENUE_DISTRIBUTION_CONTRACT || '0xa61eAfed9c3B7cF6575FB7E35E18ABe425306f02';
 
 // Helper function to format duration from seconds to MM:SS
 const formatDuration = (seconds: number | bigint): string => {
@@ -183,14 +186,28 @@ export default function Artist() {
     window.location.reload();
   };
 
-  // Load merch items (mock data for now)
-  useEffect(() => {
-    setMerchItems([
-      { id: 1, name: 'Limited Edition T-Shirt', price: '0.05', stock: 50, sold: 23 },
-      { id: 2, name: 'Signed Poster', price: '0.03', stock: 100, sold: 67 },
-      { id: 3, name: 'Hoodie', price: '0.08', stock: 30, sold: 12 },
-    ]);
-  }, []);
+  // Fetch real blockchain earnings data
+  const { data: revenueSummary } = useReadContract({
+    address: REVENUE_DISTRIBUTION_CONTRACT as `0x${string}`,
+    abi: RevenueDistribution,
+    functionName: 'getArtistRevenueSummary',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+      refetchInterval: 10000, // Refetch every 10 seconds
+    },
+  });
+
+  const claimableETH = revenueSummary ? revenueSummary[0] : BigInt(0);
+  const claimableUSDC = revenueSummary ? revenueSummary[1] : BigInt(0);
+  const totalClaimedETH = revenueSummary ? revenueSummary[2] : BigInt(0);
+  const totalClaimedUSDC = revenueSummary ? revenueSummary[3] : BigInt(0);
+  const artistPlays = revenueSummary ? Number(revenueSummary[4]) : 0;
+  const totalPlays = revenueSummary ? Number(revenueSummary[5]) : 0;
+
+  // Calculate total earnings from blockchain data
+  const totalEarnings = Number(formatEther(claimableETH)) + Number(formatEther(totalClaimedETH));
+  const totalUSDC = Number(formatUnits(claimableUSDC, 6)) + Number(formatUnits(totalClaimedUSDC, 6));
 
   // Load events (mock data for now)
   useEffect(() => {
@@ -216,13 +233,10 @@ export default function Artist() {
     ]);
   }, []);
 
-  // Calculate total earnings
-  const totalEarnings = myTracks.reduce((sum, track) => sum + parseFloat(track.revenue), 0);
-  const totalPlays = myTracks.reduce((sum, track) => sum + track.plays + track.pendingPlays, 0);
-  const totalPendingPlays = myTracks.reduce((sum, track) => sum + track.pendingPlays, 0);
-  const merchRevenue = merchItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.sold), 0);
-  const eventRevenue = events.reduce((sum, event) => sum + parseFloat(event.revenue), 0);
-  const grandTotalEarnings = totalEarnings + merchRevenue + eventRevenue;
+  // Calculate total earnings from blockchain data only
+  const totalEarnings = Number(formatEther(claimableETH)) + Number(formatEther(totalClaimedETH));
+  const totalUSDC = Number(formatUnits(claimableUSDC, 6)) + Number(formatUnits(totalClaimedUSDC, 6));
+  const grandTotalEarnings = totalEarnings + totalUSDC;
 
   if (!isConnected) {
     return (
@@ -282,6 +296,9 @@ export default function Artist() {
             <div>
               <p className="text-gray-400 text-sm">Total Earnings</p>
               <p className="text-2xl font-bold mt-1">{grandTotalEarnings.toFixed(4)} ETH</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {formatEther(claimableETH)} ETH claimable • {formatUnits(claimableUSDC, 6)} USDC claimable
+              </p>
             </div>
             <FaDollarSign className="text-3xl text-green-500" />
           </div>
@@ -378,20 +395,17 @@ export default function Artist() {
           <div className="bg-gray-800 rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Recent Performance</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gray-750 rounded-lg p-4">
+              <div className="bg-gray-800 rounded-lg p-4">
                 <p className="text-gray-400 text-sm">Streaming Revenue</p>
                 <p className="text-2xl font-bold mt-2">{totalEarnings.toFixed(4)} ETH</p>
-                <p className="text-green-400 text-sm mt-1">+12% from last month</p>
+                <p className="text-green-400 text-sm mt-1">
+                  {formatEther(claimableETH)} ETH claimable • {formatUnits(claimableUSDC, 6)} USDC claimable
+                </p>
               </div>
-              <div className="bg-gray-750 rounded-lg p-4">
-                <p className="text-gray-400 text-sm">Merch Sales</p>
-                <p className="text-2xl font-bold mt-2">{merchRevenue.toFixed(2)} ETH</p>
-                <p className="text-green-400 text-sm mt-1">+8% from last month</p>
-              </div>
-              <div className="bg-gray-750 rounded-lg p-4">
-                <p className="text-gray-400 text-sm">Event Revenue</p>
-                <p className="text-2xl font-bold mt-2">{eventRevenue.toFixed(2)} ETH</p>
-                <p className="text-blue-400 text-sm mt-1">2 upcoming events</p>
+              <div className="bg-gray-800 rounded-lg p-4">
+                <p className="text-gray-400 text-sm">Total Plays</p>
+                <p className="text-2xl font-bold mt-2">{totalPlays.toLocaleString()}</p>
+                <p className="text-blue-400 text-sm mt-1">Your share: {artistPlays.toLocaleString()} plays</p>
               </div>
             </div>
           </div>
