@@ -3,6 +3,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask_cors import CORS
 from flask_recaptcha import ReCaptcha
 from models import Database
+from genlayer_service import GenLayerService
 from datetime import datetime, timedelta
 import jwt
 import os
@@ -22,6 +23,7 @@ recaptcha = ReCaptcha(app)
 
 CORS(app)
 db = Database(os.getenv('DATABASE_URL', 'sqlite:///artist_platform.db'))
+genlayer = GenLayerService()
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -215,6 +217,20 @@ def get_subscription_plans():
         }
     ]
     return jsonify(plans)
+
+@app.route('/api/ai/generate-description', methods=['POST'])
+def generate_description():
+    data = request.get_json()
+    prompt = data.get('prompt', '')
+    description = genlayer.generate_music_description(prompt)
+    return jsonify({'description': description})
+
+@app.route('/api/ai/recommendations', methods=['POST'])
+def get_recommendations():
+    data = request.get_json()
+    preferences = data.get('preferences', {})
+    recommendations = genlayer.get_music_recommendations(preferences)
+    return jsonify({'recommendations': recommendations})
 
 if __name__ == '__main__':
     with app.app_context():

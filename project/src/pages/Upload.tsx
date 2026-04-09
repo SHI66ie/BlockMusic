@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { FaMusic, FaImage, FaUpload, FaPlus, FaTimes } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { uploadToPinata, getIPFSGatewayUrl } from '../utils/pinata';
+import { genlayerService } from '../services/genlayerService';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -20,6 +21,7 @@ export default function Upload() {
   const { writeContractAsync } = useWriteContract();
   
   const [isUploading, setIsUploading] = useState(false);
+const [aiLoading, setAiLoading] = useState(false);
   const [formData, setFormData] = useState({
     trackTitle: '',
     artistName: '',
@@ -82,6 +84,32 @@ export default function Upload() {
       ...prev,
       samples: prev.samples.map((s, i) => i === index ? value : s)
     }));
+  };
+
+  const generateAIDescription = async () => {
+    if (!formData.trackTitle) {
+      toast.error('Please enter a track title first');
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const prompt = `Generate a creative description for a music track titled "${formData.trackTitle}" in the ${formData.genre} genre by artist "${formData.artistName}"`;
+      const description = await genlayerService.generateMusicDescription(prompt);
+      
+      // Add description to form data
+      setFormData(prev => ({
+        ...prev,
+        albumName: description // Using albumName field for description
+      }));
+      
+      toast.success('AI description generated successfully!');
+    } catch (error) {
+      console.error('Error generating description:', error);
+      toast.error('Failed to generate AI description');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const uploadToIPFS = async (file: File): Promise<string> => {
@@ -315,16 +343,32 @@ export default function Upload() {
 
             <div>
               <label className="block text-sm font-medium mb-2">
-                Album Name (Optional)
+                Album Name (Optional) - Use AI Generate for Description
               </label>
-              <input
-                type="text"
-                name="albumName"
-                value={formData.albumName}
-                onChange={handleInputChange}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
-                placeholder="Enter album name"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  name="albumName"
+                  value={formData.albumName}
+                  onChange={handleInputChange}
+                  className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                  placeholder="Enter album name or AI-generated description"
+                />
+                <button
+                  type="button"
+                  onClick={generateAIDescription}
+                  disabled={aiLoading || !formData.trackTitle}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 disabled:opacity-50 text-white text-sm rounded-lg transition-all duration-200 flex items-center space-x-2"
+                >
+                  {aiLoading ? (
+                    <div className="animate-spin-slow">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full"></div>
+                    </div>
+                  ) : (
+                    <span>AI Generate</span>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div>
