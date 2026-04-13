@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAccount, useSwitchChain, useChainId } from 'wagmi';
 import { Navbar } from './components/Navbar';
 import { NowPlayingBar } from './components/NowPlayingBar';
+import { MochiFloater } from './components/genlayer/MochiFloater';
 import { baseSepolia } from 'wagmi/chains';
 
 function AppContent() {
@@ -35,6 +36,7 @@ function AppContent() {
         <Outlet />
       </main>
       <NowPlayingBar />
+      <MochiFloater />
     </div>
   );
 }
