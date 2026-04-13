@@ -32,7 +32,8 @@
     "react-toastify": "^11.0.5",
     "viem": "^2.37.7",
     "wagmi": "^2.17.1",
-    "web3.storage": "^4.5.5"
+    "web3.storage": "^4.5.5",
+    "genlayer-js": "^0.5.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",
