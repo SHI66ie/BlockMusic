@@ -2,41 +2,35 @@
 from genlayer import *
 
 
+# EVM Interface for the MusicNFT contract on Base
+@gl.evm.contract_interface
+class MusicNFT:
+    class View:
+        def ownerOf(self, tokenId: u256) -> Address: ...
+        def balanceOf(self, owner: Address) -> u256: ...
+
+    class Write:
+        # We can define custom functions here that our GenLayer contract will call
+        def setModerationStatus(self, track_id: str, status: bool) -> bool: ...
+
+
 class MusicContentModerator(gl.Contract):
     """
     AI-powered content moderation for BlockMusic uploads.
     
-    Uses GenLayer's LLM integration and Equivalence Principle to ensure
-    consensus among validators on moderation decisions.
-    
-    Features:
-    - Analyze music metadata for policy violations
-    - Check cover art descriptions for inappropriate content
-    - Verify track titles and descriptions for hate speech, spam, etc.
-    - Maintain a moderation log on-chain
+    This contract demonstrates the HYBRID flow:
+    1. Receive metadata for analysis.
+    2. Use LLM to reach consensus on policy adherence.
+    3. Call back to the Base (EVM) contract to update moderation status.
     """
 
     owner: Address
-    moderation_results: TreeMap[str, str]  # track_id -> result JSON
-    moderation_count: u256
-    appeal_count: u256
-    
-    # Content policy (can be updated by owner)
-    content_policy: str
+    music_nft_address: Address
+    moderation_results: TreeMap[str, str]
 
-    def __init__(self):
+    def __init__(self, music_nft: Address):
         self.owner = gl.message.sender_address
-        self.moderation_count = u256(0)
-        self.appeal_count = u256(0)
-        self.content_policy = (
-            "BlockMusic Content Policy:\n"
-            "1. No hate speech, slurs, or discriminatory language in titles or descriptions\n"
-            "2. No promotion of violence or illegal activities\n"
-            "3. No spam, misleading metadata, or impersonation\n"
-            "4. Cover art must not contain explicit imagery without proper tagging\n"
-            "5. No copyright-infringing titles that impersonate known artists\n"
-            "6. Genre classification must be accurate and not misleading\n"
-        )
+        self.music_nft_address = music_nft
 
     @gl.public.write
     def moderate_content(
@@ -50,71 +44,32 @@ class MusicContentModerator(gl.Contract):
         is_explicit: bool,
     ) -> None:
         """
-        Perform AI-powered content moderation on a music upload.
-        Uses non-deterministic LLM calls with equivalence principle for consensus.
+        Analyze content and update status on BOTH GenLayer and Base.
         """
 
-        metadata_text = (
-            f"Track Title: {track_title}\n"
-            f"Artist Name: {artist_name}\n"
-            f"Album: {album_name}\n"
-            f"Genre: {genre}\n"
-            f"Description: {description}\n"
-            f"Marked as Explicit: {is_explicit}\n"
-        )
-
+        metadata_text = f"Title: {track_title}, Artist: {artist_name}, Genre: {genre}, Description: {description}"
         prompt = (
-            f"You are a content moderator for a decentralized music platform.\n\n"
-            f"Content Policy:\n{self.content_policy}\n\n"
-            f"Analyze the following music upload metadata and determine if it "
-            f"violates any content policies:\n\n"
-            f"{metadata_text}\n\n"
-            f"Respond with EXACTLY one of these formats:\n"
-            f"APPROVED - if the content follows all policies\n"
-            f"FLAGGED:<reason> - if the content violates a policy, with a brief reason\n"
-            f"REVIEW:<reason> - if the content needs human review, with a brief reason\n"
+            f"Moderation Task: Analyze if this music upload violates policy (no hate speech, no spam).\n"
+            f"Content: {metadata_text}\n"
+            f"Respond with: APPROVED or REJECTED:<reason>"
         )
 
         def run_moderation():
-            result = gl.exec_prompt(prompt)
-            # Normalize the result
-            result_stripped = result.strip().upper()
-            if result_stripped.startswith("APPROVED"):
-                return "APPROVED"
-            elif result_stripped.startswith("FLAGGED"):
-                return result.strip()
-            elif result_stripped.startswith("REVIEW"):
-                return result.strip()
-            else:
-                return "REVIEW:Ambiguous moderation result"
+            return gl.exec_prompt(prompt).strip().upper()
 
-        final_result = gl.eq_principle.str_similarity(
-            run_moderation,
-            threshold=0.7
-        )
-
+        final_result = gl.eq_principle.str_similarity(run_moderation, threshold=0.8)
         self.moderation_results[track_id] = final_result
-        self.moderation_count = u256(int(self.moderation_count) + 1)
+
+        # Hybrid Flow: Update Base Sepolia state
+        is_approved = final_result == "APPROVED"
+        
+        # Instantiate the EVM contract interface
+        nft = MusicNFT(self.music_nft_address)
+        
+        # Emit a cross-chain write transaction to Base
+        # This will be picked up by GenLayer validators and executed on Base Sepolia
+        nft.emit().setModerationStatus(track_id, is_approved)
 
     @gl.public.view
     def get_moderation_result(self, track_id: str) -> str:
-        """Get the moderation result for a specific track."""
-        if track_id in self.moderation_results:
-            return self.moderation_results[track_id]
-        return "NOT_MODERATED"
-
-    @gl.public.view
-    def get_moderation_stats(self) -> str:
-        """Get overall moderation statistics."""
-        return f'{{"total_moderated": {self.moderation_count}, "total_appeals": {self.appeal_count}}}'
-
-    @gl.public.write
-    def update_content_policy(self, new_policy: str) -> None:
-        """Update the content policy (owner only)."""
-        assert gl.message.sender_address == self.owner, "Only owner can update policy"
-        self.content_policy = new_policy
-
-    @gl.public.view
-    def get_content_policy(self) -> str:
-        """Get the current content policy."""
-        return self.content_policy
+        return self.moderation_results[track_id] if track_id in self.moderation_results else "NOT_MODERATED"

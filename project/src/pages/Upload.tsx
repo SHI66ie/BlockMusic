@@ -262,8 +262,9 @@ export default function Upload() {
           {
             name: 'mintMusic',
             type: 'function',
-            stateMutability: 'nonpayable',
+            stateMutability: 'payable',
             inputs: [
+              { name: 'trackId', type: 'string' },
               { name: 'trackTitle', type: 'string' },
               { name: 'artistName', type: 'string' },
               { name: 'albumName', type: 'string' },
@@ -281,6 +282,7 @@ export default function Upload() {
         ],
         functionName: 'mintMusic',
         args: [
+          trackId,
           formData.trackTitle,
           formData.artistName,
           formData.albumName || '',
@@ -293,6 +295,7 @@ export default function Upload() {
           formData.isExplicit,
           tokenURI
         ],
+        value: BigInt(1000000000000000), // 0.001 ETH mint fee
       });
 
       console.log('NFT minted:', tx);

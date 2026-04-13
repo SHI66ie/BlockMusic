@@ -45,6 +45,15 @@ contract MusicNFT is
     // Mapping from token ID to music metadata
     mapping(uint256 => MusicMetadata) public musicMetadata;
     
+    // AI Integration: Moderation status from GenLayer (track_id => approved)
+    mapping(string => bool) public moderationStatus;
+    
+    // AI Integration: Artist verification status from GenLayer (artist => verified)
+    mapping(address => bool) public artistVerified;
+    
+    // Address allowed to update moderation (e.g. GenLayer Bridge or Owner)
+    address public genLayerModerator;
+    
     // Mapping to track plays per user per track
     mapping(uint256 => mapping(address => uint256)) public userPlays;
     
@@ -77,6 +86,21 @@ contract MusicNFT is
         
         platformWallet = _platformWallet;
         mintFee = 0.001 ether; // Default: ~$2-3 at current ETH prices
+        genLayerModerator = msg.sender; // Default to owner, can be updated
+    }
+    
+    function setGenLayerModerator(address _moderator) external onlyOwner {
+        genLayerModerator = _moderator;
+    }
+    
+    function setModerationStatus(string memory trackId, bool status) external {
+        require(msg.sender == genLayerModerator || msg.sender == owner(), "Not authorized");
+        moderationStatus[trackId] = status;
+    }
+    
+    function setArtistVerification(address artist, bool status) external {
+        require(msg.sender == genLayerModerator || msg.sender == owner(), "Not authorized");
+        artistVerified[artist] = status;
     }
     
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
@@ -85,6 +109,7 @@ contract MusicNFT is
      * @dev Mint a new music NFT
      */
     function mintMusic(
+        string memory trackId,
         string memory trackTitle,
         string memory artistName,
         string memory albumName,
@@ -98,6 +123,7 @@ contract MusicNFT is
         string memory tokenURI
     ) external payable returns (uint256) {
         require(msg.value >= mintFee, "Insufficient mint fee");
+        require(moderationStatus[trackId], "Track not yet approved by AI Moderator");
         
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter++;
