@@ -20,6 +20,7 @@
     "@web3modal/react": "^2.7.1",
     "@web3modal/wagmi": "^5.1.11",
     "axios": "^1.6.2",
+    "framer-motion": "^11.0.0",
     "lucide-react": "^0.344.0",
     "nft.storage": "^7.2.0",
     "react": "^18.3.1",
@@ -32,7 +33,7 @@
     "viem": "^2.37.7",
     "wagmi": "^2.17.1",
     "web3.storage": "^4.5.5",
-    "genlayer-js": "^0.5.0"
+    "@genlayer/genlayer-js": "^0.1.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-react-jsx": "^7.27.1",
