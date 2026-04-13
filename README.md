@@ -137,15 +137,22 @@ Create `.env` files in both directories with:
 
 ```
 BLockMusic(Pricesadj)/
-├── project/             # Main application
+├── project/             # Main application (Base EVM + React)
 │   ├── src/            # Frontend source code
 │   ├── app.py          # Flask backend
 │   ├── requirements.txt # Python dependencies
 │   └── .env            # Environment variables
+├── genlayer/           # GenLayer Intelligent Contracts (Python AI)
+│   ├── music_content_moderator.py
+│   ├── music_recommender.py
+│   ├── copyright_verifier.py
+│   └── artist_verifier.py
 ├── artist-platform/    # Artist platform
 │   ├── src/           # Frontend source code
 │   ├── app.py         # Flask backend
 │   ├── requirements.txt # Python dependencies
 │   └── .env           # Environment variables
+├── contracts/          # Solidity Smart Contracts (Base EVM)
+├── scripts/           # Deployment & Setup scripts
 └── README.md          # Project documentation
 ```

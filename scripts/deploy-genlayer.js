@@ -37,25 +37,25 @@ console.log();
 const contracts = [
   {
     name: 'MusicContentModerator',
-    file: 'contracts/genlayer/music_content_moderator.py',
+    file: 'genlayer/music_content_moderator.py',
     envKey: 'VITE_GENLAYER_CONTENT_MODERATOR',
     description: 'AI-powered content moderation',
   },
   {
     name: 'MusicRecommender',
-    file: 'contracts/genlayer/music_recommender.py',
+    file: 'genlayer/music_recommender.py',
     envKey: 'VITE_GENLAYER_MUSIC_RECOMMENDER',
     description: 'AI-powered music recommendations',
   },
   {
     name: 'CopyrightVerifier',
-    file: 'contracts/genlayer/copyright_verifier.py',
+    file: 'genlayer/copyright_verifier.py',
     envKey: 'VITE_GENLAYER_COPYRIGHT_VERIFIER',
     description: 'AI-powered copyright verification',
   },
   {
     name: 'ArtistVerifier',
-    file: 'contracts/genlayer/artist_verifier.py',
+    file: 'genlayer/artist_verifier.py',
     envKey: 'VITE_GENLAYER_ARTIST_VERIFIER',
     description: 'AI-powered artist identity verification',
   },
