@@ -9,6 +9,7 @@ import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary';
 import { config, queryClient, rainbowKitConfig } from './config/web3';
 import { MusicPlayerProvider } from './contexts/MusicPlayerContext';
+import { GenLayerProvider } from './contexts/GenLayerContext';
 import styles from './App.module.css';
 import './index.css';
 
@@ -42,14 +43,16 @@ if (!rootElement) {
               {...rainbowKitConfig}
             >
               <MusicPlayerProvider>
-                <Suspense fallback={
-                  <div className={styles.loadingContainer}>
-                    <div className={styles.loadingSpinner}></div>
-                    <p>Loading...</p>
-                  </div>
-                }>
-                  <App />
-                </Suspense>
+                <GenLayerProvider>
+                  <Suspense fallback={
+                    <div className={styles.loadingContainer}>
+                      <div className={styles.loadingSpinner}></div>
+                      <p>Loading...</p>
+                    </div>
+                  }>
+                    <App />
+                  </Suspense>
+                </GenLayerProvider>
               </MusicPlayerProvider>
             </RainbowKitProvider>
           </QueryClientProvider>

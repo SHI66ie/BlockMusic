@@ -10,6 +10,7 @@ import { config } from '../config/web3';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { convertIPFSUrl } from '../utils/ipfs';
 import { getPlayCount } from '../services/playTracker';
+import { AIRecommendations } from '../components/genlayer/AIRecommendations';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -375,6 +376,20 @@ export default function Marketplace() {
           ))}
         </div>
       </div>
+
+      {/* GenLayer AI Recommendations */}
+      {isConnected && tracks.length > 0 && (
+        <AIRecommendations
+          genresListened={Array.from(new Set(tracks.filter(t => likedTracks.has(t.id)).map(t => t.genre))).join(', ')}
+          favoriteArtists={Array.from(new Set(tracks.filter(t => likedTracks.has(t.id)).map(t => t.artist))).join(', ')}
+          recentTracks={tracks.slice(0, 5).map(t => t.id).join(', ')}
+          availableTrackIds={tracks.map(t => t.id).slice(0, 20).join(', ')}
+          onTrackSelect={(trackId) => {
+            const track = tracks.find(t => t.id === Number(trackId));
+            if (track) handlePlay(track);
+          }}
+        />
+      )}
 
       {/* Track List */}
       <div className="space-y-2">

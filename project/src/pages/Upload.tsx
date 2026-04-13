@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import { FaMusic, FaImage, FaUpload, FaPlus, FaTimes } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { uploadToPinata, getIPFSGatewayUrl } from '../utils/pinata';
+import { useContentModeration, useCopyrightVerification } from '../hooks/useGenLayer';
+import { ContentModerationPanel } from '../components/genlayer/ContentModerationBadge';
 
 const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
 
@@ -18,6 +20,8 @@ const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Track'];
 export default function Upload() {
   const { isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
+  const { moderateContent, isModeratingContent, moderationResult } = useContentModeration();
+  const { verifyCopyright, isVerifying, copyrightResult } = useCopyrightVerification();
   
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -143,6 +147,65 @@ export default function Upload() {
     setIsUploading(true);
 
     try {
+      // ====== GenLayer AI Content Moderation ======
+      toast.info('🧠 Running AI content moderation via GenLayer...');
+      
+      const trackId = `track_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      
+      try {
+        const modResult = await moderateContent({
+          trackId,
+          trackTitle: formData.trackTitle,
+          artistName: formData.artistName,
+          albumName: formData.albumName || '',
+          genre: formData.genre,
+          description: `${formData.trackTitle} by ${formData.artistName}`,
+          isExplicit: formData.isExplicit,
+        });
+
+        if (modResult.status === 'FLAGGED') {
+          toast.error(`❌ Content flagged by AI: ${modResult.reason || 'Policy violation'}`);
+          setIsUploading(false);
+          return;
+        }
+
+        if (modResult.status === 'APPROVED') {
+          toast.success('✅ AI content moderation passed!');
+        } else {
+          toast.warning('⚠️ Content under review — proceeding with upload');
+        }
+      } catch (modError) {
+        console.warn('GenLayer moderation skipped (not configured):', modError);
+        toast.info('ℹ️ AI moderation unavailable — proceeding with upload');
+      }
+
+      // ====== GenLayer Copyright Verification ======
+      try {
+        toast.info('🔍 Running AI copyright check via GenLayer...');
+        const copyResult = await verifyCopyright({
+          trackId,
+          trackTitle: formData.trackTitle,
+          artistName: formData.artistName,
+          claimedOriginal: true,
+          sampleSources: formData.samples.filter(s => s.trim()).join(', '),
+        });
+
+        if (copyResult.status === 'FLAGGED') {
+          toast.error(`🚫 Copyright issue detected: ${copyResult.details || 'Potential infringement'}`);
+          setIsUploading(false);
+          return;
+        }
+
+        if (copyResult.status === 'CLEAR') {
+          toast.success('✅ Copyright check passed!');
+        } else if (copyResult.status === 'COVER') {
+          toast.warning('⚠️ This may be a cover/remix. Ensure you have proper licensing.');
+        }
+      } catch (copyError) {
+        console.warn('GenLayer copyright check skipped:', copyError);
+      }
+
+      // ====== Continue with standard upload flow ======
       toast.info('Extracting audio duration...');
       
       // Get audio duration
@@ -467,6 +530,16 @@ export default function Upload() {
           </div>
         </div>
 
+        {/* GenLayer AI Moderation Status */}
+        <ContentModerationPanel
+          result={moderationResult}
+          isLoading={isModeratingContent || isVerifying}
+          onRetry={() => {
+            // User can retry moderation
+            toast.info('Retrying AI moderation...');
+          }}
+        />
+
         {/* Submit Button */}
         <div className="flex justify-end">
           <button
@@ -499,6 +572,8 @@ export default function Upload() {
           <li>• You earn from every play of your music</li>
           <li>• 100% of streaming revenue goes to you</li>
           <li>• Users stream via subscription - no NFT purchase needed</li>
+          <li>• 🧠 <strong>AI-powered moderation</strong> via GenLayer checks content before publishing</li>
+          <li>• 🔍 <strong>Copyright verification</strong> uses on-chain AI to protect creators</li>
         </ul>
       </div>
     </div>

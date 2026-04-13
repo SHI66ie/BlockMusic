@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 import { shortenAddress } from '../utils/address';
+import { useArtistVerification } from '../hooks/useGenLayer';
+import { ArtistVerificationBadge, ArtistVerificationForm } from '../components/genlayer/ArtistVerificationBadge';
 
 type NFT = {
   id: string;
@@ -13,8 +15,17 @@ type NFT = {
 
 export default function Profile() {
   const { address, isConnected } = useAccount();
+  const { requestVerification, checkVerification, isVerifyingArtist, artistVerificationResult } = useArtistVerification();
+  
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isArtistVerified, setIsArtistVerified] = useState(false);
+
+  useEffect(() => {
+    if (address) {
+      checkVerification(address as `0x${string}`).then(setIsArtistVerified);
+    }
+  }, [address, checkVerification]);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -72,11 +83,28 @@ export default function Profile() {
             {address?.substring(2, 4).toUpperCase()}
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Your Collection</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold">Your Collection</h1>
+              <ArtistVerificationBadge 
+                isVerified={isArtistVerified} 
+                result={artistVerificationResult} 
+                isLoading={isVerifyingArtist} 
+                size="md"
+              />
+            </div>
             <p className="text-gray-400 font-mono">{shortenAddress(address || '')}</p>
           </div>
         </div>
       </div>
+
+      {!isArtistVerified && (
+        <ArtistVerificationForm 
+          onSubmit={requestVerification}
+          isLoading={isVerifyingArtist}
+          result={artistVerificationResult}
+          walletAddress={address}
+        />
+      )}
 
       <div>
         <h2 className="text-xl font-semibold mb-4">Your NFTs ({nfts.length})</h2>
