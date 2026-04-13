@@ -72,7 +72,7 @@ genlayer init
 
 3. Deploy Intelligent Contracts:
 ```bash
-node scripts/deploy-genlayer.js --network localnet
+node scripts/deploy-genlayer.js --network simulator
 ```
 
 4. **Synchronize Addresses**: Ensure the Base contract has the GenLayer bridge address as its moderator:

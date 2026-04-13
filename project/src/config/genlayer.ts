@@ -1,5 +1,5 @@
 import { createClient } from 'genlayer-js';
-import { localnet } from 'genlayer-js/chains';
+import { simulator } from 'genlayer-js/chains';
 
 // ============================================================
 // GenLayer Configuration for BlockMusic
@@ -14,7 +14,7 @@ export const GENLAYER_CONTRACTS = {
 };
 
 // GenLayer network configuration
-const genLayerNetwork = import.meta.env.VITE_GENLAYER_NETWORK || 'localnet';
+const genLayerNetwork = import.meta.env.VITE_GENLAYER_NETWORK || 'simulator';
 
 // Custom chain configuration for testnet/mainnet
 const getChainConfig = () => {
@@ -30,9 +30,10 @@ const getChainConfig = () => {
           },
         },
       };
+    case 'simulator':
     case 'localnet':
     default:
-      return localnet;
+      return simulator;
   }
 };
 
