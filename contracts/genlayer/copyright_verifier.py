@@ -6,7 +6,7 @@ from genlayer import *
 class MusicNFT:
     class Write:
         # Note: We share the same moderation mapping on Base for simplicity
-        def setModerationStatus(self, track_id: str, status: bool) -> bool: ...
+        def setModerationStatus(self, track_id: str, status: bool) -> None: ...
 
 
 class CopyrightVerifier(gl.Contract):

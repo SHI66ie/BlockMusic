@@ -5,7 +5,7 @@ from genlayer import *
 @gl.evm.contract_interface
 class MusicNFT:
     class Write:
-        def setArtistVerification(self, artist: Address, status: bool) -> bool: ...
+        def setArtistVerification(self, artist: Address, status: bool) -> None: ...
 
 
 class ArtistVerifier(gl.Contract):

@@ -11,7 +11,7 @@ class MusicNFT:
 
     class Write:
         # We can define custom functions here that our GenLayer contract will call
-        def setModerationStatus(self, track_id: str, status: bool) -> bool: ...
+        def setModerationStatus(self, track_id: str, status: bool) -> None: ...
 
 
 class MusicContentModerator(gl.Contract):
