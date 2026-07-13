@@ -5,7 +5,7 @@ import { config } from '../config/web3';
 import { toast } from 'react-toastify';
 import { FaMusic, FaImage, FaUpload, FaPlus, FaTimes } from 'react-icons/fa';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { uploadToPinata, getIPFSGatewayUrl } from '../utils/pinata';
+import { uploadToPinata, uploadMetadataToPinata } from '../utils/pinata';
 import { useContentModeration, useCopyrightVerification } from '../hooks/useGenLayer';
 import { ContentModerationPanel } from '../components/genlayer/ContentModerationBadge';
 
@@ -91,18 +91,6 @@ export default function Upload() {
     }));
   };
 
-  const uploadToIPFS = async (file: File): Promise<string> => {
-    // Upload to Pinata IPFS
-    try {
-      const ipfsHash = await uploadToPinata(file);
-      const gatewayUrl = getIPFSGatewayUrl(ipfsHash);
-      console.log('✅ Uploaded to IPFS:', gatewayUrl);
-      return gatewayUrl;
-    } catch (error) {
-      console.error('❌ IPFS upload failed:', error);
-      throw error;
-    }
-  };
 
   const getAudioDuration = (file: File): Promise<number> => {
     return new Promise((resolve, reject) => {
@@ -279,8 +267,8 @@ export default function Upload() {
       toast.info('Uploading files to IPFS...');
       
       // Upload files to IPFS
-      const coverArtURI = await uploadToIPFS(formData.coverArtFile);
-      const audioURI = await uploadToIPFS(formData.audioFile);
+      const coverArtURI = await uploadToPinata(formData.coverArtFile);
+      const audioURI = await uploadToPinata(formData.audioFile);
       
       // Create metadata JSON (NFT standard format)
       const metadata = {

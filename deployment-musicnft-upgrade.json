@@ -1,12 +1,12 @@
 {
   "network": "baseSepolia",
-  "proxyAddress": "0x47991c5D3bb51972Bef2075cAE9E7bFa08D17817",
-  "implementationAddress": "0xE3C8779cCBc4742bf35809Ab584FB5F182266696",
+  "proxyAddress": "0xF29A2DCC8877fac176C36F30d6245C4320e90841",
+  "implementationAddress": "0xb51bCa90dF8b47e2F4672DbD6BE5b9ac7d64BEC5",
   "adminAddress": "0x0000000000000000000000000000000000000000",
   "platformWallet": "0x75d0E2213C44A2eAE9eb271e42200ED31fBEe5AC",
   "backendWallet": "0xb89A51592Fca543a6879B12507aC64536eb23764",
   "deployer": "0x75d0E2213C44A2eAE9eb271e42200ED31fBEe5AC",
   "oldContract": "0x019211130714DEF2a46FFeF084D559313181BDFA",
-  "timestamp": "2025-10-15T14:50:31.956Z",
+  "timestamp": "2026-07-13T09:27:56.502Z",
   "version": "2.0.0-upgradeable"
 }
