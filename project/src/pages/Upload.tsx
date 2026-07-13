@@ -23,10 +23,9 @@ export default function Upload() {
   const { isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { moderateContent, isModeratingContent, moderationResult } = useContentModeration();
-  const { verifyCopyright, isVerifying, copyrightResult } = useCopyrightVerification();
+  const { verifyCopyright, isVerifying } = useCopyrightVerification();
   
   const [isUploading, setIsUploading] = useState(false);
-  const [isPollingModeration, setIsPollingModeration] = useState(false);
   const [formData, setFormData] = useState({
     trackTitle: '',
     artistName: '',
@@ -138,137 +137,23 @@ export default function Upload() {
     setIsUploading(true);
 
     try {
-      // ====== GenLayer AI Content Moderation ======
-      toast.info('🧠 Running AI content moderation via GenLayer...');
-      
+      // Generate track ID
       const trackId = `track_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       
-      let isApprovedOnChain = false;
-
-      try {
-        const modResult = await moderateContent({
-          trackId,
-          trackTitle: formData.trackTitle,
-          artistName: formData.artistName,
-          albumName: formData.albumName || '',
-          genre: formData.genre,
-          description: `${formData.trackTitle} by ${formData.artistName}`,
-          isExplicit: formData.isExplicit,
-        });
-
-        if (modResult.status === 'FLAGGED') {
-          toast.error(`❌ Content flagged by AI: ${modResult.reason || 'Policy violation'}`);
-          setIsUploading(false);
-          return;
-        }
-
-        if (modResult.status === 'APPROVED') {
-          toast.success('✅ AI content moderation passed! Syncing on-chain...');
-          
-          // Wait for cross-chain sync (polling)
-          setIsPollingModeration(true);
-          let attempts = 0;
-          const maxAttempts = 10; // 10 * 1.5s = 15s max wait
-          
-          while (attempts < maxAttempts) {
-            attempts++;
-            toast.info(`⏳ Syncing with blockchain (Attempt ${attempts}/${maxAttempts})...`, { autoClose: 1000 });
-            
-            try {
-              // We'll use a direct read call here to check status
-              const status = await readContract(config, {
-                address: MUSIC_NFT_CONTRACT as `0x${string}`,
-                abi: [{
-                  name: 'moderationStatus',
-                  type: 'function',
-                  stateMutability: 'view',
-                  inputs: [{ name: '', type: 'string' }],
-                  outputs: [{ name: '', type: 'bool' }]
-                }],
-                functionName: 'moderationStatus',
-                args: [trackId],
-              });
-
-              if (status) {
-                isApprovedOnChain = true;
-                toast.success('✅ Moderation status synced on-chain!');
-                break;
-              }
-            } catch (err) {
-              console.warn('Polling error:', err);
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 1500));
-          }
-          
-          if (!isApprovedOnChain) {
-            try {
-              const isEnforced = await readContract(config, {
-                address: MUSIC_NFT_CONTRACT as `0x${string}`,
-                abi: [{
-                  name: 'isModerationEnforced',
-                  type: 'function',
-                  stateMutability: 'view',
-                  inputs: [],
-                  outputs: [{ name: '', type: 'bool' }]
-                }],
-                functionName: 'isModerationEnforced',
-                args: [],
-              });
-              
-              if (!isEnforced) {
-                toast.success('ℹ️ GenLayer sync timed out, but strict moderation is currently disabled. Proceeding to mint!');
-                isApprovedOnChain = true; // Pretend it's approved to proceed
-              } else {
-                toast.warning('⚠️ On-chain sync is taking longer than expected. You can try minting anyway, but it might fail.');
-              }
-            } catch (err) {
-               toast.warning('⚠️ On-chain sync is taking longer than expected. You can try minting anyway, but it might fail.');
-            }
-          }
-        } else {
-          toast.warning('⚠️ Content under review — proceeding with upload');
-        }
-      } catch (modError) {
-        console.warn('GenLayer moderation skipped (not configured):', modError);
-        toast.info('ℹ️ AI moderation unavailable — using owner override');
-        // If owner, we could manually approve, but for now we just proceed and hope the contract allows it
-        // Or we could suggest the user to manually approve via dashboard
-      } finally {
-        setIsPollingModeration(false);
-      }
-
-      // ====== GenLayer Copyright Verification ======
-      // (Keep copyright check as optional/informative)
-      try {
-        toast.info('🔍 Running AI copyright check via GenLayer...');
-        const copyResult = await verifyCopyright({
-          trackId,
-          trackTitle: formData.trackTitle,
-          artistName: formData.artistName,
-          claimedOriginal: true,
-          sampleSources: formData.samples.filter(s => s.trim()).join(', '),
-        });
-
-        if (copyResult.status === 'FLAGGED') {
-          toast.warning(`🚫 Copyright issue detected: ${copyResult.details || 'Potential infringement'}`);
-          // We don't block upload for copyright yet, just warn
-        }
-      } catch (copyError) {
-        console.warn('GenLayer copyright check skipped:', copyError);
-      }
-
-      // ====== Continue with standard upload flow ======
-      toast.info('Extracting audio duration...');
+      // ====== Step 1: Upload files to IPFS ======
+      toast.info('📁 Extracting audio duration...');
       
       // Get audio duration
       const durationInSeconds = await getAudioDuration(formData.audioFile);
+      toast.success('✅ Audio duration extracted');
       
-      toast.info('Uploading files to IPFS...');
-      
-      // Upload files to IPFS
+      toast.info('☁️ Uploading cover art to IPFS...');
       const coverArtURI = await uploadToPinata(formData.coverArtFile);
+      toast.success('✅ Cover art uploaded to IPFS');
+      
+      toast.info('☁️ Uploading audio to IPFS...');
       const audioURI = await uploadToPinata(formData.audioFile);
+      toast.success('✅ Audio uploaded to IPFS');
       
       // Create metadata JSON (NFT standard format)
       const metadata = {
@@ -291,15 +176,18 @@ export default function Upload() {
       };
       
       // Upload metadata to IPFS
+      toast.info('☁️ Uploading metadata to IPFS...');
       const tokenURI = await uploadMetadataToPinata(metadata);
+      toast.success('✅ Metadata uploaded to IPFS');
       
-      toast.info('Minting NFT...');
+      // ====== Step 2: Mint NFT ======
+      toast.info('🔐 Please sign transaction to mint NFT...');
       
       // Filter out empty samples
       const samples = formData.samples.filter(s => s.trim() !== '');
       
       // Mint NFT
-      const tx = await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: MUSIC_NFT_CONTRACT as `0x${string}`,
         abi: [
           {
@@ -341,7 +229,75 @@ export default function Upload() {
         value: BigInt(1000000000000000), // 0.001 ETH mint fee
       });
 
-      toast.success('🎉 Music NFT minted successfully!');
+      toast.success('🎉 Track uploaded and NFT minted successfully!');
+      toast.info(`📝 Transaction hash: ${txHash}`);
+      
+      // ====== Step 3: Run GenLayer AI Moderation (Background) ======
+      // This runs after minting and doesn't block the user
+      setTimeout(async () => {
+        try {
+          toast.info('🧠 Running AI content moderation via GenLayer...');
+          
+          const modResult = await moderateContent({
+            trackId,
+            trackTitle: formData.trackTitle,
+            artistName: formData.artistName,
+            albumName: formData.albumName || '',
+            genre: formData.genre,
+            description: `${formData.trackTitle} by ${formData.artistName}`,
+            isExplicit: formData.isExplicit,
+          });
+
+          if (modResult.status === 'FLAGGED') {
+            toast.warning(`⚠️ Content flagged by AI: ${modResult.reason || 'Policy violation'}`);
+          } else if (modResult.status === 'APPROVED') {
+            toast.success('✅ AI content moderation passed!');
+            
+            // Try to sync to blockchain
+            try {
+              const isEnforced = await readContract(config, {
+                address: MUSIC_NFT_CONTRACT as `0x${string}`,
+                abi: [{
+                  name: 'isModerationEnforced',
+                  type: 'function',
+                  stateMutability: 'view',
+                  inputs: [],
+                  outputs: [{ name: '', type: 'bool' }]
+                }],
+                functionName: 'isModerationEnforced',
+                args: [],
+              });
+              
+              if (!isEnforced) {
+                toast.info('ℹ️ Moderation enforcement is disabled on contract');
+              }
+            } catch (err) {
+              console.warn('Failed to check enforcement status:', err);
+            }
+          }
+        } catch (modError) {
+          console.warn('GenLayer moderation skipped (not configured):', modError);
+        }
+      }, 1000); // Start after 1 second
+
+      // ====== Step 4: Run GenLayer Copyright Verification (Background) ======
+      setTimeout(async () => {
+        try {
+          const copyResult = await verifyCopyright({
+            trackId,
+            trackTitle: formData.trackTitle,
+            artistName: formData.artistName,
+            claimedOriginal: true,
+            sampleSources: formData.samples.filter(s => s.trim()).join(', '),
+          });
+
+          if (copyResult.status === 'FLAGGED') {
+            toast.warning(`🚫 Copyright issue detected: ${copyResult.details || 'Potential infringement'}`);
+          }
+        } catch (copyError) {
+          console.warn('GenLayer copyright check skipped:', copyError);
+        }
+      }, 2000); // Start after 2 seconds
       
       // Reset form
       setFormData({
@@ -358,7 +314,27 @@ export default function Upload() {
       
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload music');
+      
+      // Provide specific error messages based on what failed
+      if (error instanceof Error) {
+        const errorMessage = error.message.toLowerCase();
+        
+        if (errorMessage.includes('user rejected') || errorMessage.includes('user denied')) {
+          toast.error('❌ Transaction rejected by user');
+        } else if (errorMessage.includes('insufficient funds')) {
+          toast.error('❌ Insufficient funds for transaction');
+        } else if (errorMessage.includes('ipfs') || errorMessage.includes('pinata')) {
+          toast.error('❌ Failed to upload files to IPFS');
+        } else if (errorMessage.includes('network') || errorMessage.includes('rpc')) {
+          toast.error('❌ Network error - please check your connection');
+        } else if (errorMessage.includes('contract') || errorMessage.includes('mint')) {
+          toast.error('❌ Contract error - transaction failed');
+        } else {
+          toast.error(`❌ Upload failed: ${error.message}`);
+        }
+      } else {
+        toast.error('❌ Failed to upload music - unknown error');
+      }
     } finally {
       setIsUploading(false);
     }
