@@ -9,7 +9,7 @@ import { uploadToPinata, uploadMetadataToPinata } from '../utils/pinata';
 import { useContentModeration, useCopyrightVerification } from '../hooks/useGenLayer';
 import { ContentModerationPanel } from '../components/genlayer/ContentModerationBadge';
 
-const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xF29A2DCC8877fac176C36F30d6245C4320e90841';
 
 const GENRES = [
   'Hip Hop', 'R&B', 'Pop', 'Rock', 'Electronic', 'House', 'Techno',

@@ -11,7 +11,7 @@ import RevenueClaimCard from '../components/artist/RevenueClaimCard';
 import { getPlayCount } from '../services/playTracker';
 import { RevenueDistribution } from '../abis/RevenueDistribution';
 
-const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xF29A2DCC8877fac176C36F30d6245C4320e90841';
 const REVENUE_DISTRIBUTION_CONTRACT = import.meta.env.VITE_REVENUE_DISTRIBUTION_CONTRACT || '0xa61eAfed9c3B7cF6575FB7E35E18ABe425306f02';
 
 // Helper function to format duration from seconds to MM:SS

@@ -12,7 +12,7 @@ import { convertIPFSUrl } from '../utils/ipfs';
 import { getPlayCount } from '../services/playTracker';
 import { AIRecommendations } from '../components/genlayer/AIRecommendations';
 
-const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xbB509d5A144E3E3d240D7CFEdffC568BE35F1348';
+const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xF29A2DCC8877fac176C36F30d6245C4320e90841';
 
 // Helper function to format duration from seconds to MM:SS
 const formatDuration = (seconds: number | bigint): string => {
