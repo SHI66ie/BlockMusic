@@ -39,13 +39,16 @@
     "xss": "^1.0.15"
   },
   "devDependencies": {
+    "chai": "^4.5.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "^29.7.0",
+    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.0.3",
     "prettier": "^3.6.2",
+    "sinon": "^22.0.0",
     "supertest": "^6.3.4"
   },
   "jest": {

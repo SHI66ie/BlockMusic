@@ -14,6 +14,7 @@ const errorHandler = require('./middleware/errorHandler');
 const nftRoutes = require('./routes/nft');
 const ipfsRoutes = require('./routes/ipfs');
 const authRoutes = require('./routes/auth');
+const playlistRoutes = require('./routes/playlist');
 
 // Initialize Express app
 const app = express();
@@ -46,6 +47,7 @@ app.get('/health', (req, res) => {
 app.use(`${config.api.prefix}/nfts`, nftRoutes);
 app.use(`${config.api.prefix}/ipfs`, ipfsRoutes);
 app.use(`${config.api.prefix}/auth`, authRoutes);
+app.use(`${config.api.prefix}/playlists`, playlistRoutes);
 
 // Serve static files in production
 if (config.nodeEnv === 'production') {
