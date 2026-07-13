@@ -7,7 +7,9 @@ import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
 import Upload from './pages/Upload';
 import Artist from './pages/Artist';
+import Playlists from './pages/Playlists';
 import SubscriptionContextProvider from './contexts/SubscriptionContextProvider';
+import { PlaylistProvider } from './contexts/PlaylistContext';
 import { SubscriptionGuard } from './components/subscription/SubscriptionGuard';
 
 // Type for component props
@@ -36,7 +38,8 @@ const ProtectedArtist = withSubscription(Artist);
 function App() {
   return (
     <SubscriptionContextProvider>
-      <Suspense fallback={
+      <PlaylistProvider>
+        <Suspense fallback={
         <div className="flex items-center justify-center min-h-screen bg-neutral-950">
           <div className="text-center">
             <div className="inline-block animate-spin-slow mb-4">
@@ -56,11 +59,13 @@ function App() {
               <Route path="upload" element={<ProtectedUpload />} />
               <Route path="artist" element={<ProtectedArtist />} />
               <Route path="profile" element={<ProtectedProfile />} />
+              <Route path="playlists" element={<Playlists />} />
               <Route path="subscribe" element={<Subscribe />} />
               <Route path="*" element={<Navigate to="/home" replace />} />
             </Route>          </Routes>
         </Router>
       </Suspense>
+      </PlaylistProvider>
     </SubscriptionContextProvider>
   );
 }
