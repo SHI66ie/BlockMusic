@@ -29,6 +29,8 @@ export default function Upload() {
   const [formData, setFormData] = useState({
     trackTitle: '',
     artistName: '',
+    producer: '',
+    otherArtists: '',
     albumName: '',
     releaseType: 'Single',
     genre: 'Hip Hop',
@@ -173,16 +175,20 @@ export default function Upload() {
       // Create metadata JSON (NFT standard format)
       const metadata = {
         name: formData.trackTitle,
-        description: `${formData.trackTitle} by ${formData.artistName}`,
+        description: `${formData.trackTitle} by ${formData.artistName}${formData.producer ? ` (Produced by ${formData.producer})` : ''}${formData.otherArtists ? ` feat. ${formData.otherArtists}` : ''}`,
         image: coverArtURI,
         animation_url: audioURI,
         audio_url: audioURI,
         artist: formData.artistName,
+        producer: formData.producer || '',
+        otherArtists: formData.otherArtists || '',
         genre: formData.genre,
         duration: formatDuration(durationInSeconds),
         playCount: 0,
         attributes: [
           { trait_type: 'Artist', value: formData.artistName },
+          { trait_type: 'Producer', value: formData.producer || 'N/A' },
+          { trait_type: 'Featured Artists', value: formData.otherArtists || 'N/A' },
           { trait_type: 'Album', value: formData.albumName || 'N/A' },
           { trait_type: 'Release Type', value: formData.releaseType },
           { trait_type: 'Genre', value: formData.genre },
@@ -348,6 +354,8 @@ export default function Upload() {
       setFormData({
         trackTitle: '',
         artistName: '',
+        producer: '',
+        otherArtists: '',
         albumName: '',
         releaseType: 'Single',
         genre: 'Hip Hop',
@@ -439,6 +447,34 @@ export default function Upload() {
                 required
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
                 placeholder="Enter artist name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Producer (Optional)
+              </label>
+              <input
+                type="text"
+                name="producer"
+                value={formData.producer}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                placeholder="Enter producer name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Other Artists (Optional)
+              </label>
+              <input
+                type="text"
+                name="otherArtists"
+                value={formData.otherArtists}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                placeholder="Enter featured artists (comma separated)"
               />
             </div>
 
