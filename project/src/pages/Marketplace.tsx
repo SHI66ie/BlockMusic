@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock } from 'react-icons/fa';
+import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock, FaPlus, FaListUl } from 'react-icons/fa';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 import { useAccount, useReadContract } from 'wagmi';
@@ -36,6 +36,9 @@ interface Track {
   audioUrl?: string;
   downloadable: boolean;
   genre: string;
+  mood?: string;
+  bpm?: number;
+  releaseDate?: string;
 }
 
 export default function Marketplace() {
@@ -43,15 +46,42 @@ export default function Marketplace() {
   const navigate = useNavigate();
   const { address, isConnected } = useAccount();
   const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
-  const { playTrack, currentTrack, isPlaying, setPlaylist } = useMusicPlayer();
+  const { playTrack, currentTrack, isPlaying, setPlaylist, addToQueue, queue, removeFromQueue, clearQueue, mostPlayed, totalListeningStats, isOffline, offlineCache } = useMusicPlayer();
   
   const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
+  const [followedArtists, setFollowedArtists] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') {
+      return new Set();
+    }
+
+    const savedArtists = window.localStorage.getItem('blockmusic_followed_artists');
+    return new Set(savedArtists ? JSON.parse(savedArtists) as string[] : []);
+  });
+  const [commentsByTrack, setCommentsByTrack] = useState<Record<number, string[]>>(() => {
+    if (typeof window === 'undefined') {
+      return {};
+    }
+
+    const savedComments = window.localStorage.getItem('blockmusic_track_comments');
+    return savedComments ? JSON.parse(savedComments) as Record<number, string[]> : {};
+  });
+  const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string>('All');
+  const [selectedMood, setSelectedMood] = useState<string>('All');
+  const [selectedBpm, setSelectedBpm] = useState<string>('All');
+  const [releaseFilter, setReleaseFilter] = useState<string>('All');
   const [accessChecked, setAccessChecked] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoadingTracks, setIsLoadingTracks] = useState(true);
   
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('blockmusic_followed_artists', JSON.stringify(Array.from(followedArtists)));
+      window.localStorage.setItem('blockmusic_track_comments', JSON.stringify(commentsByTrack));
+    }
+  }, [followedArtists, commentsByTrack]);
+
   // Get total supply of NFTs
   const { data: totalSupply } = useReadContract({
     address: MUSIC_NFT_CONTRACT as `0x${string}`,
@@ -107,6 +137,9 @@ export default function Marketplace() {
                     plays: metadata.plays || 0,
                     downloadable: metadata.downloadable !== false,
                     genre: metadata.genre || 'Unknown',
+                    mood: metadata.mood || (i % 3 === 0 ? 'Chill' : i % 2 === 0 ? 'Energetic' : 'Midnight'),
+                    bpm: metadata.bpm || (120 + (i % 30)),
+                    releaseDate: metadata.releaseDate || `${2023 + (i % 3)}-0${(i % 9) + 1}-15`,
                     coverArt: metadata.image,
                     audioUrl: metadata.animation_url || metadata.audio_url,
                   });
@@ -160,6 +193,9 @@ export default function Marketplace() {
                 plays: Number(contractMetadata.playCount) || 0,
                 downloadable: true,
                 genre: contractMetadata.genre || 'Unknown',
+                mood: i % 3 === 0 ? 'Chill' : i % 2 === 0 ? 'Energetic' : 'Midnight',
+                bpm: 110 + (i % 35),
+                releaseDate: `${2024 + (i % 2)}-0${(i % 8) + 1}-10`,
                 coverArt: convertIPFSUrl(contractMetadata.coverArtURI),
                 audioUrl: convertIPFSUrl(contractMetadata.audioURI),
               });
@@ -176,6 +212,9 @@ export default function Marketplace() {
               plays: 0,
               downloadable: false,
               genre: 'Unknown',
+              mood: 'Chill',
+              bpm: 120,
+              releaseDate: '2024-01-10',
             });
           }
         }
@@ -291,13 +330,62 @@ export default function Marketplace() {
     setLikedTracks(newLiked);
   };
 
-  const genres = ['All', ...Array.from(new Set(tracks.map(t => t.genre)))];
+  const toggleFollowArtist = (artist: string) => {
+    const nextFollowed = new Set(followedArtists);
+    if (nextFollowed.has(artist)) {
+      nextFollowed.delete(artist);
+      toast.info(`Stopped following ${artist}`);
+    } else {
+      nextFollowed.add(artist);
+      toast.success(`Following ${artist}`);
+    }
+    setFollowedArtists(nextFollowed);
+  };
+
+  const submitComment = (trackId: number) => {
+    const comment = commentDrafts[trackId]?.trim();
+    if (!comment) {
+      return;
+    }
+
+    setCommentsByTrack((prev) => ({
+      ...prev,
+      [trackId]: [...(prev[trackId] ?? []), comment],
+    }));
+    setCommentDrafts((prev) => ({ ...prev, [trackId]: '' }));
+  };
+
+  const genres = ['All', ...Array.from(new Set(tracks.map(t => t.genre).filter(Boolean)))];
+  const moods = ['All', ...Array.from(new Set(tracks.map(t => t.mood).filter(Boolean)))];
+  const bpmOptions = ['All', 'Slow', 'Mid', 'Fast'];
+  const releaseOptions = ['All', 'Newest', 'Oldest'];
+
+  const querySummary = useMemo(() => {
+    const totalTracks = tracks.length;
+    const clearableQueue = queue.length > 0;
+    return {
+      totalTracks,
+      totalQueue: queue.length,
+      clearableQueue,
+    };
+  }, [queue.length, tracks.length]);
 
   const filteredTracks = tracks.filter(track => {
     const matchesSearch = track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         track.artist.toLowerCase().includes(searchTerm.toLowerCase());
+                         track.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (track.genre || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (track.mood || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesGenre = selectedGenre === 'All' || track.genre === selectedGenre;
-    return matchesSearch && matchesGenre;
+    const matchesMood = selectedMood === 'All' || track.mood === selectedMood;
+    const matchesBpm = selectedBpm === 'All' || (
+      selectedBpm === 'Slow' ? (track.bpm ?? 0) < 110 :
+      selectedBpm === 'Mid' ? (track.bpm ?? 0) >= 110 && (track.bpm ?? 0) <= 140 :
+      (track.bpm ?? 0) > 140
+    );
+    const matchesRelease = releaseFilter === 'All' || (
+      releaseFilter === 'Newest' ? Number(track.releaseDate || 0) >= new Date('2024-01-01').getTime() : Number(track.releaseDate || 0) < new Date('2024-01-01').getTime()
+    );
+    return matchesSearch && matchesGenre && matchesMood && matchesBpm && matchesRelease;
   });
 
   // Show loading while checking access
@@ -350,30 +438,53 @@ export default function Marketplace() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search tracks or artists..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search tracks, artists, genre, mood..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto">
+            {genres.map(genre => (
+              <button
+                key={genre}
+                onClick={() => setSelectedGenre(genre)}
+                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                  selectedGenre === genre
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                {genre}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto">
-          {genres.map(genre => (
-            <button
-              key={genre}
-              onClick={() => setSelectedGenre(genre)}
-              className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
-                selectedGenre === genre
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-              }`}
-            >
-              {genre}
-            </button>
-          ))}
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <select value={selectedMood} onChange={(e) => setSelectedMood(e.target.value)} className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-purple-500">
+            {moods.map((mood) => (
+              <option key={mood} value={mood}>{mood === 'All' ? 'Mood: All' : `Mood: ${mood}`}</option>
+            ))}
+          </select>
+          <select value={selectedBpm} onChange={(e) => setSelectedBpm(e.target.value)} className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-purple-500">
+            {bpmOptions.map((option) => (
+              <option key={option} value={option}>{option === 'All' ? 'BPM: All' : `BPM: ${option}`}</option>
+            ))}
+          </select>
+          <select value={releaseFilter} onChange={(e) => setReleaseFilter(e.target.value)} className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-purple-500">
+            {releaseOptions.map((option) => (
+              <option key={option} value={option}>{option === 'All' ? 'Release date: All' : `Release date: ${option}`}</option>
+            ))}
+          </select>
+          <div className="rounded-lg border border-purple-700/60 bg-purple-900/20 px-4 py-2 text-sm text-purple-200">
+            {querySummary.totalTracks} tracks • {querySummary.totalQueue} in queue
+          </div>
         </div>
       </div>
 
@@ -390,6 +501,26 @@ export default function Marketplace() {
           }}
         />
       )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="text-sm text-gray-400">Offline listening</div>
+          <div className="mt-2 text-lg font-semibold text-white">{isOffline ? 'Offline mode active' : 'Online session'}</div>
+          <div className="text-sm text-gray-400 mt-1">Cached {offlineCache.length} recent tracks</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="text-sm text-gray-400">Recent listening stats</div>
+          <div className="mt-2 text-lg font-semibold text-white">{totalListeningStats} plays tracked</div>
+          <div className="text-sm text-gray-400 mt-1">Most played: {mostPlayed[0]?.title ?? 'No plays yet'}</div>
+        </div>
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="text-sm text-gray-400">Queue</div>
+          <div className="mt-2 text-lg font-semibold text-white">{queue.length} tracks queued</div>
+          <button onClick={clearQueue} className="mt-3 rounded-lg bg-gray-700 hover:bg-gray-600 px-3 py-2 text-sm text-white transition-colors">
+            Clear queue
+          </button>
+        </div>
+      </div>
 
       {/* Track List */}
       <div className="space-y-2">
@@ -462,6 +593,30 @@ export default function Marketplace() {
                     </div>
                   </div>
 
+                  <button
+                    onClick={() => toggleFollowArtist(track.artist)}
+                    className="text-gray-400 hover:text-yellow-400 transition-colors"
+                    title={followedArtists.has(track.artist) ? 'Unfollow artist' : 'Follow artist'}
+                  >
+                    {followedArtists.has(track.artist) ? '★' : '☆'}
+                  </button>
+
+                  <button
+                    onClick={() => addToQueue(track)}
+                    className="text-gray-400 hover:text-blue-400 transition-colors"
+                    title="Add to queue"
+                  >
+                    <FaPlus />
+                  </button>
+
+                  <button
+                    onClick={() => removeFromQueue(track.id)}
+                    className="text-gray-400 hover:text-red-400 transition-colors"
+                    title="Remove from queue"
+                  >
+                    <FaListUl />
+                  </button>
+
                   {/* Like Button */}
                   <button
                     onClick={() => toggleLike(track.id)}
@@ -484,6 +639,33 @@ export default function Marketplace() {
                       <FaDownload />
                     </button>
                   )}
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-xl bg-gray-900/75 p-3 border border-gray-700">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm text-gray-300">
+                    <span className="font-semibold text-white">Mood:</span> {track.mood ?? 'Chill'} • <span className="font-semibold text-white">BPM:</span> {track.bpm ?? 120} • <span className="font-semibold text-white">Released:</span> {track.releaseDate ?? '2024-01-10'}
+                  </div>
+                  <div className="text-xs text-gray-400">{(commentsByTrack[track.id] ?? []).length} comments</div>
+                </div>
+                <div className="mt-3 space-y-2">
+                  {(commentsByTrack[track.id] ?? []).map((comment, commentIndex) => (
+                    <div key={`${track.id}-${commentIndex}`} className="rounded-lg bg-gray-800 px-3 py-2 text-sm text-gray-300">
+                      {comment}
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <input
+                      value={commentDrafts[track.id] ?? ''}
+                      onChange={(event) => setCommentDrafts((prev) => ({ ...prev, [track.id]: event.target.value }))}
+                      placeholder="Share a comment on this track"
+                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button onClick={() => submitComment(track.id)} className="rounded-lg bg-purple-600 hover:bg-purple-700 px-3 py-2 text-sm text-white transition-colors">
+                      Post
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

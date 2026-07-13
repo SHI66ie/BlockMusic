@@ -10,7 +10,10 @@ import {
   FaRandom,
   FaRedo,
   FaHeart,
-  FaRegHeart
+  FaRegHeart,
+  FaArrowUp,
+  FaArrowDown,
+  FaTrash
 } from 'react-icons/fa';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
 
@@ -30,9 +33,14 @@ export const NowPlayingBar: React.FC = () => {
     toggleShuffle,
     repeatMode,
     setRepeatMode,
+    queue,
+    moveQueueItem,
+    removeFromQueue,
+    clearQueue,
   } = useMusicPlayer();
 
   const [isLiked, setIsLiked] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
 
   if (!currentTrack) return null;
 
@@ -205,6 +213,46 @@ export const NowPlayingBar: React.FC = () => {
             />
           </div>
         </div>
+
+        {queue.length > 0 && (
+          <div className="mt-2 rounded-xl border border-purple-700/60 bg-purple-950/30 px-3 py-2">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => setShowQueue((prev) => !prev)}
+                className="text-sm font-semibold text-purple-200"
+              >
+                Queue ({queue.length})
+              </button>
+              <button
+                onClick={clearQueue}
+                className="text-xs text-red-200 hover:text-red-100"
+              >
+                Clear queue
+              </button>
+            </div>
+
+            {showQueue && (
+              <div className="mt-2 space-y-2">
+                {queue.map((track, index) => (
+                  <div key={`${track.id}-${index}`} className="flex items-center justify-between gap-2 rounded-lg bg-black/20 px-2 py-1 text-sm text-purple-50">
+                    <span className="truncate">{track.title}</span>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => moveQueueItem(index, Math.max(index - 1, 0))} className="p-1 hover:text-white" aria-label="Move up">
+                        <FaArrowUp />
+                      </button>
+                      <button onClick={() => moveQueueItem(index, Math.min(index + 1, queue.length - 1))} className="p-1 hover:text-white" aria-label="Move down">
+                        <FaArrowDown />
+                      </button>
+                      <button onClick={() => removeFromQueue(track.id)} className="p-1 hover:text-red-200" aria-label="Remove from queue">
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
