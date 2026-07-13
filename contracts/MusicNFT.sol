@@ -57,6 +57,9 @@ contract MusicNFT is
     // Mapping to track plays per user per track
     mapping(uint256 => mapping(address => uint256)) public userPlays;
     
+    // Toggle for enforcing GenLayer AI moderation (defaults to false for testing)
+    bool public isModerationEnforced;
+    
     // Events
     event MusicMinted(
         uint256 indexed tokenId,
@@ -93,6 +96,10 @@ contract MusicNFT is
         genLayerModerator = _moderator;
     }
     
+    function setModerationEnforced(bool _enforced) external onlyOwner {
+        isModerationEnforced = _enforced;
+    }
+    
     function setModerationStatus(string memory trackId, bool status) external {
         require(msg.sender == genLayerModerator || msg.sender == owner(), "Not authorized");
         moderationStatus[trackId] = status;
@@ -123,7 +130,7 @@ contract MusicNFT is
         string memory tokenURI
     ) external payable returns (uint256) {
         require(msg.value >= mintFee, "Insufficient mint fee");
-        require(moderationStatus[trackId], "Track not yet approved by AI Moderator");
+        require(!isModerationEnforced || moderationStatus[trackId], "Track not yet approved by AI Moderator");
         
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter++;

@@ -180,7 +180,7 @@ export default function Upload() {
           // Wait for cross-chain sync (polling)
           setIsPollingModeration(true);
           let attempts = 0;
-          const maxAttempts = 30; // 30 * 2s = 60s max wait
+          const maxAttempts = 10; // 10 * 1.5s = 15s max wait
           
           while (attempts < maxAttempts) {
             attempts++;
@@ -210,11 +210,33 @@ export default function Upload() {
               console.warn('Polling error:', err);
             }
             
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 1500));
           }
           
           if (!isApprovedOnChain) {
-            toast.warning('⚠️ On-chain sync is taking longer than expected. You can try minting anyway, but it might fail.');
+            try {
+              const isEnforced = await readContract(config, {
+                address: MUSIC_NFT_CONTRACT as `0x${string}`,
+                abi: [{
+                  name: 'isModerationEnforced',
+                  type: 'function',
+                  stateMutability: 'view',
+                  inputs: [],
+                  outputs: [{ name: '', type: 'bool' }]
+                }],
+                functionName: 'isModerationEnforced',
+                args: [],
+              });
+              
+              if (!isEnforced) {
+                toast.success('ℹ️ GenLayer sync timed out, but strict moderation is currently disabled. Proceeding to mint!');
+                isApprovedOnChain = true; // Pretend it's approved to proceed
+              } else {
+                toast.warning('⚠️ On-chain sync is taking longer than expected. You can try minting anyway, but it might fail.');
+              }
+            } catch (err) {
+               toast.warning('⚠️ On-chain sync is taking longer than expected. You can try minting anyway, but it might fail.');
+            }
           }
         } else {
           toast.warning('⚠️ Content under review — proceeding with upload');

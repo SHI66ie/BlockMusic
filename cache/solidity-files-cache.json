@@ -1,46 +1,9 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\Greeter.sol": {
-      "lastModificationDate": 1758551744752,
-      "contentHash": "9c3bfe36cdac47c46d0d13b7acef7f3c",
-      "sourceName": "contracts/Greeter.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Greeter"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\BlockMusic.sol": {
-      "lastModificationDate": 1758558428253,
-      "contentHash": "3e4b015f2462958b48f71765ba09aa7d",
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\BlockMusic.sol": {
+      "lastModificationDate": 1770987137679,
+      "contentHash": "14b9ca2931acbfb3211c71022e14a8e3",
       "sourceName": "contracts/BlockMusic.sol",
       "solcConfig": {
         "version": "0.8.22",
@@ -78,8 +41,8 @@
         "BlockMusic"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
-      "lastModificationDate": 1758558327312,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
+      "lastModificationDate": 1776086395905,
       "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
@@ -117,8 +80,8 @@
         "Ownable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\ERC721.sol": {
-      "lastModificationDate": 1758558319586,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\ERC721.sol": {
+      "lastModificationDate": 1776086395265,
       "contentHash": "522ec023bce510c30dfbf61584f5a190",
       "sourceName": "@openzeppelin/contracts/token/ERC721/ERC721.sol",
       "solcConfig": {
@@ -162,8 +125,8 @@
         "ERC721"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
-      "lastModificationDate": 1758558316276,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
+      "lastModificationDate": 1776086394910,
       "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
@@ -199,8 +162,47 @@
         "Context"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\Strings.sol": {
-      "lastModificationDate": 1758558329198,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
+      "lastModificationDate": 1776086395032,
+      "contentHash": "5041977bbe908de2e6ed0270447f79ad",
+      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.8.4"
+      ],
+      "artifacts": [
+        "IERC1155Errors",
+        "IERC20Errors",
+        "IERC721Errors"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\Strings.sol": {
+      "lastModificationDate": 1776086396160,
       "contentHash": "d8f70caf0e0c77dc908176ed44812fb7",
       "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
       "solcConfig": {
@@ -240,47 +242,8 @@
         "Strings"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
-      "lastModificationDate": 1758558317837,
-      "contentHash": "5041977bbe908de2e6ed0270447f79ad",
-      "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IERC1155Errors",
-        "IERC20Errors",
-        "IERC721Errors"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\ERC165.sol": {
-      "lastModificationDate": 1758558318282,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\ERC165.sol": {
+      "lastModificationDate": 1776086395146,
       "contentHash": "0906d06dca25210d4696dcef6dad2909",
       "sourceName": "@openzeppelin/contracts/utils/introspection/ERC165.sol",
       "solcConfig": {
@@ -318,8 +281,8 @@
         "ERC165"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\IERC721.sol": {
-      "lastModificationDate": 1758558326884,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\IERC721.sol": {
+      "lastModificationDate": 1776086395757,
       "contentHash": "f62e11dbd302e17a5621a1438f4e054c",
       "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721.sol",
       "solcConfig": {
@@ -357,8 +320,8 @@
         "IERC721"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
-      "lastModificationDate": 1758558326900,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\IERC721Metadata.sol": {
+      "lastModificationDate": 1776086395779,
       "contentHash": "136c64eca25bcb8a68f43ac6605559f9",
       "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol",
       "solcConfig": {
@@ -396,8 +359,8 @@
         "IERC721Metadata"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\utils\\ERC721Utils.sol": {
-      "lastModificationDate": 1758558320678,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\utils\\ERC721Utils.sol": {
+      "lastModificationDate": 1776086395322,
       "contentHash": "4cefad279a37c895b709bce2b901816e",
       "sourceName": "@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol",
       "solcConfig": {
@@ -436,45 +399,8 @@
         "ERC721Utils"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SafeCast.sol": {
-      "lastModificationDate": 1758558328125,
-      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
-      "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SafeCast"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\math\\Math.sol": {
-      "lastModificationDate": 1758558327022,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\math\\Math.sol": {
+      "lastModificationDate": 1776086395842,
       "contentHash": "5ec781e33d3a9ac91ffdc83d94420412",
       "sourceName": "@openzeppelin/contracts/utils/math/Math.sol",
       "solcConfig": {
@@ -513,8 +439,45 @@
         "Math"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SignedMath.sol": {
-      "lastModificationDate": 1758558328159,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SafeCast.sol": {
+      "lastModificationDate": 1776086395971,
+      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
+      "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SafeCast"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SignedMath.sol": {
+      "lastModificationDate": 1776086396000,
       "contentHash": "ae3528afb8bdb0a7dcfba5b115ee8074",
       "sourceName": "@openzeppelin/contracts/utils/math/SignedMath.sol",
       "solcConfig": {
@@ -552,8 +515,8 @@
         "SignedMath"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\Panic.sol": {
-      "lastModificationDate": 1758558327498,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\Panic.sol": {
+      "lastModificationDate": 1776086395930,
       "contentHash": "2133dc13536b4a6a98131e431fac59e1",
       "sourceName": "@openzeppelin/contracts/utils/Panic.sol",
       "solcConfig": {
@@ -589,8 +552,8 @@
         "Panic"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
-      "lastModificationDate": 1758558325083,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\introspection\\IERC165.sol": {
+      "lastModificationDate": 1776086395556,
       "contentHash": "7074c93b1ea0a122063f26ddd1db1032",
       "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
       "solcConfig": {
@@ -626,8 +589,8 @@
         "IERC165"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\IERC721Receiver.sol": {
-      "lastModificationDate": 1758558326916,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\IERC721Receiver.sol": {
+      "lastModificationDate": 1776086395787,
       "contentHash": "d61660a41ce200e99816e4734f7fd202",
       "sourceName": "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
       "solcConfig": {
@@ -663,485 +626,8 @@
         "IERC721Receiver"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
-      "lastModificationDate": 1758558318889,
-      "contentHash": "59dfce11284f2636db261df9b6a18f81",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./IERC20.sol",
-        "./extensions/IERC20Metadata.sol",
-        "../../utils/Context.sol",
-        "../../interfaces/draft-IERC6093.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC20"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
-      "lastModificationDate": 1758558325521,
-      "contentHash": "9261adf6457863de3e9892f51317ec89",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC20"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
-      "lastModificationDate": 1758558325875,
-      "contentHash": "513778b30d2750f5d2b9b19bbcf748a5",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC20Metadata"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\SubscriptionV2.sol": {
-      "lastModificationDate": 1759827724719,
-      "contentHash": "23e598e0058400d147abf16cc49b5bf4",
-      "sourceName": "contracts/SubscriptionV2.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.19"
-      ],
-      "artifacts": [
-        "AggregatorV3Interface",
-        "SubscriptionV2"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
-      "lastModificationDate": 1758558327519,
-      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
-      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ReentrancyGuard"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\SubscriptionManager.sol": {
-      "lastModificationDate": 1759765713102,
-      "contentHash": "3de32c56ad871d84b04a721556409bec",
-      "sourceName": "contracts/SubscriptionManager.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol",
-        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SubscriptionManager"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\MockUSDC.sol": {
-      "lastModificationDate": 1758630463603,
-      "contentHash": "6e2a532faa61063f08e7412e0dc1d471",
-      "sourceName": "contracts/MockUSDC.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "@openzeppelin/contracts/access/Ownable.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "MockUSDC"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\token\\ERC721\\extensions\\ERC721URIStorage.sol": {
-      "lastModificationDate": 1758558320625,
-      "contentHash": "0b00dd0d9f2738855f17aa283bfa3ff5",
-      "sourceName": "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol",
-      "solcConfig": {
-        "version": "0.8.20",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../ERC721.sol",
-        "./IERC721Metadata.sol",
-        "../../../utils/Strings.sol",
-        "../../../interfaces/IERC4906.sol",
-        "../../../interfaces/IERC165.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC721URIStorage"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC4906.sol": {
-      "lastModificationDate": 1758558326790,
-      "contentHash": "4386d2e9b1578157802062e156bd9ae1",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC4906.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./IERC165.sol",
-        "./IERC721.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC4906"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC165.sol": {
-      "lastModificationDate": 1758558325023,
-      "contentHash": "947853028399b7de34bcc3704ee06e99",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC165.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": []
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC721.sol": {
-      "lastModificationDate": 1758558326881,
-      "contentHash": "6b9716905fb42874ed1769ae7f7458b1",
-      "sourceName": "@openzeppelin/contracts/interfaces/IERC721.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "../token/ERC721/IERC721.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": []
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\contracts\\MusicNFT.sol": {
-      "lastModificationDate": 1760539381936,
-      "contentHash": "602997ccbd96d2ec778765ca27310978",
-      "sourceName": "contracts/MusicNFT.sol",
-      "solcConfig": {
-        "version": "0.8.22",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata",
-                "storageLayout"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol",
-        "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
-        "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol",
-        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
-        "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.22"
-      ],
-      "artifacts": [
-        "MusicNFT"
-      ]
-    },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol": {
-      "lastModificationDate": 1760538917326,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\token\\ERC721\\ERC721Upgradeable.sol": {
+      "lastModificationDate": 1776086393910,
       "contentHash": "1c5851d32f3a9b29c8962274b38974a7",
       "sourceName": "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol",
       "solcConfig": {
@@ -1187,8 +673,8 @@
         "ERC721Upgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol": {
-      "lastModificationDate": 1760538916563,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol": {
+      "lastModificationDate": 1776086393219,
       "contentHash": "c28aaa25d083a9a55bd9ec9e0b785122",
       "sourceName": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol",
       "solcConfig": {
@@ -1226,8 +712,8 @@
         "ContextUpgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol": {
-      "lastModificationDate": 1760538917791,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol": {
+      "lastModificationDate": 1776086394142,
       "contentHash": "2acae54ad209714bca07edf4bae32f72",
       "sourceName": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
       "solcConfig": {
@@ -1263,8 +749,8 @@
         "Initializable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol": {
-      "lastModificationDate": 1760538916807,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol": {
+      "lastModificationDate": 1776086393591,
       "contentHash": "4d250f562322f9c023c5503064ffc12f",
       "sourceName": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol",
       "solcConfig": {
@@ -1303,8 +789,122 @@
         "ERC165Upgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721URIStorageUpgradeable.sol": {
-      "lastModificationDate": 1760538917342,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC165.sol": {
+      "lastModificationDate": 1776086395553,
+      "contentHash": "947853028399b7de34bcc3704ee06e99",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC165.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/introspection/IERC165.sol"
+      ],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": []
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC4906.sol": {
+      "lastModificationDate": 1776086395734,
+      "contentHash": "4386d2e9b1578157802062e156bd9ae1",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC4906.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC165.sol",
+        "./IERC721.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": [
+        "IERC4906"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC721.sol": {
+      "lastModificationDate": 1776086395752,
+      "contentHash": "6b9716905fb42874ed1769ae7f7458b1",
+      "sourceName": "@openzeppelin/contracts/interfaces/IERC721.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../token/ERC721/IERC721.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": []
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\token\\ERC721\\extensions\\ERC721URIStorageUpgradeable.sol": {
+      "lastModificationDate": 1776086393920,
       "contentHash": "f8f3407312c59eaa503141607bb2692e",
       "sourceName": "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol",
       "solcConfig": {
@@ -1347,8 +947,8 @@
         "ERC721URIStorageUpgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol": {
-      "lastModificationDate": 1760538917949,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol": {
+      "lastModificationDate": 1776086394196,
       "contentHash": "77d30f3cd93f46b80b6f8f1ebc574ee4",
       "sourceName": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
       "solcConfig": {
@@ -1387,8 +987,51 @@
         "OwnableUpgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\utils\\ReentrancyGuardUpgradeable.sol": {
-      "lastModificationDate": 1760538918015,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\MusicNFT.sol": {
+      "lastModificationDate": 1783933705877,
+      "contentHash": "157ba4fd28edb7f50b2f4c30db5463f2",
+      "sourceName": "contracts/MusicNFT.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol",
+        "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.22"
+      ],
+      "artifacts": [
+        "MusicNFT"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\utils\\ReentrancyGuardUpgradeable.sol": {
+      "lastModificationDate": 1776086394233,
       "contentHash": "24562076b21756e3358ede5e844008ce",
       "sourceName": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol",
       "solcConfig": {
@@ -1426,8 +1069,8 @@
         "ReentrancyGuardUpgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts-upgradeable\\proxy\\utils\\UUPSUpgradeable.sol": {
-      "lastModificationDate": 1760538918064,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts-upgradeable\\proxy\\utils\\UUPSUpgradeable.sol": {
+      "lastModificationDate": 1776086394281,
       "contentHash": "08db0b4bea3d52072346c326c5b857b7",
       "sourceName": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol",
       "solcConfig": {
@@ -1467,8 +1110,8 @@
         "UUPSUpgradeable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC1822.sol": {
-      "lastModificationDate": 1758558317776,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC1822.sol": {
+      "lastModificationDate": 1776086395022,
       "contentHash": "9b2cafd2153b51bcfd7f4cb4cfc975aa",
       "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC1822.sol",
       "solcConfig": {
@@ -1504,8 +1147,8 @@
         "IERC1822Proxiable"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\proxy\\ERC1967\\ERC1967Utils.sol": {
-      "lastModificationDate": 1758558318868,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\proxy\\ERC1967\\ERC1967Utils.sol": {
+      "lastModificationDate": 1776086395173,
       "contentHash": "2741625b983eb412cfdd8aa55a7671c1",
       "sourceName": "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol",
       "solcConfig": {
@@ -1546,8 +1189,8 @@
         "ERC1967Utils"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC1967.sol": {
-      "lastModificationDate": 1758558325177,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC1967.sol": {
+      "lastModificationDate": 1776086395570,
       "contentHash": "3c9577899f440b0c66e880c96e9250bb",
       "sourceName": "@openzeppelin/contracts/interfaces/IERC1967.sol",
       "solcConfig": {
@@ -1583,8 +1226,8 @@
         "IERC1967"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\Address.sol": {
-      "lastModificationDate": 1758558316026,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\Address.sol": {
+      "lastModificationDate": 1776086394840,
       "contentHash": "2a06d82f31f75087bf90231599da4f1c",
       "sourceName": "@openzeppelin/contracts/utils/Address.sol",
       "solcConfig": {
@@ -1622,8 +1265,8 @@
         "Address"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\StorageSlot.sol": {
-      "lastModificationDate": 1758558329145,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\StorageSlot.sol": {
+      "lastModificationDate": 1776086396150,
       "contentHash": "e656d64c4ce918f3d13030b91c935134",
       "sourceName": "@openzeppelin/contracts/utils/StorageSlot.sol",
       "solcConfig": {
@@ -1659,8 +1302,8 @@
         "StorageSlot"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\proxy\\beacon\\IBeacon.sol": {
-      "lastModificationDate": 1758558324413,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\proxy\\beacon\\IBeacon.sol": {
+      "lastModificationDate": 1776086395492,
       "contentHash": "ee2e46607ed2be58bd554306d068acba",
       "sourceName": "@openzeppelin/contracts/proxy/beacon/IBeacon.sol",
       "solcConfig": {
@@ -1696,8 +1339,8 @@
         "IBeacon"
       ]
     },
-    "C:\\Users\\DELL\\Downloads\\BLockMusic(Pricesadj)\\node_modules\\@openzeppelin\\contracts\\utils\\Errors.sol": {
-      "lastModificationDate": 1758558321905,
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\Errors.sol": {
+      "lastModificationDate": 1776086395357,
       "contentHash": "6b5eac2b85500c3012977849cfd633d8",
       "sourceName": "@openzeppelin/contracts/utils/Errors.sol",
       "solcConfig": {
@@ -1731,6 +1374,361 @@
       ],
       "artifacts": [
         "Errors"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
+      "lastModificationDate": 1776086395178,
+      "contentHash": "59dfce11284f2636db261df9b6a18f81",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IERC20.sol",
+        "./extensions/IERC20Metadata.sol",
+        "../../utils/Context.sol",
+        "../../interfaces/draft-IERC6093.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ERC20"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
+      "lastModificationDate": 1776086395580,
+      "contentHash": "9261adf6457863de3e9892f51317ec89",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.16"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
+      "lastModificationDate": 1776086395588,
+      "contentHash": "513778b30d2750f5d2b9b19bbcf748a5",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../IERC20.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.2"
+      ],
+      "artifacts": [
+        "IERC20Metadata"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\SubscriptionV2.sol": {
+      "lastModificationDate": 1770989169552,
+      "contentHash": "7f04e5752a274c0a9c93ef8da8ec8d13",
+      "sourceName": "contracts/SubscriptionV2.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "AggregatorV3Interface",
+        "SubscriptionV2"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\node_modules\\@openzeppelin\\contracts\\utils\\ReentrancyGuard.sol": {
+      "lastModificationDate": 1776086395952,
+      "contentHash": "190613e556d509d9e9a0ea43dc5d891d",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ReentrancyGuard"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\SubscriptionManager.sol": {
+      "lastModificationDate": 1770987137679,
+      "contentHash": "2e6d767c20a926818c8bcd131f11eeeb",
+      "sourceName": "contracts/SubscriptionManager.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "SubscriptionManager"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\RevenueDistributor.sol": {
+      "lastModificationDate": 1783933912290,
+      "contentHash": "cc0eb97e7565e4a1b607ec3d737c76e2",
+      "sourceName": "contracts/RevenueDistributor.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.22"
+      ],
+      "artifacts": [
+        "RevenueDistributor"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\MockUSDC.sol": {
+      "lastModificationDate": 1770987137679,
+      "contentHash": "e8b3fb20b59ab4af5bbaa03e7b1f3ef1",
+      "sourceName": "contracts/MockUSDC.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MockUSDC"
+      ]
+    },
+    "C:\\Users\\Lenovo\\Documents\\GitHub\\BlockMusic\\contracts\\Greeter.sol": {
+      "lastModificationDate": 1770987137679,
+      "contentHash": "1eed9412b0e8795b212c6fca9d641bb0",
+      "sourceName": "contracts/Greeter.sol",
+      "solcConfig": {
+        "version": "0.8.22",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "Greeter"
       ]
     }
   }

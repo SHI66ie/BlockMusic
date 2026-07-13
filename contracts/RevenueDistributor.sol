@@ -262,7 +262,7 @@ contract RevenueDistributor is Ownable, ReentrancyGuard {
      * @return currentRevenue Current subscription revenue pool
      * @return currentPlays Total plays this period
      * @return lastDistribution Timestamp of last distribution
-     * @return totalDistributed Total historical distributions
+     * @return totalDistributed_ Total historical distributions
      */
     function getDistributionStats() external view returns (
         uint256 currentRevenue,
