@@ -307,7 +307,7 @@ export default function Upload() {
             trackTitle: formData.trackTitle,
             artistName: formData.artistName,
             albumName: formData.albumName || '',
-            genre: formData.genre,
+            genre: finalGenre,
             description: `${formData.trackTitle} by ${formData.artistName}`,
             isExplicit: formData.isExplicit,
           });
@@ -377,6 +377,7 @@ export default function Upload() {
         coverArtFile: null,
         audioFile: null,
       });
+      setCustomGenre('');
       
     } catch (error) {
       console.error('Upload error:', error);
