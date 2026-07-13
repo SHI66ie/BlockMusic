@@ -14,7 +14,7 @@ const MUSIC_NFT_CONTRACT = import.meta.env.VITE_MUSIC_NFT_CONTRACT || '0xF29A2DC
 const GENRES = [
   'Hip Hop', 'R&B', 'Pop', 'Rock', 'Electronic', 'House', 'Techno',
   'Trap', 'Drill', 'Afrobeats', 'Reggae', 'Jazz', 'Soul', 'Funk',
-  'Country', 'Latin', 'K-Pop', 'Indie', 'Alternative', 'Metal'
+  'Country', 'Latin', 'K-Pop', 'Indie', 'Alternative', 'Metal', 'Other'
 ];
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Track'];
@@ -26,6 +26,7 @@ export default function Upload() {
   const { verifyCopyright, isVerifying } = useCopyrightVerification();
   
   const [isUploading, setIsUploading] = useState(false);
+  const [customGenre, setCustomGenre] = useState('');
   const [formData, setFormData] = useState({
     trackTitle: '',
     artistName: '',
@@ -48,6 +49,11 @@ export default function Upload() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+
+    // Reset custom genre when switching away from "Other"
+    if (name === 'genre' && value !== 'Other') {
+      setCustomGenre('');
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'coverArt' | 'audio') => {
@@ -131,6 +137,12 @@ export default function Upload() {
       return;
     }
 
+    // Validate custom genre if "Other" is selected
+    if (formData.genre === 'Other' && !customGenre.trim()) {
+      toast.error('Please enter a custom genre');
+      return;
+    }
+
     if (!formData.coverArtFile || !formData.audioFile) {
       toast.error('Please upload both cover art and audio file');
       return;
@@ -141,6 +153,7 @@ export default function Upload() {
     try {
       // Generate track ID
       const trackId = `track_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const finalGenre = formData.genre === 'Other' ? customGenre.trim() : formData.genre;
       
       // ====== Step 1: Upload files to IPFS ======
       toast.info('📁 Extracting audio duration...');
@@ -182,7 +195,7 @@ export default function Upload() {
         artist: formData.artistName,
         producer: formData.producer || '',
         otherArtists: formData.otherArtists || '',
-        genre: formData.genre,
+        genre: finalGenre,
         duration: formatDuration(durationInSeconds),
         playCount: 0,
         attributes: [
@@ -191,7 +204,7 @@ export default function Upload() {
           { trait_type: 'Featured Artists', value: formData.otherArtists || 'N/A' },
           { trait_type: 'Album', value: formData.albumName || 'N/A' },
           { trait_type: 'Release Type', value: formData.releaseType },
-          { trait_type: 'Genre', value: formData.genre },
+          { trait_type: 'Genre', value: finalGenre },
           { trait_type: 'Duration', value: formatDuration(durationInSeconds) },
         ]
       };
@@ -220,7 +233,7 @@ export default function Upload() {
         artistName: formData.artistName,
         albumName: formData.albumName || '',
         releaseType: formData.releaseType,
-        genre: formData.genre,
+        genre: finalGenre,
         samples,
         coverArtURI,
         audioURI,
@@ -264,7 +277,7 @@ export default function Upload() {
             formData.artistName,
             formData.albumName || '',
             formData.releaseType,
-            formData.genre,
+            finalGenre,
             samples,
             coverArtURI,
             audioURI,
@@ -524,6 +537,16 @@ export default function Upload() {
                   <option key={genre} value={genre}>{genre}</option>
                 ))}
               </select>
+              {formData.genre === 'Other' && (
+                <input
+                  type="text"
+                  value={customGenre}
+                  onChange={(e) => setCustomGenre(e.target.value)}
+                  placeholder="Enter custom genre"
+                  className="mt-2 w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+                  required
+                />
+              )}
             </div>
 
           </div>
