@@ -147,13 +147,28 @@ export default function Upload() {
       const durationInSeconds = await getAudioDuration(formData.audioFile);
       toast.success('✅ Audio duration extracted');
       
+      let coverArtURI: string;
+      let audioURI: string;
+      
       toast.info('☁️ Uploading cover art to IPFS...');
-      const coverArtURI = await uploadToPinata(formData.coverArtFile);
-      toast.success('✅ Cover art uploaded to IPFS');
+      try {
+        coverArtURI = await uploadToPinata(formData.coverArtFile);
+        toast.success('✅ Cover art uploaded to IPFS');
+        console.log('Cover Art URI:', coverArtURI);
+      } catch (ipfsError) {
+        console.error('Cover art upload failed:', ipfsError);
+        throw new Error(`Cover art upload failed: ${ipfsError instanceof Error ? ipfsError.message : 'Unknown error'}`);
+      }
       
       toast.info('☁️ Uploading audio to IPFS...');
-      const audioURI = await uploadToPinata(formData.audioFile);
-      toast.success('✅ Audio uploaded to IPFS');
+      try {
+        audioURI = await uploadToPinata(formData.audioFile);
+        toast.success('✅ Audio uploaded to IPFS');
+        console.log('Audio URI:', audioURI);
+      } catch (ipfsError) {
+        console.error('Audio upload failed:', ipfsError);
+        throw new Error(`Audio upload failed: ${ipfsError instanceof Error ? ipfsError.message : 'Unknown error'}`);
+      }
       
       // Create metadata JSON (NFT standard format)
       const metadata = {
@@ -177,8 +192,15 @@ export default function Upload() {
       
       // Upload metadata to IPFS
       toast.info('☁️ Uploading metadata to IPFS...');
-      const tokenURI = await uploadMetadataToPinata(metadata);
-      toast.success('✅ Metadata uploaded to IPFS');
+      let tokenURI: string;
+      try {
+        tokenURI = await uploadMetadataToPinata(metadata);
+        toast.success('✅ Metadata uploaded to IPFS');
+        console.log('Token URI:', tokenURI);
+      } catch (ipfsError) {
+        console.error('Metadata upload failed:', ipfsError);
+        throw new Error(`Metadata upload failed: ${ipfsError instanceof Error ? ipfsError.message : 'Unknown error'}`);
+      }
       
       // ====== Step 2: Mint NFT ======
       toast.info('🔐 Please sign transaction to mint NFT...');
@@ -186,48 +208,71 @@ export default function Upload() {
       // Filter out empty samples
       const samples = formData.samples.filter(s => s.trim() !== '');
       
-      // Mint NFT
-      const txHash = await writeContractAsync({
-        address: MUSIC_NFT_CONTRACT as `0x${string}`,
-        abi: [
-          {
-            name: 'mintMusic',
-            type: 'function',
-            stateMutability: 'payable',
-            inputs: [
-              { name: 'trackId', type: 'string' },
-              { name: 'trackTitle', type: 'string' },
-              { name: 'artistName', type: 'string' },
-              { name: 'albumName', type: 'string' },
-              { name: 'releaseType', type: 'string' },
-              { name: 'genre', type: 'string' },
-              { name: 'samples', type: 'string[]' },
-              { name: 'coverArtURI', type: 'string' },
-              { name: 'audioURI', type: 'string' },
-              { name: 'duration', type: 'uint256' },
-              { name: 'isExplicit', type: 'bool' },
-              { name: 'tokenURI', type: 'string' }
-            ],
-            outputs: [{ name: '', type: 'uint256' }]
-          }
-        ],
-        functionName: 'mintMusic',
-        args: [
-          trackId,
-          formData.trackTitle,
-          formData.artistName,
-          formData.albumName || '',
-          formData.releaseType,
-          formData.genre,
-          samples,
-          coverArtURI,
-          audioURI,
-          BigInt(Math.floor(durationInSeconds)),
-          formData.isExplicit,
-          tokenURI
-        ],
-        value: BigInt(1000000000000000), // 0.001 ETH mint fee
+      console.log('Minting with params:', {
+        trackId,
+        trackTitle: formData.trackTitle,
+        artistName: formData.artistName,
+        albumName: formData.albumName || '',
+        releaseType: formData.releaseType,
+        genre: formData.genre,
+        samples,
+        coverArtURI,
+        audioURI,
+        duration: BigInt(Math.floor(durationInSeconds)),
+        isExplicit: formData.isExplicit,
+        tokenURI,
+        value: BigInt(1000000000000000)
       });
+      
+      // Mint NFT
+      let txHash: string;
+      try {
+        txHash = await writeContractAsync({
+          address: MUSIC_NFT_CONTRACT as `0x${string}`,
+          abi: [
+            {
+              name: 'mintMusic',
+              type: 'function',
+              stateMutability: 'payable',
+              inputs: [
+                { name: 'trackId', type: 'string' },
+                { name: 'trackTitle', type: 'string' },
+                { name: 'artistName', type: 'string' },
+                { name: 'albumName', type: 'string' },
+                { name: 'releaseType', type: 'string' },
+                { name: 'genre', type: 'string' },
+                { name: 'samples', type: 'string[]' },
+                { name: 'coverArtURI', type: 'string' },
+                { name: 'audioURI', type: 'string' },
+                { name: 'duration', type: 'uint256' },
+                { name: 'isExplicit', type: 'bool' },
+                { name: 'tokenURI', type: 'string' }
+              ],
+              outputs: [{ name: '', type: 'uint256' }]
+            }
+          ],
+          functionName: 'mintMusic',
+          args: [
+            trackId,
+            formData.trackTitle,
+            formData.artistName,
+            formData.albumName || '',
+            formData.releaseType,
+            formData.genre,
+            samples,
+            coverArtURI,
+            audioURI,
+            BigInt(Math.floor(durationInSeconds)),
+            formData.isExplicit,
+            tokenURI
+          ],
+          value: BigInt(1000000000000000), // 0.001 ETH mint fee
+        });
+        console.log('Transaction successful:', txHash);
+      } catch (contractError) {
+        console.error('Contract call failed:', contractError);
+        throw new Error(`Contract minting failed: ${contractError instanceof Error ? contractError.message : 'Unknown error'}`);
+      }
 
       toast.success('🎉 Track uploaded and NFT minted successfully!');
       toast.info(`📝 Transaction hash: ${txHash}`);
