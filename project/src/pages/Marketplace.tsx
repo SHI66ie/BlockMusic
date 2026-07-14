@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { FaPlay, FaPause, FaDownload, FaMusic, FaHeart, FaRegHeart, FaLock, FaPlus, FaListUl } from 'react-icons/fa';
 import { useSubscription } from '../contexts/SubscriptionContext';
 import { useMusicPlayer } from '../contexts/MusicPlayerContext';
+import { usePlaylist } from '../contexts/PlaylistContext';
 import { useAccount, useReadContract } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
@@ -47,6 +48,9 @@ export default function Marketplace() {
   const { address, isConnected } = useAccount();
   const { isSubscribed, subscriptionData, isLoading: subscriptionLoading, checkSubscription } = useSubscription();
   const { playTrack, currentTrack, isPlaying, setPlaylist, addToQueue, queue, removeFromQueue, clearQueue, mostPlayed, totalListeningStats, isOffline, offlineCache } = useMusicPlayer();
+  const { playlists, addTrackToPlaylist } = usePlaylist();
+  
+  const [selectedPlaylistForAdd, setSelectedPlaylistForAdd] = useState<string>('');
   
   const [likedTracks, setLikedTracks] = useState<Set<number>>(new Set());
   const [followedArtists, setFollowedArtists] = useState<Set<string>>(() => {
@@ -330,6 +334,15 @@ export default function Marketplace() {
     setLikedTracks(newLiked);
   };
 
+  const handleAddToPlaylist = (track: Track) => {
+    if (!selectedPlaylistForAdd) {
+      toast.error('Please select a playlist first');
+      return;
+    }
+    addTrackToPlaylist(selectedPlaylistForAdd, track);
+    toast.success(`Added "${track.title}" to playlist`);
+  };
+
   const toggleFollowArtist = (artist: string) => {
     const nextFollowed = new Set(followedArtists);
     if (nextFollowed.has(artist)) {
@@ -464,6 +477,18 @@ export default function Marketplace() {
               </button>
             ))}
           </div>
+          {playlists.length > 0 && (
+            <select
+              value={selectedPlaylistForAdd}
+              onChange={(e) => setSelectedPlaylistForAdd(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-purple-500 min-w-[200px]"
+            >
+              <option value="">Select playlist to add...</option>
+              {playlists.map(playlist => (
+                <option key={playlist.id} value={playlist.id}>{playlist.name}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -637,6 +662,17 @@ export default function Marketplace() {
                       title="Download track"
                     >
                       <FaDownload />
+                    </button>
+                  )}
+
+                  {/* Add to Playlist Button */}
+                  {playlists.length > 0 && (
+                    <button
+                      onClick={() => handleAddToPlaylist(track)}
+                      className="text-gray-400 hover:text-purple-500 transition-colors"
+                      title="Add to playlist"
+                    >
+                      <FaListUl />
                     </button>
                   )}
                 </div>

@@ -1,0 +1,25 @@
+# Web framework for API
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Async support
+httpx==0.25.1
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Logging
+structlog==23.2.0
+
+# Data validation
+pydantic==2.5.0
+
+# Web3 integration (for EVM bridge)
+web3==6.11.3
+eth-account==0.10.0
+
+# Utilities
+aiofiles==23.2.1
+
+# Note: py-genlayer SDK will be added when publicly available
+# GenLayer contracts are deployed directly to GenLayer network
