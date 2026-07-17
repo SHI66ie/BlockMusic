@@ -3,7 +3,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { readContract } from '@wagmi/core';
 import { config } from '../config/web3';
 import { formatEther, formatUnits } from 'viem';
-import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus, FaSync, FaClock } from 'react-icons/fa';
+import { FaMusic, FaEthereum, FaChartLine, FaTshirt, FaCalendar, FaPlay, FaDollarSign, FaTrophy, FaUsers, FaPlus, FaSync, FaClock, FaTwitter, FaInstagram, FaSpotify, FaYoutube, FaEdit, FaLink, FaGlobe } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -52,6 +52,20 @@ interface Event {
   revenue: string;
 }
 
+interface ArtistProfile {
+  name: string;
+  bio: string;
+  genre: string;
+  location: string;
+  website: string;
+  twitter: string;
+  instagram: string;
+  spotify: string;
+  youtube: string;
+  verified: boolean;
+  joinedDate: string;
+}
+
 export default function Artist() {
   const { address, isConnected } = useAccount();
   const navigate = useNavigate();
@@ -63,6 +77,24 @@ export default function Artist() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [artistProfile, setArtistProfile] = useState<ArtistProfile>(() => {
+    const saved = localStorage.getItem('blockmusic_artist_profile');
+    return saved ? JSON.parse(saved) : {
+      name: 'Artist Name',
+      bio: 'Add your artist bio to tell fans about your music journey.',
+      genre: 'Hip Hop',
+      location: 'Worldwide',
+      website: '',
+      twitter: '',
+      instagram: '',
+      spotify: '',
+      youtube: '',
+      verified: false,
+      joinedDate: new Date().toISOString()
+    };
+  });
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileDraft, setProfileDraft] = useState<ArtistProfile>(artistProfile);
 
   // Get total supply to fetch artist's tracks
   const { data: totalSupply } = useReadContract({
@@ -186,6 +218,18 @@ export default function Artist() {
     window.location.reload();
   };
 
+  const handleSaveProfile = () => {
+    setArtistProfile(profileDraft);
+    localStorage.setItem('blockmusic_artist_profile', JSON.stringify(profileDraft));
+    setIsEditingProfile(false);
+    toast.success('Profile updated successfully');
+  };
+
+  const handleCancelEdit = () => {
+    setProfileDraft(artistProfile);
+    setIsEditingProfile(false);
+  };
+
   // Fetch real blockchain earnings data
   const { data: revenueSummary } = useReadContract({
     address: REVENUE_DISTRIBUTION_CONTRACT as `0x${string}`,
@@ -259,6 +303,174 @@ export default function Artist() {
             <FaPlus /> Upload New Track
           </button>
         </div>
+      </div>
+
+      {/* Artist Profile Section */}
+      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+              <FaMusic className="text-white text-3xl" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-bold">{artistProfile.name}</h2>
+                {artistProfile.verified && (
+                  <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">Verified</span>
+                )}
+              </div>
+              <p className="text-gray-400 text-sm mt-1">{artistProfile.genre} • {artistProfile.location}</p>
+              <p className="text-gray-500 text-xs mt-1">Joined {new Date(artistProfile.joinedDate).toLocaleDateString()}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setProfileDraft(artistProfile);
+              setIsEditingProfile(true);
+            }}
+            className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-colors"
+          >
+            <FaEdit /> Edit Profile
+          </button>
+        </div>
+
+        {isEditingProfile ? (
+          <div className="space-y-4 bg-gray-900 rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Artist Name</label>
+                <input
+                  type="text"
+                  value={profileDraft.name}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, name: e.target.value })}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Genre</label>
+                <input
+                  type="text"
+                  value={profileDraft.genre}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, genre: e.target.value })}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Location</label>
+                <input
+                  type="text"
+                  value={profileDraft.location}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, location: e.target.value })}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Website</label>
+                <input
+                  type="text"
+                  value={profileDraft.website}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, website: e.target.value })}
+                  placeholder="https://"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Twitter</label>
+                <input
+                  type="text"
+                  value={profileDraft.twitter}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, twitter: e.target.value })}
+                  placeholder="@username"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Instagram</label>
+                <input
+                  type="text"
+                  value={profileDraft.instagram}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, instagram: e.target.value })}
+                  placeholder="@username"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">Spotify</label>
+                <input
+                  type="text"
+                  value={profileDraft.spotify}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, spotify: e.target.value })}
+                  placeholder="Artist URL"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-400 block mb-1">YouTube</label>
+                <input
+                  type="text"
+                  value={profileDraft.youtube}
+                  onChange={(e) => setProfileDraft({ ...profileDraft, youtube: e.target.value })}
+                  placeholder="Channel URL"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-gray-400 block mb-1">Bio</label>
+              <textarea
+                value={profileDraft.bio}
+                onChange={(e) => setProfileDraft({ ...profileDraft, bio: e.target.value })}
+                rows={3}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveProfile}
+                className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-gray-300 mt-4">{artistProfile.bio}</p>
+            <div className="flex gap-3 mt-4">
+              {artistProfile.website && (
+                <a href={artistProfile.website} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                  <FaGlobe className="text-xl" />
+                </a>
+              )}
+              {artistProfile.twitter && (
+                <a href={`https://twitter.com/${artistProfile.twitter.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-400 transition-colors">
+                  <FaTwitter className="text-xl" />
+                </a>
+              )}
+              {artistProfile.instagram && (
+                <a href={`https://instagram.com/${artistProfile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-pink-400 transition-colors">
+                  <FaInstagram className="text-xl" />
+                </a>
+              )}
+              {artistProfile.spotify && (
+                <a href={artistProfile.spotify} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-400 transition-colors">
+                  <FaSpotify className="text-xl" />
+                </a>
+              )}
+              {artistProfile.youtube && (
+                <a href={artistProfile.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-red-400 transition-colors">
+                  <FaYoutube className="text-xl" />
+                </a>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Stats Overview */}

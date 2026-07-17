@@ -40,6 +40,15 @@ interface Track {
   mood?: string;
   bpm?: number;
   releaseDate?: string;
+  albumName?: string;
+}
+
+interface Album {
+  name: string;
+  artist: string;
+  tracks: Track[];
+  coverArt?: string;
+  totalPlays: number;
 }
 
 export default function Marketplace() {
@@ -75,6 +84,7 @@ export default function Marketplace() {
   const [selectedMood, setSelectedMood] = useState<string>('All');
   const [selectedBpm, setSelectedBpm] = useState<string>('All');
   const [releaseFilter, setReleaseFilter] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'tracks' | 'albums'>('tracks');
   const [accessChecked, setAccessChecked] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [isLoadingTracks, setIsLoadingTracks] = useState(true);
@@ -401,6 +411,29 @@ export default function Marketplace() {
     return matchesSearch && matchesGenre && matchesMood && matchesBpm && matchesRelease;
   });
 
+  // Group tracks by albums
+  const albums = useMemo(() => {
+    const albumMap = new Map<string, Album>();
+    
+    filteredTracks.forEach(track => {
+      const albumName = track.albumName || 'Singles';
+      if (!albumMap.has(albumName)) {
+        albumMap.set(albumName, {
+          name: albumName,
+          artist: track.artist,
+          tracks: [],
+          coverArt: track.coverArt,
+          totalPlays: 0
+        });
+      }
+      const album = albumMap.get(albumName)!;
+      album.tracks.push(track);
+      album.totalPlays += track.plays;
+    });
+
+    return Array.from(albumMap.values()).sort((a, b) => b.totalPlays - a.totalPlays);
+  }, [filteredTracks]);
+
   // Show loading while checking access
   if (subscriptionLoading || !accessChecked) {
     return (
@@ -489,6 +522,20 @@ export default function Marketplace() {
               ))}
             </select>
           )}
+          <div className="flex gap-2 bg-gray-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('tracks')}
+              className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'tracks' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              Tracks
+            </button>
+            <button
+              onClick={() => setViewMode('albums')}
+              className={`px-4 py-2 rounded-lg transition-colors ${viewMode === 'albums' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              Albums
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -547,26 +594,101 @@ export default function Marketplace() {
         </div>
       </div>
 
-      {/* Track List */}
-      <div className="space-y-2">
+      {/* Track List / Album View */}
+      <div className="space-y-4">
         {isLoadingTracks ? (
           <div className="flex flex-col items-center justify-center py-12">
             <LoadingSpinner size="lg" />
             <p className="text-gray-400 mt-4">Loading tracks from blockchain...</p>
           </div>
-        ) : filteredTracks.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <FaMusic className="mx-auto text-4xl mb-4 opacity-50" />
-            <p>No tracks found</p>
-          </div>
+        ) : viewMode === 'albums' ? (
+          // Album View
+          albums.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <FaMusic className="mx-auto text-4xl mb-4 opacity-50" />
+              <p>No albums found</p>
+            </div>
+          ) : (
+            albums.map((album) => (
+              <div key={album.name} className="bg-gray-800 rounded-xl p-5 border border-gray-700">
+                <div className="flex items-start gap-4">
+                  {album.coverArt ? (
+                    <img
+                      src={album.coverArt}
+                      alt={album.name}
+                      className="w-24 h-24 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                      <FaMusic className="text-white text-2xl" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-white">{album.name}</h3>
+                    <p className="text-gray-400 text-sm mt-1">{album.artist}</p>
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                      <span>{album.tracks.length} tracks</span>
+                      <span>{album.totalPlays.toLocaleString()} plays</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPlaylist(album.tracks);
+                      if (album.tracks.length > 0) {
+                        playTrack(album.tracks[0]);
+                      }
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Play Album
+                  </button>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {album.tracks.map((track) => (
+                    <div key={track.id} className="flex items-center justify-between rounded-lg bg-gray-900/70 p-3 hover:bg-gray-900 transition-colors">
+                      <div className="min-w-0">
+                        <p className="text-white font-medium truncate">{track.title}</p>
+                        <p className="text-gray-400 text-sm">{track.duration}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => playTrack(track)}
+                          className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg p-2"
+                          title={`Play ${track.title}`}
+                        >
+                          <FaPlay />
+                        </button>
+                        {playlists.length > 0 && (
+                          <button
+                            onClick={() => handleAddToPlaylist(track)}
+                            className="bg-gray-700 hover:bg-gray-600 text-white rounded-lg p-2"
+                            title="Add to playlist"
+                          >
+                            <FaListUl />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )
         ) : (
-          filteredTracks.map((track) => (
-            <div
-              key={track.id}
-              className={`bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-all ${
-                currentTrack?.id === track.id && isPlaying ? 'ring-2 ring-purple-500' : ''
-              }`}
-            >
+          // Track View
+          filteredTracks.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <FaMusic className="mx-auto text-4xl mb-4 opacity-50" />
+              <p>No tracks found</p>
+            </div>
+          ) : (
+            filteredTracks.map((track) => (
+              <div
+                key={track.id}
+                className={`bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-all ${
+                  currentTrack?.id === track.id && isPlaying ? 'ring-2 ring-purple-500' : ''
+                }`}
+              >
               <div className="flex items-center gap-4">
                 {/* Play Button */}
                 <button

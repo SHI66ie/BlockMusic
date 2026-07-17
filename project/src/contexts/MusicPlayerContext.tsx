@@ -90,6 +90,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isShuffled, setIsShuffled] = useState(false);
   const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const preloadAudioRef = useRef<HTMLAudioElement | null>(null);
   const playRecordedRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
@@ -152,10 +153,20 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       });
     }
 
+    if (!preloadAudioRef.current) {
+      preloadAudioRef.current = new Audio();
+      preloadAudioRef.current.preload = 'auto';
+      preloadAudioRef.current.volume = 0;
+    }
+
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
+      }
+      if (preloadAudioRef.current) {
+        preloadAudioRef.current.pause();
+        preloadAudioRef.current.src = '';
       }
     };
   }, []);
@@ -217,6 +228,9 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
     updatePlayHistory(track);
 
+    // Preload next track for seamless playback
+    preloadNextTrack(track);
+
     if (track.id !== undefined && track.id !== null && address && !playRecordedRef.current.has(track.id)) {
       playRecordedRef.current.add(track.id);
       recordPlay({
@@ -230,6 +244,22 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
           console.error('❌ Failed to record play:', error);
           playRecordedRef.current.delete(track.id);
         });
+    }
+  };
+
+  const preloadNextTrack = (currentTrack: Track) => {
+    if (!preloadAudioRef.current) return;
+
+    // Find next track in playlist or queue
+    const allTracks = [...playlist, ...queue];
+    const currentIndex = allTracks.findIndex(t => t.id === currentTrack.id);
+    const nextTrack = currentIndex >= 0 && currentIndex < allTracks.length - 1 
+      ? allTracks[currentIndex + 1] 
+      : allTracks[0];
+
+    if (nextTrack && nextTrack.audioUrl && nextTrack.id !== currentTrack.id) {
+      preloadAudioRef.current.src = nextTrack.audioUrl;
+      preloadAudioRef.current.load();
     }
   };
 
@@ -307,7 +337,15 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     }
 
-    playTrack(playlist[nextIndex]);
+    const nextTrack = playlist[nextIndex];
+    if (nextTrack && audioRef.current) {
+      // Check if next track is preloaded and use it for seamless playback
+      if (preloadAudioRef.current && preloadAudioRef.current.src === nextTrack.audioUrl) {
+        audioRef.current.src = nextTrack.audioUrl;
+        audioRef.current.load();
+      }
+      playTrack(nextTrack);
+    }
   };
 
   const playPrevious = () => {

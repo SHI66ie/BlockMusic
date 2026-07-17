@@ -8,6 +8,7 @@ import Subscribe from './pages/Subscribe';
 import Upload from './pages/Upload';
 import Artist from './pages/Artist';
 import Playlists from './pages/Playlists';
+import Discover from './pages/Discover';
 import SubscriptionContextProvider from './contexts/SubscriptionContextProvider';
 import { PlaylistProvider } from './contexts/PlaylistContext';
 import { SubscriptionGuard } from './components/subscription/SubscriptionGuard';
@@ -55,6 +56,7 @@ function App() {
             <Route path="/" element={<AppContent />}>
               <Route index element={<Navigate to="/home" replace />} />
               <Route path="home" element={<Home />} />
+              <Route path="discover" element={<Discover />} />
               <Route path="marketplace" element={<ProtectedMarketplace />} />
               <Route path="upload" element={<ProtectedUpload />} />
               <Route path="artist" element={<ProtectedArtist />} />
